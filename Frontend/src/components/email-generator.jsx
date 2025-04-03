@@ -27,7 +27,6 @@ export function EmailGenerator({ emailGenerated }) {
         const response = await axios.post('/api/v1/email/generate-email', { prompt });
         if (response.data.success) {
           setGeneratedEmail(response.data.fullEmail);
-          setPrompt("")
         } else {
           throw new Error(response.data.error || 'Failed to generate email');
         }
@@ -110,6 +109,7 @@ export function EmailGenerator({ emailGenerated }) {
               setShowOutput(false);
               setGeneratedEmail("");
               emailGenerated(false);
+              setPrompt("")
             }}
           />
         </div>

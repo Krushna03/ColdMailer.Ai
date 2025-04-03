@@ -9,6 +9,7 @@ import axios from 'axios';
 import { login, logout } from '../context/authSlice';
 import { useToast } from '../hooks/use-toast';
 
+
 export const GenerateEmail = () => {
 
   const [generatedEmail, setGeneratedEmails] = useState(false);

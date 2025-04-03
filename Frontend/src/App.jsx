@@ -1,12 +1,11 @@
-import { useState } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import LandingPage from './page/Landing'
 import GenerateEmail from './page/Generate-email'
-import GeneratedEmail from './page/generated-email'
 import LoginPage from './page/Login'
 import RegisterPage from './page/Register'
 import Protected from './components/Protected'
 import NotFound from './components/NotFound'
+import GeneratedEmail from './page/Generated-email'
+import LandingPage from './Landing/Landing'
 
 function App() {
   

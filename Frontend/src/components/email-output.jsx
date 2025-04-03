@@ -46,7 +46,7 @@ export function EmailOutput({
           <div className="absolute bottom-0 left-0 w-full bg-black">
             <Textarea
               placeholder="Add any specific requirements or modifications..."
-              className="w-full py-3 px-3 text-white max-h-48 text-xl border border-gray-400 rounded-xl placeholder:text-base placeholder:font-medium placeholder:text-gray-500 focus:outline-blue-800 resize-none custom-scroll"
+              className="bg-gray-950 w-full py-3 px-3 text-white max-h-48 text-xl border border-gray-400 rounded-xl placeholder:text-base placeholder:font-medium placeholder:text-gray-500 focus:outline-blue-800 resize-none custom-scroll"
               value={bottomPrompt}
               onChange={(e) => {
                 setBottomPrompt(e.target.value);
