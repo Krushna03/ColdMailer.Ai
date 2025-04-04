@@ -31,7 +31,7 @@ export default function LoginPage() {
 
         setTimeout(() => {
           navigate("/generate-email")
-        }, 2000)
+        }, 1300)
       }
 
       localStorage.setItem('token', JSON.stringify(res.data?.accessToken))

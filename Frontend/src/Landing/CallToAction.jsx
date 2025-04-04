@@ -1,0 +1,46 @@
+import React from 'react'
+import { NavLink } from 'react-router-dom';
+
+
+
+function CallToAction() {
+
+  return (
+    <section className="w-full pb-16 bg-black text-white relative overflow-hidden">
+
+      <div className="absolute left-[42%] top-5 w-64 h-64 bg-[#6f34ed] opacity-25 blur-3xl rounded-full"></div>
+
+      <div className="container mx-auto px-4 flex flex-col items-center text-center max-w-3xl">
+        <div className="mb-6">
+          <button className="bg-black border border-gray-700 rounded-full px-4 py-2 flex items-center">
+            <img
+              src="/white-logo.png"
+              width={20}
+              height={20}
+              alt="Radison logo"
+              className="mr-2"
+            />
+            <span>ColdMailer.Ai</span>
+          </button>
+        </div>
+
+        <h2 className="text-4xl md:text-5xl font-bold mb-8 leading-tight">
+        Start generating emails
+          <br />
+          that work for you
+        </h2>
+
+        <div className="flex flex-col items-center">
+          <NavLink
+            href="#"
+            className="bg-[#3f1cbc] hover:bg-[#2c1679] text-white font-medium py-3 px-8 rounded-full text-lg transition-colors duration-200 mb-3"
+          >
+            Try it for Free
+          </NavLink>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export default CallToAction;

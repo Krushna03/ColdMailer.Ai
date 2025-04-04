@@ -43,10 +43,13 @@ const faqData = [
 const Faq = () => {
   return (
     <div>
-      <Accordion type="single" collapsible className="w-full">
+      
+      <div className="absolute top-[55%] rotate-12 right-26 w-[70%] h-28 bg-[#6f34ed] opacity-25 blur-3xl"></div>
+      
+      <Accordion type="single" collapsible className="w-full z-40">
         {faqData.map(({ id, question, answer }) => (
           <AccordionItem key={id} value={id} className="mb-5">
-            <AccordionTrigger className="font-light text-base text-gray-300 sm:text-xl py-4 px-9 rounded-t-full">
+            <AccordionTrigger className="font-light text-base text-gray-300 sm:text-xl py-4 px-9 rounded-t-full z-50">
               {question}
             </AccordionTrigger>
             <AccordionContent className="font-normal text-gray-200 text-base sm:text-lg px-9">

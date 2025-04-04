@@ -1,26 +1,22 @@
 import { NavLink } from "react-router-dom"
-import { Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react"
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, Github } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-white py-16">
-      <div className="container mx-auto px-4 md:px-6">
+    <footer className="bg-black text-white py-16 relative overflow-hidden">
+
+      <div className="absolute top-1/3 -rotate-12 w-full h-20 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+
+      <div className="container mx-auto px-2 max-w-7xl">
         <div className="flex flex-col md:flex-row justify-between">
           {/* Logo and description */}
           <div className="mb-10 md:mb-0 max-w-md">
             <div className="flex items-center mb-4">
               {/* Logo */}
               <div className="mr-3">
-                <div className="w-10 h-10 relative">
-                  <div className="absolute inset-0 bg-white rounded-lg grid grid-cols-2 grid-rows-2 gap-1 p-1.5">
-                    <div className="bg-white rounded-sm"></div>
-                    <div className="bg-white rounded-sm"></div>
-                    <div className="bg-white rounded-sm"></div>
-                    <div className="bg-white rounded-sm"></div>
-                  </div>
-                </div>
+                <img src="white-logo.png" alt="logo" className="h-11 w-11 p-1 rounded"/>
               </div>
-              <span className="text-2xl font-bold">Radison</span>
+              <span className="text-2xl font-bold">ColdMailer.Ai</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               Your trusted partner in AI solutions, creating smarter systems for smarter businesses.
@@ -28,41 +24,33 @@ export default function Footer() {
 
             {/* Social icons */}
             <div className="flex space-x-3 mt-8">
-              <NavLink
-                to="#"
-                className="w-10 h-10 bg-zinc-800 rounded-md flex items-center justify-center hover:bg-zinc-700 transition-colors"
+              <a
+                href="https://www.linkedin.com/in/krushna-sakhare/" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-zinc-300 rounded-md flex items-center justify-center hover:bg-zinc-400 transition-colors"
               >
-                <Facebook size={18} className="text-gray-400" />
-                <span className="sr-only">Facebook</span>
-              </NavLink>
-              <NavLink
-                to="#"
-                className="w-10 h-10 bg-zinc-800 rounded-md flex items-center justify-center hover:bg-zinc-700 transition-colors"
-              >
-                <Twitter size={18} className="text-gray-400" />
-                <span className="sr-only">Twitter</span>
-              </NavLink>
-              <NavLink
-                to="#"
-                className="w-10 h-10 bg-zinc-800 rounded-md flex items-center justify-center hover:bg-zinc-700 transition-colors"
-              >
-                <Instagram size={18} className="text-gray-400" />
-                <span className="sr-only">Instagram</span>
-              </NavLink>
-              <NavLink
-                to="#"
-                className="w-10 h-10 bg-zinc-800 rounded-md flex items-center justify-center hover:bg-zinc-700 transition-colors"
-              >
-                <Linkedin size={18} className="text-gray-400" />
+                <Linkedin size={18} className="text-[#4f23af] " />
                 <span className="sr-only">LinkedIn</span>
-              </NavLink>
-              <NavLink
-                to="#"
-                className="w-10 h-10 bg-zinc-800 rounded-md flex items-center justify-center hover:bg-zinc-700 transition-colors"
+              </a>
+              <a
+                href="https://github.com/Krushna03"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-zinc-300 rounded-md flex items-center justify-center hover:bg-zinc-400 transition-colors"
               >
-                <Youtube size={18} className="text-gray-400" />
-                <span className="sr-only">YouTube</span>
-              </NavLink>
+                <Github size={18} className="text-[#4f23af]" />
+                <span className="sr-only">Github</span>
+              </a>
+              <a
+                href="https://x.com/sakhare_kr9294" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-zinc-300 rounded-md flex items-center justify-center hover:bg-zinc-400 transition-colors"
+              >
+                <Twitter size={18} className="text-[#4f23af]" />
+                <span className="sr-only">Twitter</span>
+              </a>
             </div>
           </div>
 

@@ -35,7 +35,7 @@ export default function RegisterPage() {
         
         setTimeout(() => {
           navigate("/generate-email")
-        }, 2000)
+        }, 1300)
       }
       localStorage.setItem('token', JSON.stringify(res.data?.data.accessToken))
       reset()

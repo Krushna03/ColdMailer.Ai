@@ -4,14 +4,17 @@ import { FaArrowRight } from "react-icons/fa6";
 import Faq from './Faq';
 import Contact from './Contact';
 import Footer from './Footer';
+import CallToAction from './CallToAction';
+import {MovingDots} from "../components/moving-dots"
+import { RiMailSendFill, RiMoneyDollarCircleLine } from "react-icons/ri";
 
 const LandingPage = () => {
 
   return (
     <>
-      {/* <MovingDots /> */}
       <div className="min-h-screen bg-black text-white relative overflow-hidden">
         
+      <MovingDots />
 
         <div className="absolute top-10 -left-14 w-1/2 h-72 bg-[#6f34ed] opacity-30 blur-3xl"></div>
         <div className="absolute bottom-10 -right-0 w-1/2 h-64 bg-[#6f34ed] opacity-30 blur-3xl"></div>
@@ -26,28 +29,25 @@ const LandingPage = () => {
           </div>
 
           <nav className="hidden md:flex items-center gap-8 bg-[rgba(3,3,3,0.3)] px-5 py-3 rounded-2xl">
-            <NavLink href="#process" className="hover:text-purple-300 transition-colors">
-              Process
+            <NavLink href="#process" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
+              Features
             </NavLink>
-            <NavLink href="#services" className="hover:text-purple-300 transition-colors">
-              Services
+            <NavLink href="#services" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
+              Faqs
             </NavLink>
-            <NavLink href="#benefits" className="hover:text-purple-300 transition-colors">
-              Benefits
-            </NavLink>
-            <NavLink href="#plans" className="hover:text-purple-300 transition-colors">
-              Plans
-            </NavLink>
-            <NavLink href="#contact" className="hover:text-purple-300 transition-colors">
+            <NavLink href="#benefits" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
               Contact
+            </NavLink>
+            <NavLink href="#benefits" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
+              Register
             </NavLink>
           </nav>
 
           <NavLink
             href="#contact"
-            className="bg-[#6435db] hover:bg-[#482ab5] text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
+            className="bg-[#5d30d1] hover:bg-[#482ab5] text-white px-4 py-3 rounded-lg transition-colors flex items-center gap-2"
           >
-            Generate Cold Email <FaArrowRight />
+            <RiMailSendFill /> Generate Cold Email
           </NavLink>
         </header>
 
@@ -75,9 +75,9 @@ const LandingPage = () => {
             </NavLink>
             <NavLink
               href="#plans"
-              className="border border-gray-600 hover:border-gray-400 text-white px-8 py-3 rounded-lg transition-colors"
+              className="flex items-center gap-1 border border-gray-600 hover:border-gray-400 text-white px-8 py-3 rounded-lg transition-colors"
             >
-              See Plans
+              It's Free <RiMoneyDollarCircleLine className='h-5 w-5'/>
             </NavLink>
           </div>
 
@@ -89,7 +89,7 @@ const LandingPage = () => {
                   <circle cx="12" cy="12" r="10" />
                 </svg>
               </div>
-              <span className="text-xl font-semibold">Logoipsum</span>
+              <span className="text-base font-semibold">Sales cold mail</span>
             </div>
             <div className="flex items-center text-gray-400">
               <div className="w-5 h-5 mr-2 opacity-50">
@@ -97,7 +97,7 @@ const LandingPage = () => {
                   <rect x="2" y="2" width="20" height="20" rx="5" />
                 </svg>
               </div>
-              <span className="text-xl font-semibold">Logoipsum</span>
+              <span className="text-base font-semibold">Job cold mail</span>
             </div>
             <div className="flex items-center text-gray-400">
               <div className="w-5 h-5 mr-2 opacity-50">
@@ -106,13 +106,13 @@ const LandingPage = () => {
                   <circle cx="16" cy="12" r="4" />
                 </svg>
               </div>
-              <span className="text-xl font-semibold">Logoipsum</span>
+              <span className="text-base font-semibold">Marketing mail</span>
             </div>
           </div>
         </main>
       </div>
 
-      <div className='min-h-screen bg-black'>
+      <div className='min-h-screen bg-black relative overflow-hidden'>
       <section className="w-full max-w-7xl mx-auto py-10 ">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-base font-normal text-gray-200">Features</span>
@@ -141,7 +141,7 @@ const LandingPage = () => {
         </section>
       </div>
 
-      <div className='min-h-screen bg-black'>
+      <div className='min-h-screen bg-black relative overflow-hidden'>
         <section className="w-full max-w-5xl mx-auto py-10 ">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-base font-normal text-gray-200">FAQs</span>
@@ -155,14 +155,16 @@ const LandingPage = () => {
         </section>
       </div>
       
-      <div className='min-h-screen bg-black'>
-        <section className="w-full max-w-5xl mx-auto py-10 ">
+      <div className='min-h-screen bg-black relative overflow-hidden'>
+        <section className="w-full max-w-7xl mx-auto py-10">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-base font-normal text-gray-200">Contacts</span>
           </div>
           <Contact />
         </section>
       </div>
+
+      <CallToAction />
 
       <Footer />
     </>
