@@ -12,7 +12,8 @@ const LandingPage = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      {/* Navbar & hero  */}
+      <div id='home' className="min-h-screen bg-black text-white relative overflow-hidden">
         
       <MovingDots />
 
@@ -29,22 +30,22 @@ const LandingPage = () => {
           </div>
 
           <nav className="hidden md:flex items-center gap-8 bg-[rgba(3,3,3,0.3)] px-5 py-3 rounded-2xl">
-            <NavLink href="#process" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
+            <a href="#features" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
               Features
-            </NavLink>
-            <NavLink href="#services" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
+            </a>
+            <a href="#faqs" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
               Faqs
-            </NavLink>
-            <NavLink href="#benefits" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
+            </a>
+            <a href="#contact" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
               Contact
-            </NavLink>
-            <NavLink href="#benefits" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
+            </a>
+            <NavLink to="/sign-up" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
               Register
             </NavLink>
           </nav>
 
           <NavLink
-            href="#contact"
+            to="/generate-email"
             className="bg-[#5d30d1] hover:bg-[#482ab5] text-white px-4 py-3 rounded-lg transition-colors flex items-center gap-2"
           >
             <RiMailSendFill /> Generate Cold Email
@@ -68,13 +69,13 @@ const LandingPage = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 mb-24">
             <NavLink
-              href="#services"
+              to="/sign-"
               className="bg-[#3f1cbc] hover:bg-[#2c1679] text-white px-8 py-3 rounded-lg transition-colors font-medium"
             >
               Get started
             </NavLink>
             <NavLink
-              href="#plans"
+              to="/sign-up"
               className="flex items-center gap-1 border border-gray-600 hover:border-gray-400 text-white px-8 py-3 rounded-lg transition-colors"
             >
               It's Free <RiMoneyDollarCircleLine className='h-5 w-5'/>
@@ -112,7 +113,8 @@ const LandingPage = () => {
         </main>
       </div>
 
-      <div className='min-h-screen bg-black relative overflow-hidden'>
+      {/* Feature */}
+      <div id='features' className='min-h-screen bg-black relative overflow-hidden'>
       <section className="w-full max-w-7xl mx-auto py-10 ">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-base font-normal text-gray-200">Features</span>
@@ -141,7 +143,8 @@ const LandingPage = () => {
         </section>
       </div>
 
-      <div className='min-h-screen bg-black relative overflow-hidden'>
+      {/* Faqs */}
+      <div id='faqs' className='min-h-screen bg-black relative overflow-hidden'>
         <section className="w-full max-w-5xl mx-auto py-10 ">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-base font-normal text-gray-200">FAQs</span>
@@ -155,7 +158,8 @@ const LandingPage = () => {
         </section>
       </div>
       
-      <div className='min-h-screen bg-black relative overflow-hidden'>
+      {/* Contact */}
+      <div id='contact' className='min-h-screen bg-black relative overflow-hidden'>
         <section className="w-full max-w-7xl mx-auto py-10">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-base font-normal text-gray-200">Contacts</span>
@@ -176,45 +180,53 @@ export default LandingPage
 
 const features = [
   {
-    title: "AI-Powered Personalization",
-    description: "Generate highly personalized cold emails at scale using advanced AI that adapts to each recipient's profile and preferences.",
+    title: "Instant Email Generation",
+    description: "Quickly generate professional cold emails tailored to your goals, whether you're reaching out for sales, networking, job applications, or collaborations.",
     icon: (
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 5H8a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2zm0 0l-4 4m0 0l-4-4m4 4V3" />
     ),
   },
   {
-    title: "Response Rate Analytics",
-    description: "Track and analyze email performance with detailed metrics on open rates, response rates, and engagement to continuously improve your campaigns.",
+    title: "Context-Aware Writing",
+    description: "Our AI understands your input and customizes the tone, structure, and message to fit your purpose, audience, and intent.",
     icon: (
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 20h9m-9 0H3m9 0V4m0 0L8 8m4-4l4 4" />
     ),
   },
   {
-    title: "Automated Follow-ups",
-    description: "Set up intelligent follow-up sequences that adapt timing and content based on recipient behavior and engagement patterns.",
+    title: "Personalization Inputs",
+    description: "Add key details about your recipient or company and let the AI craft emails that feel human, relevant, and specific.",
     icon: (
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
     ),
   },
   {
-    title: "Anti-Spam Optimization",
-    description: "Our AI ensures your emails bypass spam filters by optimizing content, subject lines, and sending patterns for maximum deliverability.",
+    title: "Tone Customization",
+    description: "Whether you want to sound friendly, formal, persuasive, or direct, you can adjust the tone to match your brand or style.",
     icon: (
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17a2.25 2.25 0 104.5 0m-4.5 0h4.5m4.5-5.25a2.25 2.25 0 10-4.5 0 2.25 2.25 0 004.5 0zM3.75 11.75a2.25 2.25 0 104.5 0 2.25 2.25 0 00-4.5 0z" />
     ),
   },
   {
-    title: "Audience Segmentation",
-    description: "Segment your prospects with AI-driven insights to create targeted campaigns that resonate with specific audience groups and industries.",
+    title: "One-Click Copy & Export",
+    description: "Easily copy your generated email or export it for your CRM, email platform, or outreach tools with a single click.",
     icon: (
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16h8m-4-4h4m-4-4h4m-4-4h4M4 6h.01M4 10h.01M4 14h.01M4 18h.01" />
     ),
   },
   {
-    title: "Smart Scheduling",
-    description: "Send emails at the optimal time for each recipient based on AI analysis of past engagement patterns and timezone considerations.",
+    title: "Unlimited Revisions",
+    description: "Not happy with the first draft? Instantly regenerate or edit your cold email until it’s just right—no limits.",
     icon: (
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582M20 20v-5h-.581M20 4l-4.35 4.35M4 20l4.35-4.35M20 4a9 9 0 00-12.73 0L4 7.27M4 20a9 9 0 0012.73 0L20 16.73" />
     ),
-  },
+  },  
+  // {
+  //   title: "Multiple Use-Case Templates",
+  //   description: "Choose from a variety of templates tailored for different needs—outreach, follow-ups, recruiting, product pitches, and more.",
+  //   icon: (
+  //     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+  //   ),
+  // },
 ];
+

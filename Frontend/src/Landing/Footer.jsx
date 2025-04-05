@@ -3,13 +3,12 @@ import { Facebook, Twitter, Instagram, Linkedin, Youtube, Github } from "lucide-
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-white py-16 relative overflow-hidden">
+    <footer className="bg-black text-white pt-16 pb-8 relative overflow-hidden">
 
       <div className="absolute top-1/3 -rotate-12 w-full h-20 bg-[#6f34ed] opacity-30 blur-3xl"></div>
 
       <div className="container mx-auto px-2 max-w-7xl">
         <div className="flex flex-col md:flex-row justify-between">
-          {/* Logo and description */}
           <div className="mb-10 md:mb-0 max-w-md">
             <div className="flex items-center mb-4">
               {/* Logo */}
@@ -54,35 +53,34 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Navigation */}
           <div className="grid grid-cols-2 gap-x-16 gap-y-8">
             {/* Sections */}
             <div>
               <h3 className="text-lg font-medium mb-6">Sections</h3>
               <ul className="space-y-4">
                 <li>
-                  <NavLink to="#process" className="text-gray-400 hover:text-white transition-colors">
-                    Process
-                  </NavLink>
+                  <a href="#features" className="text-gray-400 hover:text-white transition-colors">
+                    Features
+                  </a>
                 </li>
                 <li>
-                  <NavLink to="#services" className="text-gray-400 hover:text-white transition-colors">
-                    Services
-                  </NavLink>
+                  <a href="#faqs" className="text-gray-400 hover:text-white transition-colors">
+                    Faqs
+                  </a>
                 </li>
                 <li>
-                  <NavLink to="#benefits" className="text-gray-400 hover:text-white transition-colors">
-                    Benefits
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="#plans" className="text-gray-400 hover:text-white transition-colors">
-                    Plans
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="#contact" className="text-gray-400 hover:text-white transition-colors">
+                  <a href="#contact" className="text-gray-400 hover:text-white transition-colors">
                     Contact
+                  </a>
+                </li>
+                <li>
+                  <NavLink to="/sign-up" className="text-gray-400 hover:text-white transition-colors">
+                    Register
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/sign-in" className="text-gray-400 hover:text-white transition-colors">
+                    Login
                   </NavLink>
                 </li>
               </ul>
@@ -93,25 +91,30 @@ export default function Footer() {
               <h3 className="text-lg font-medium mb-6">Pages</h3>
               <ul className="space-y-4">
                 <li>
-                  <NavLink to="/" className="text-gray-400 hover:text-white transition-colors">
+                  <a href="#home" className="text-gray-400 hover:text-white transition-colors">
                     Home
-                  </NavLink>
+                  </a>
                 </li>
                 <li>
-                  <NavLink to="/coming-soon" className="text-gray-400 hover:text-white transition-colors">
-                    Coming soon
+                  <NavLink to="/generate-email" className="text-gray-400 hover:text-white transition-colors">
+                    Generate Email
                   </NavLink>
                 </li>
-                <li>
+                {/* <li>
                   <NavLink to="/404" className="text-gray-400 hover:text-white transition-colors">
                     404
                   </NavLink>
-                </li>
+                </li> */}
               </ul>
             </div>
           </div>
         </div>
+
+      <div className="mt-4 text-gray-400">
+        @Copyright, All rights reserved. ColdMailer.Ai
       </div>
+      </div>
+
     </footer>
   )
 }

@@ -32,7 +32,7 @@ function CallToAction() {
 
         <div className="flex flex-col items-center">
           <NavLink
-            href="#"
+            to="/generate-email"
             className="bg-[#3f1cbc] hover:bg-[#2c1679] text-white font-medium py-3 px-8 rounded-full text-lg transition-colors duration-200 mb-3"
           >
             Try it for Free

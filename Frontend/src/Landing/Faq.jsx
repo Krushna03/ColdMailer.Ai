@@ -4,41 +4,44 @@ import React from "react";
 const faqData = [
   {
     id: "item-1",
-    question: "What is Vidya Nexus?",
+    question: "What is Cold Mailer AI?",
     answer:
-      "Vidya Nexus is a comprehensive platform designed to manage and streamline various administrative tasks, including attendance, grading, scheduling, communication, and more, all in one place.",
+      "Cold Mailer AI is an AI-powered platform that helps you generate high-quality cold emails for sales, outreach, networking, job hunting, and more—instantly and effortlessly.",
   },
   {
     id: "item-2",
-    question: "How easy is it to implement the system?",
+    question: "Do I need to be a copywriter to use this?",
     answer:
-      "Vidya Nexus is user-friendly and can be implemented with minimal setup, ensuring a smooth transition for educational institutions.",
+      "Not at all! Cold Mailer AI is designed for everyone—founders, sales reps, marketers, freelancers, and job seekers. Just enter a few details, and the AI handles the rest.",
   },
   {
     id: "item-3",
-    question: "Does the system support mobile devices?",
+    question: "Can I customize the email after it's generated?",
     answer:
-      "Yes, Vidya Nexus is fully responsive and accessible on mobile devices, allowing users to manage tasks on the go.",
+      "Yes, you can regenerate, edit, and fine-tune your email as many times as you need until you're happy with it.",
   },
   {
     id: "item-4",
-    question: "Can the system track both teachers and students?",
+    question: "Does it support different use-cases like sales or job outreach?",
     answer:
-      "Yes, it provides tracking and reporting features for both teachers and students to monitor progress and activities effectively.",
+      // "Absolutely! We offer templates for various goals such as sales, partnerships, hiring, client follow-ups, and more.",
+      "Absolutely! We offer email output for various goals such as sales, partnerships, hiring, client follow-ups, and more.",
   },
   {
     id: "item-5",
-    question: "Can I try the system before purchasing?",
+    question: "Do you offer a free trial?",
     answer:
-      "Yes, we offer a free trial so you can explore all the features before making a decision.",
+      // "Yes, you can try Cold Mailer AI for free and generate a limited number of emails before deciding to upgrade.",
+      "Yes, you can try Cold Mailer AI for free and generate a unlimited number of emails for your use cases.",
   },
   {
-    id: "item-5",
-    question: "Can I try the system before purchasing?",
+    id: "item-6",
+    question: "Can I use it on mobile?",
     answer:
-      "Yes, we offer a free trial so you can explore all the features before making a decision.",
+      "Yes, the platform is fully responsive and works smoothly on mobile, tablet, and desktop devices.",
   },
 ];
+
 
 const Faq = () => {
   return (
@@ -49,10 +52,10 @@ const Faq = () => {
       <Accordion type="single" collapsible className="w-full z-40">
         {faqData.map(({ id, question, answer }) => (
           <AccordionItem key={id} value={id} className="mb-5">
-            <AccordionTrigger className="font-light text-base text-gray-300 sm:text-xl py-4 px-9 rounded-t-full z-50">
+            <AccordionTrigger className=" text-base text-gray-300 sm:text-xl py-4 px-9 rounded-t-full z-50">
               {question}
             </AccordionTrigger>
-            <AccordionContent className="font-normal text-gray-200 text-base sm:text-lg px-9">
+            <AccordionContent className="font-normal text-gray-200 text-base sm:text-lg px-9 pt-2">
               {answer}
             </AccordionContent>
           </AccordionItem>
