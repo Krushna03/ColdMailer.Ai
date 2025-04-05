@@ -16,7 +16,7 @@ const Protected = ({ children }) => {
 
   if (!user) {
     return (
-        <Navigate to="/" state={{ from: location }} replace />
+        <Navigate to="/sign-in" state={{ from: location }} replace />
       ) 
   }
 
