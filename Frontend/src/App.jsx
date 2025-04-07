@@ -4,7 +4,6 @@ import LoginPage from './page/Login'
 import RegisterPage from './page/Register'
 import Protected from './components/Protected'
 import NotFound from './components/NotFound'
-import GeneratedEmail from './page/Generated-email'
 import LandingPage from './Landing/Landing'
 
 function App() {
@@ -33,14 +32,6 @@ function App() {
             <GenerateEmail />
         </Protected>
       ) 
-    },
-    {
-      path: "/generated-email",
-      element: (
-        <Protected>
-          <GeneratedEmail />
-        </Protected>
-      )
     },
   ]) 
 

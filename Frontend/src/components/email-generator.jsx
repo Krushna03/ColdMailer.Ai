@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { EmailInput } from './email-input';
 import { EmailOutput } from './email-output';
 import { useToast } from "../hooks/use-toast";
-// import { Toaster } from "../hooks/use-toast";
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 export function EmailGenerator({ emailGenerated }) {
     const [prompt, setPrompt] = useState("");
@@ -14,7 +14,9 @@ export function EmailGenerator({ emailGenerated }) {
     const [bottomPrompt, setBottomPrompt] = useState("");
     const [showOutput, setShowOutput] = useState(false);
     const { toast } = useToast();
-    
+
+    const user = useSelector(state => state.auth.userData)
+    const userId = user?.userData?._id
 
     const generateEmail = async (e) => {
       e.preventDefault();
@@ -24,7 +26,10 @@ export function EmailGenerator({ emailGenerated }) {
       emailGenerated(true);
 
       try {
-        const response = await axios.post('/api/v1/email/generate-email', { prompt });
+        const response = await axios.post('/api/v1/email/generate-email', { prompt, userId }, 
+          { withCredentials: true}
+        );
+
         if (response.data.success) {
           setGeneratedEmail(response.data.fullEmail);
         } else {
@@ -73,8 +78,7 @@ export function EmailGenerator({ emailGenerated }) {
     };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto h-full overflow-hidden">
-      <div className="relative w-full h-full">
+    <div className="w-full max-w-[1400px] mx-auto relative h-full overflow-hidden">
         <div 
           className={`
             w-full
@@ -92,8 +96,8 @@ export function EmailGenerator({ emailGenerated }) {
 
         <div 
           className={`
-            w-full
-            transition-all duration-500 ease-in-out
+            w-full h-full mt-6
+            transition-all duration-500 ease-in-out 
             ${showOutput ? 'transform translate-y-0 opacity-100' : 'transform translate-y-full opacity-0'}
             absolute top-0 left-0 bottom-0
           `}
@@ -112,7 +116,6 @@ export function EmailGenerator({ emailGenerated }) {
               setPrompt("")
             }}
           />
-        </div>
       </div>
 
 

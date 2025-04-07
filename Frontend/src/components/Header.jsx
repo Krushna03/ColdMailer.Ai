@@ -2,9 +2,9 @@ import { NavLink, useNavigate } from "react-router-dom"
 import { ShimmerButton } from "./ui/spinner-button"
 import { User } from "lucide-react"
 import { useToast } from "../hooks/use-toast"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { logout } from "../context/authSlice"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import axios from "axios"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger} from "../components/ui/dropdown-menu"
 
@@ -14,8 +14,9 @@ export function Header() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(false)
-
+  const user = useSelector(state => state.auth.userData)
   const token = localStorage.getItem('token') || null;
+  
 
   const handleLogout = async (e) => {
     e.preventDefault()
@@ -48,7 +49,7 @@ export function Header() {
   }
   
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-gradient-to-br shadow-lg shadow-blue-900/0 group-hover:shadow-blue-900/50">
+    <header className="backdrop-blur-md shadow-lg shadow-blue-900/0 group-hover:shadow-blue-900/50">
       <div className="container flex h-16 items-center px-10">
         <NavLink to="/" className="flex items-center gap-1 mr-6 group">
           <div className="p-2 px-4 rounded-xl transition-shadow flex items-center gap-2">
@@ -72,34 +73,26 @@ export function Header() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <User className="h-8 w-8 rounded-full bg-gray-100 p-2 cursor-pointer"/>
+                  <User className="h-10 w-10 rounded-full bg-[#4a465bd3] text-white p-2 cursor-pointer"/>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
+                <DropdownMenuContent className="min-w-52 bg-[#24232bf3] text-white border-none mr-5 mt-2">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                     <DropdownMenuItem>
-                      Profile
-                      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                      Name
+                      <DropdownMenuShortcut>{user?.userData?.username}</DropdownMenuShortcut>
                     </DropdownMenuItem>
+
                     <DropdownMenuItem>
-                      Billing
-                      <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      Settings
-                      <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      Keyboard shortcuts
-                      <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
+                      Email
+                      <DropdownMenuShortcut className="ml-5">{user?.userData?.email}</DropdownMenuShortcut>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                   
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    Log out
-                    <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

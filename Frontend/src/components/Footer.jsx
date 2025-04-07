@@ -2,7 +2,7 @@
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/[0.08] bg-black/50 py-4 mt-6 backdrop-blur-xl">
+    <footer className="border-t border-white/[0.08] bg-[#0d0e12]/50 py-4 mt-6 backdrop-blur-xl">
       {/* <div>
         <GoSidebarCollapse className="h-6 w-6 text-gray-400 ml-5" />
       </div> */}

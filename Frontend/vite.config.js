@@ -14,6 +14,9 @@ export default defineConfig({
     proxy: {
       "/api" : "http://localhost:5000"
     },
+    // proxy: {
+    //   "/api" : "https://coldmailer-ai-backend.onrender.com"
+    // },
     host: true, 
     allowedHosts: [
       "6709-2409-40c2-108-76f1-1d9c-5c46-367b-aa41.ngrok-free.app"

@@ -14,9 +14,15 @@ const generateAccessAndRefreshTokens = async (userID) => {
     return {accessToken, refreshToken}
 
   } catch (error) {
-    throw new ApiError(500, "Something wend wrong while generating access and refresh token")
+    return res.status(500).json(
+      {
+        success: false,
+        message: 'Error while generating access & refresh token, please try again.',
+      }
+    );
   }
 }
+
 
 
 const register = async (req, res) => {
@@ -25,12 +31,11 @@ const register = async (req, res) => {
     const existingUser = await UserModel.findOne({email});
 
     if (existingUser) {
-      return res.json(
+      return res.status(500).json(
         {
           success: false,
           message: 'User already Exists',
-        },
-        { status: 400 }
+        }
       );
     }
 
@@ -41,12 +46,11 @@ const register = async (req, res) => {
       });
 
       if (!user) {
-        return res.json(
+        return res.status(500).json(
           {
             success: false,
             message: "Error registering user | Try registering again !",
           },
-          { status: 500 }
         );
       }
 
@@ -69,23 +73,39 @@ const register = async (req, res) => {
 }
 
 
+
 const login = async (req, res) => {
     const {email, password} = req.body
 
     if (!email || !password) {
-      throw new ApiError(400, "username or email is required")
+      return res.status(500).json(
+        {
+          success: false,
+          message: "username or email is required !",
+        },
+      );
     }
 
     const user = await UserModel.findOne({ email })
 
     if (!user) {
-      throw new ApiError(404, "User does not exist")
+      return res.status(500).json(
+        {
+          success: false,
+          message: "User does not exist. Please enter correct email !",
+        },
+      );
     }
 
     const isPaswordValidate = await user.isPasswordCorrect(password)
 
     if (!isPaswordValidate) {
-      throw new ApiError(404, "User password does not matched")
+      return res.status(500).json(
+        {
+          success: false,
+          message: "Password does not matched, Please enter correct password !",
+        }
+      );
     }
 
     const {accessToken} = await generateAccessAndRefreshTokens(user._id)
@@ -108,6 +128,7 @@ const login = async (req, res) => {
         "User logged In successFully"
     )
 }
+
 
 
 const currentUser = async (req, res) => {

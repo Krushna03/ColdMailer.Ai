@@ -55,10 +55,14 @@ export const GenerateEmail = () => {
 }, [dispatch])
   
   return (
-    <div className="h-screen overflow-y-hidden flex flex-col bg-black bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(121,120,240,0.5),rgba(255,255,255,0))]">
+    <div className="h-screen overflow-y-hidden flex flex-col relative bg-[#0d0e12]">
+
+  <div className="absolute top-20 -left-14 w-1/2 h-48 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+        <div className="absolute bottom-20 right-0 w-1/2 h-40 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+
       <MovingDots />
       <Header />
-      <main className="flex-1 flex flex-col items-center justify-center p-4 pt-20">
+      <main className="z-50 flex-1 flex flex-col items-center justify-center px-4">
         <EmailGenerator emailGenerated={setGeneratedEmails}/>
       </main>
 

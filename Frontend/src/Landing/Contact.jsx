@@ -1,6 +1,14 @@
 import { useState } from "react"
+import axios from "axios"
+import { useToast } from "@/hooks/use-toast"
+import { Toaster } from "../components/ui/toaster"
+
 
 export default function Contact() {
+
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(false)
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -12,9 +20,60 @@ export default function Contact() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Form submitted:", formData)
+    formData.email.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
+    setLoading(true)
+
+    try {
+      const res = await axios.post('/api/v1/contact/new-contact', formData, { withCredentials : true });
+  
+      if (res.status === 200) {
+        toast({
+          title: "Message Sent !!",
+          description: "Thanks for sending messsage, we will love to reply you.",
+        });
+        setFormData({email: "", name: "", message: ""})
+      }
+
+      if (res.status === 500) { 
+        toast({
+          title: "Error !!",
+          description: res.data.message,
+        });
+        setFormData({email: "", name: "", message: ""})
+        return;
+      }
+
+
+    } catch (error) {
+      console.log("Error in contact", error);
+      if (error.response && error.response.data) {
+        const backendErrorMessage = error.response.data.message || "An error occurred.";
+        console.error("Backend Error:", backendErrorMessage);
+        toast({
+          title: "Error",
+          description: backendErrorMessage,
+          status: "error",
+          variant: "destructive",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        console.error("Unexpected Error:", error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again later.",
+          variant: "destructive",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    }
+    finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -86,12 +145,17 @@ export default function Contact() {
 
           <button
             type="submit"
+            disabled={loading ||
+              !formData.name.trim() ||
+              !formData.email.trim() ||
+              !formData.message.trim()}
             className="w-full py-3 px-4 bg-[#3f1cbc] hover:bg-[#2c1679] text-white font-medium rounded-md transition-colors"
           >
-            Submit
+            {loading ? "Sending..." : "Submit"}
           </button>
         </form>
       </div>
+      <Toaster />
     </div>
   )
 }

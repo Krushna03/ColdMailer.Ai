@@ -21,6 +21,7 @@ const UserSchema = new Schema({
       type: String,
       required: [true, "Username is required"],
     },
+
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -28,10 +29,22 @@ const UserSchema = new Schema({
       match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
       , "Please use valid email"]
     },
+
     password: {
-      type: String,
+      type: String ,
       required: [true, "Password is required"],
     },
+    
+    authProvider: {
+      type: String,
+      default: null
+    },
+
+    refreshToken: {
+      type: String,
+      default: null
+    },
+    
     genereatedEmails: [EmailSchema]
   }, 
   { timestamps: true }

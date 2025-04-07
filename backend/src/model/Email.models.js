@@ -9,8 +9,14 @@ const EmailSchema = new Schema({
     generatedEmail: { 
       type: String,
     },
-  }
-  , { timestamps: true }
+
+    userId: { 
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true 
+    }
+  },
+  { timestamps: true }
 );
 
 export const Email = mongoose.model('Email', EmailSchema);

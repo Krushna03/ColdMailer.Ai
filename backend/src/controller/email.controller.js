@@ -1,15 +1,25 @@
 import { Email } from "../model/Email.models.js";
-import { model } from "../../index.js";
+import { model } from "../index.js";
 
 const generateEmail = async (req, res) => {
   try {
-    const { prompt } = req.body;
+    const { prompt, userId } = req.body;
 
-    const systemPrompt = `You are an expert at writing cold emails.
-    Create a professional cold email with the following characteristics:
-    - Keep it concise and engaging
-    - Include a clear call to action
-    - Be professional and respectful`;
+    if (!userId) {
+        return res.status(500).json({
+          success: false,
+          message: "Userid is not provided",
+        },
+      );
+    }
+
+    const systemPrompt = `You are an expert in crafting high-converting cold emails.
+      Generate a professional cold email based on the user's input with the following guidelines:
+      - Keep it concise, engaging, and to the point
+      - Maintain a professional and respectful tone
+      - Include a clear and compelling call to action
+
+      Do not include any additional suggestions, explanations, or content beyond the email itself.`;
 
 
     const result = await model.generateContent({
@@ -23,8 +33,9 @@ const generateEmail = async (req, res) => {
     const fullEmail = result?.response?.text();
     
     const email = await Email.create({
-      prompt,
-      generatedEmail: fullEmail,
+        prompt,
+        generatedEmail: fullEmail,
+        userId
     });
 
     if (!email) {
@@ -91,17 +102,18 @@ const updateEmail = async (req, res) => {
         generatedEmail: updatedEmail,
     });
 
-    return NextResponse.json({
+    return res.status(200).json({
       success: true,
       updatedEmail,
-    }, { status: 200 });
+    }, 
+  );
 
   } catch (error) {
       console.error('Error:', error);
-      return NextResponse.json({
+      return res.status(200).json({
         success: false,
         error: 'Failed to generate email',
-      }, { status: 500 });
+      });
   }
 }
 
