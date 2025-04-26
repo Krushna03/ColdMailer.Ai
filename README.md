@@ -2,6 +2,11 @@
 
 An AI-based email generator designed to create effective cold emails for outreach and professional communication.
 
+## Deployment
+
+See project: **[ColdMailerAi](https://coldmailer-ai.vercel.app)**.
+
+
 ## Features
 - AI-powered cold email generation
 - Google Authentication for secure login
@@ -24,3 +29,17 @@ An AI-based email generator designed to create effective cold emails for outreac
 1. Clone the repository:
    ```bash
    git clone https://github.com/your-username/ColdMailer.Ai.git
+   
+2. Navigate to the project directory:
+   ```bash
+   cd ColdMailer.Ai
+   
+3. Install dependencies for both frontend and backend:
+   ```bash
+   cd frontend
+   npm install
+   cd ../backend
+   npm install
+4. Set up environment variables as required (Google OAuth keys, API URLs, etc.).
+5. Run development servers:
+
