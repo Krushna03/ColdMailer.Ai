@@ -20,15 +20,15 @@ const LandingPage = () => {
         <div className="absolute bottom-10 -right-0 w-1/2 h-64 bg-[#6f34ed] opacity-30 blur-3xl"></div>
 
         {/* Navigation */}
-        <header className="relative z-10 flex items-center justify-between px-6 py-5 md:px-16">
+        <header className="relative z-10 flex items-center justify-between px-4 py-6 md:py-5 md:px-16">
           <div className="flex items-center">
-          <img src="/white-logo.png" alt="logo" className="h-11 w-11 p-1 rounded" />
-              <span className="font-medium text-gray-100 text-2xl">
+          <img src="/white-logo.png" alt="logo" className="h-9 w-9 md:h-11 md:w-11 p-1 rounded" />
+              <span className="font-medium text-gray-100 text-xl md:text-2xl">
                 𝐂𝐨𝐥𝐝𝐌𝐚𝐢𝐥𝐞𝐫.𝐀𝐢
               </span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 bg-[rgba(3,3,3,0.3)] px-5 py-3 rounded-2xl">
+          <nav className="hidden md:flex items-center gap-8 bg-[rgba(63,62,62,0.3)] px-5 py-3 rounded-2xl">
             <a href="#features" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
               Features
             </a>
@@ -45,68 +45,70 @@ const LandingPage = () => {
 
           <NavLink
             to="/generate-email"
-            className="bg-[#5d30d1] hover:bg-[#482ab5] text-white px-4 py-3 rounded-lg transition-colors flex items-center gap-2"
+            className="bg-[#5d30d1] hover:bg-[#482ab5] text-white px-2 md:px-4 py-2 md:py-3 rounded-lg transition-colors flex items-center gap-1 md:gap-2 text-xs md:text-base"
           >
-            <RiMailSendFill /> Generate Cold Email
+            <RiMailSendFill className='h-4 w-4' /> Generate Email
           </NavLink>
         </header>
 
         {/* Hero Section */}
-        <main className="relative z-10 flex flex-col items-center justify-center px-6 text-center mt-20 md:mt-24">
+        <main className="relative z-10 flex flex-col items-center justify-center px-6 text-center mt-16 md:mt-24">
           <div className="inline-flex items-center bg-[#1a1133] shadow-2xl rounded-full px-4 py-2 mb-6 gap-1">
-            <img src="/white-logo.png" alt="logo" className="h-7 w-7 p-1 rounded" />
-            <span className="text-sm">ColdMailer.Ai - AI Powered Email Generator</span>
+            <img src="/white-logo.png" alt="logo" className="h-6 w-6 md:h-7 md:w-7 p-1 rounded" />
+            <span className="text-xs md:text-sm">ColdMailer.Ai - AI Powered Email Generator</span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold max-w-6xl leading-tight mb-6">
+          <h1 className="text-2xl md:text-6xl lg:text-7xl font-bold max-w-6xl leading-tight mb-6">
             Transforming outreach with AI powered cold emails
           </h1>
 
-          <p className="text-xl text-gray-300 max-w-[580px] mb-12">
+          <p className="text-base md:text-xl text-gray-300 max-w-[580px] mb-12">
             Enhance outreach with AI-driven, scalable cold email generation, designed to boost engagement and conversions.        
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-24">
+          <div className="flex gap-4 mb-20 md:mb-24">
             <NavLink
               to="/sign-in"
-              className="bg-[#3f1cbc] hover:bg-[#2c1679] text-white px-8 py-3 rounded-lg transition-colors font-medium"
+              className="bg-[#3f1cbc] hover:bg-[#2c1679] text-white px-5 md:px-8 py-3 rounded-lg transition-colors font-medium"
             >
               Get started
             </NavLink>
             <NavLink
               to="/sign-up"
-              className="flex items-center gap-1 border border-gray-600 hover:border-gray-400 text-white px-8 py-3 rounded-lg transition-colors"
+              className="flex items-center gap-1 border border-gray-600 hover:border-gray-400 text-white px-5 md:px-8 py-3 rounded-lg transition-colors"
             >
               It's Free <RiMoneyDollarCircleLine className='h-5 w-5'/>
             </NavLink>
           </div>
 
           {/* Client Logos */}
-          <div className="flex flex-wrap justify-center gap-12 md:gap-24 mb-16">
+          <div className="flex flex-wrap justify-center gap-10 md:gap-24 mb-16">
             <div className="flex items-center text-gray-400">
-              <div className="w-5 h-5 mr-2 opacity-50">
+              <div className="w-3 h-3 md:w-5 md:h-5 mr-2 opacity-50">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <circle cx="12" cy="12" r="10" />
                 </svg>
               </div>
-              <span className="text-base font-semibold">Sales cold mail</span>
+              <span className="text-sm sm:text-base font-semibold">Sales cold mail</span>
             </div>
+
             <div className="flex items-center text-gray-400">
-              <div className="w-5 h-5 mr-2 opacity-50">
+              <div className="w-3 h-3 md:w-5 md:h-5 mr-2 opacity-50">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="2" y="2" width="20" height="20" rx="5" />
                 </svg>
               </div>
-              <span className="text-base font-semibold">Job cold mail</span>
+              <span className="text-sm sm:text-base font-semibold">Job cold mail</span>
             </div>
+
             <div className="flex items-center text-gray-400">
-              <div className="w-5 h-5 mr-2 opacity-50">
+              <div className="w-3 h-3 md:w-5 md:h-5 mr-2 opacity-50">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="8" cy="12" r="4" />
                   <circle cx="16" cy="12" r="4" />
                 </svg>
               </div>
-              <span className="text-base font-semibold">Marketing mail</span>
+              <span className="text-sm sm:text-base font-semibold">Marketing mail</span>
             </div>
           </div>
         </main>
@@ -114,27 +116,27 @@ const LandingPage = () => {
 
       {/* Feature */}
       <div id='features' className='min-h-screen bg-black relative overflow-hidden'>
-      <section className="w-full max-w-7xl mx-auto py-10 ">
+        <section className="w-full max-w-7xl mx-auto py-10 ">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
-            <span className="text-base font-normal text-gray-200">Features</span>
+            <span className="text-sm sm:text-base font-normal text-gray-200">Features</span>
           </div>
 
-          <h2 className="text-4xl md:text-5xl text-center text-white font-bold mb-4">Why ColdMailer.AI ?</h2>
-          <p className="text-lg text-gray-300 max-w-2xl text-center mx-auto mb-12">
+          <h2 className="text-2xl md:text-5xl text-center text-white font-bold mb-4">Why ColdMailer.AI ?</h2>
+          <p className="text-lg text-gray-300 px-2 md:px-0 max-w-2xl text-center mx-auto mb-8 md:mb-12">
             Discover the key benefits of our AI-powered cold email platform.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 p-5 md:p-0">
             {
               features.map((feature, index) => (
                 <div key={index} className="bg-gradient-to-br from-[#1d1c1f] p-6 rounded-[28px]">
-                  <div className="w-10 h-10 bg-[#28252ee7] rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-7 h-7 md:w-10 md:h-10 bg-[#28252ee7] rounded-lg flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-[#6435db]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       {feature.icon}
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-200">{feature.title}</h3>
-                  <p className="text-gray-300">{feature.description}</p>
+                  <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-200">{feature.title}</h3>
+                  <p className="text-sm md:text-base text-gray-300">{feature.description}</p>
                 </div>
               ))
             }
@@ -144,12 +146,12 @@ const LandingPage = () => {
 
       {/* Faqs */}
       <div id='faqs' className='min-h-screen bg-black relative overflow-hidden'>
-        <section className="w-full max-w-5xl mx-auto py-10 ">
+        <section className="w-full max-w-5xl mx-auto py-10 px-2 md:px-0">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
-            <span className="text-base font-normal text-gray-200">FAQs</span>
+            <span className="text-sm sm:text-base font-normal text-gray-200">FAQs</span>
           </div>
 
-          <h2 className="text-4xl md:text-5xl text-center text-white font-bold mb-4">We're here to help</h2>
+          <h2 className="text-2xl md:text-5xl text-center text-white font-bold mb-4">We're here to help</h2>
           <p className="text-lg text-gray-300 max-w-2xl text-center mx-auto mb-16">
             FAQs designed to provide the information you need.
           </p>
@@ -160,8 +162,8 @@ const LandingPage = () => {
       {/* Contact */}
       <div id='contact' className='min-h-screen bg-black relative overflow-hidden'>
         <section className="w-full max-w-7xl mx-auto py-10">
-          <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
-            <span className="text-base font-normal text-gray-200">Contacts</span>
+          <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-2 md:mb-8">
+            <span className="text-sm sm:text-base font-normal text-gray-200">Contacts</span>
           </div>
           <Contact />
         </section>

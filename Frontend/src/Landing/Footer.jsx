@@ -3,17 +3,17 @@ import { Facebook, Twitter, Instagram, Linkedin, Youtube, Github } from "lucide-
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-white pt-16 pb-8 relative overflow-hidden">
+    <footer className="bg-black text-white pt-16 pb-5 sm:pb-8 relative overflow-hidden">
 
       <div className="absolute top-1/3 -rotate-12 w-full h-20 bg-[#6f34ed] opacity-30 blur-3xl"></div>
 
-      <div className="container mx-auto px-2 max-w-7xl">
+      <div className="container mx-auto px-4 md:px-2 max-w-7xl">
         <div className="flex flex-col md:flex-row justify-between">
           <div className="mb-10 md:mb-0 max-w-md">
             <div className="flex items-center mb-4">
               {/* Logo */}
               <div className="mr-3">
-                <img src="white-logo.png" alt="logo" className="h-11 w-11 p-1 rounded"/>
+                <img src="white-logo.png" alt="logo" className="h-9 w-9 sm:h-11 sm:w-11 p-1 rounded"/>
               </div>
               <span className="text-2xl font-bold">ColdMailer.Ai</span>
             </div>
@@ -110,7 +110,7 @@ export default function Footer() {
           </div>
         </div>
 
-      <div className="mt-4 text-gray-400">
+      <div className="mt-4 text-gray-400 text-center sm:text-left">
         @Copyright, All rights reserved. ColdMailer.Ai
       </div>
       </div>

@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(sign-in|sign-up|generate-email)?",
+      "dest": "/"
+    },
+    {
+      "src": "/.*",
+      "dest": "/"
+    }
+  ]
+}

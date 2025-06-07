@@ -14,12 +14,8 @@ const generateAccessAndRefreshTokens = async (userID) => {
     return {accessToken, refreshToken}
 
   } catch (error) {
-    return res.status(500).json(
-      {
-        success: false,
-        message: 'Error while generating access & refresh token, please try again.',
-      }
-    );
+    console.error("Token generation error:", error);
+    throw new Error("Something went wrong while generating tokens.");
   }
 }
 

@@ -8,8 +8,6 @@ import axios from "axios"
 import { NavLink, useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "../components/ui/toaster"
-// import jwt_decode from "jwt-decode"
-// import * as jwt_decode from "jwt-decode"; 
 import Googlelogin from "./Google-Login"
 
 export default function LoginPage() {
@@ -19,12 +17,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-
+  const url = import.meta.env.VITE_BASE_URL
 
   const submit = async (data) => {
     setLoading(true)
     try {
-      const res = await axios.post('api/v1/user/login', data, { withCredentials: true })
+      const res = await axios.post(`${url}/api/v1/user/login`, data, { withCredentials: true })
 
       if (res.status === 200) { 
         toast({
@@ -53,7 +51,7 @@ export default function LoginPage() {
         const backendErrorMessage = error.response.data.message || "An error occurred.";
         console.error("Backend Error:", backendErrorMessage);
         toast({
-          title: "Error",
+          title: "Error Occurred !!",
           description: backendErrorMessage,
           variant: "destructive",
           duration: 5000,
@@ -61,7 +59,7 @@ export default function LoginPage() {
       } else {
         console.error("Unexpected Error:", error);
         toast({
-          title: "Error",
+          title: "Erro Occurred !!",
           description: "An unexpected error occurred. Please try again later.",
           variant: "destructive",
         });
@@ -74,15 +72,19 @@ export default function LoginPage() {
 
   return (
     <div className="h-screen overflow-y-hidden flex flex-col bg-black bg-[radial-gradient(ellipse_80%_80%_at_50%_50%,rgba(121,120,240,0.2),rgba(255,255,255,0))]">
-      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden">
+      <div className="relative flex min-h-screen flex-col items-center sm:justify-center overflow-hidden mt-20 sm:mt-0 px-3">
         <MovingDots />
         <div className="relative z-10 w-full max-w-md rounded-3xl bg-zinc-900/80 px-8 py-8 backdrop-blur-sm">
-          <div className="mb-6 flex flex-col items-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full">
-              <img src="/white-logo.png" alt="login-logo" height={40} width={40} />
+          
+          <NavLink to="/">
+            <div className="mb-6 flex flex-col items-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full">
+                <img src="/white-logo.png" alt="login-logo" height={40} width={40} />
+              </div>
+              <h1 className="mt-4 text-2xl font-semibold text-white">ColdMailer.Ai</h1>
             </div>
-            <h1 className="mt-4 text-2xl font-semibold text-white">ColdMailer.Ai</h1>
-          </div>
+          </NavLink>
+          
           <form className="space-y-6" onSubmit={handleSubmit(submit)}>
             <div>
               <Input
@@ -120,9 +122,10 @@ export default function LoginPage() {
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
           
-          <div className="mt-6">
+          <div className="w-full flex flex-col items-center mt-6">
             <Googlelogin />
-            <h1 className="text-center text-gray-300 mt-5">Don't have an account?
+            <h1 className="text-center text-gray-300 mt-5">
+              Don't have an account?
               <NavLink to="/sign-up">
                 <span className="text-blue-500 ml-2">Signup</span>
               </NavLink>

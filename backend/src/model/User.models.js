@@ -2,19 +2,6 @@ import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 
-const EmailSchema = new Schema({
-    content: {
-      type: String,
-      required: true
-    },
-    createdAt: {
-      type: Date,
-      required: true,
-      default: Date.now()
-    }
-})
-
-
 
 const UserSchema = new Schema({
     username: {
@@ -45,7 +32,6 @@ const UserSchema = new Schema({
       default: null
     },
     
-    genereatedEmails: [EmailSchema]
   }, 
   { timestamps: true }
 )

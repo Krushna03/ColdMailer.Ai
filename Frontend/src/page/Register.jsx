@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form"
 import { useToast } from "@/hooks/use-toast"
 import { NavLink, useNavigate } from "react-router-dom"
 import { Toaster } from "../components/ui/toaster"
-import { useDispatch } from "react-redux"
 import Googlelogin from "./Google-Login"
 
 export default function RegisterPage() {
@@ -18,11 +17,12 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
   const navigate = useNavigate()
+  const url = import.meta.env.VITE_BASE_URL
 
   const onSubmit = async (data) => {
     setLoading(true)
     try {
-      const res = await axios.post('/api/v1/user/register', data, { withCredentials: true })
+      const res = await axios.post(`${url}/api/v1/user/register`, data, { withCredentials: true })
 
       console.log("response", res.data?.data.user);
 
@@ -54,7 +54,7 @@ export default function RegisterPage() {
         const backendErrorMessage = error.response.data.message || "An error occurred.";
         console.error("Backend Error:", backendErrorMessage);
         toast({
-          title: "Error",
+          title: "Error Occurred !!",
           description: backendErrorMessage,
           status: "error",
           variant: "destructive",
@@ -64,7 +64,7 @@ export default function RegisterPage() {
       } else {
         console.error("Unexpected Error:", error);
         toast({
-          title: "Error",
+          title: "Error Occurred !!",
           description: "An unexpected error occurred. Please try again later.",
           variant: "destructive",
           status: "error",
@@ -81,18 +81,20 @@ export default function RegisterPage() {
 
   return (
     <div className="h-screen overflow-y-hidden flex flex-col bg-black bg-[radial-gradient(ellipse_80%_80%_at_50%_50%,rgba(121,120,240,0.2),rgba(255,255,255,0))]">
-      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden ">
+      <div className="relative flex min-h-screen flex-col items-center sm:justify-center overflow-hidden mt-10 sm:mt-0 px-3">
       <MovingDots />
 
         {/* Login card */}
         <div className="relative z-10 w-full max-w-md rounded-3xl bg-zinc-900/80 px-8 py-8 backdrop-blur-sm">
-          {/* Logo */}
+          
+        <NavLink to="/">
           <div className="mb-6 flex flex-col items-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full">
                 <img src="/white-logo.png" alt="login-logo" height={40} width={40} />
             </div>
             <h1 className="mt-4 text-2xl font-semibold text-white">ColdMailer.Ai</h1>
           </div>
+        </NavLink>
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -162,14 +164,16 @@ export default function RegisterPage() {
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
 
-          <div className="mt-6">
+          <div className="w-full flex flex-col items-center mt-6">
             <Googlelogin />
-            <h1 className="text-center text-gray-300 mt-5">Already a user ?
-              <NavLink to={"/sign-in"}>
-              <span className="text-blue-500 ml-2">Signin</span> 
+            <h1 className="text-center text-gray-300 mt-5">
+              Already have an account?
+              <NavLink to="/sign-in">
+                <span className="text-blue-500 ml-2">Signin</span>
               </NavLink>
             </h1>
           </div>
+
         </div>
       </div>
       <Toaster />

@@ -46,7 +46,6 @@ const faqData = [
 const Faq = () => {
   return (
     <div>
-      
       <div className="absolute top-[55%] rotate-12 right-26 w-[70%] h-28 bg-[#6f34ed] opacity-25 blur-3xl"></div>
       
       <Accordion type="single" collapsible className="w-full z-40">

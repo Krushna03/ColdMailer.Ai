@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { login, logout } from '../context/authSlice';
 import { useToast } from '../hooks/use-toast';
-
+import Sidebar from '../components/Sidebar';
 
 export const GenerateEmail = () => {
 
@@ -16,12 +16,14 @@ export const GenerateEmail = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const url = import.meta.env.VITE_BASE_URL
 
-  const token = localStorage.getItem('token') || null;
+  const token = JSON.parse(localStorage.getItem('token')) || null;
+
   
   const validateANDFetchUser = async () => {
     try {
-      const response = await axios.get('/api/v1/user/getCurrentUser',
+      const response = await axios.get(`${url}/api/v1/user/getCurrentUser`,
         {
           headers: {Authorization: `Bearer ${token}`}
         },
@@ -55,21 +57,25 @@ export const GenerateEmail = () => {
 }, [dispatch])
   
   return (
-    <div className="h-screen overflow-y-hidden flex flex-col relative bg-[#0d0e12]">
-
-  <div className="absolute top-20 -left-14 w-1/2 h-48 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+    <>
+      <Sidebar />
+    
+      {/* Main Content */}
+      <div className="h-screen overflow-y-hidden flex flex-col relative bg-[#0d0e12] z-0">
+        {/* Background glow */}
+        <div className="absolute top-20 -left-14 w-1/2 h-48 bg-[#6f34ed] opacity-30 blur-3xl"></div>
         <div className="absolute bottom-20 right-0 w-1/2 h-40 bg-[#6f34ed] opacity-30 blur-3xl"></div>
-
-      <MovingDots />
-      <Header />
-      <main className="z-50 flex-1 flex flex-col items-center justify-center px-4">
-        <EmailGenerator emailGenerated={setGeneratedEmails}/>
-      </main>
-
-      {
-        !generatedEmail && ( <Footer /> )
-      }
-    </div>
+    
+        <MovingDots />
+        <Header />
+        <main className="z-50 h-full custom-scroll flex-1 flex sm:flex-col items-center justify-center px-2">
+          <EmailGenerator emailGenerated={setGeneratedEmails} />
+        </main>
+    
+        {!generatedEmail && <Footer />}
+      </div>
+    </>
+  
   )
 }
 

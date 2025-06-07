@@ -1,10 +1,12 @@
-
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { EmailInput } from './email-input';
 import { EmailOutput } from './email-output';
 import { useToast } from "../hooks/use-toast";
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import sidebarContext from '../context/SidebarContext';
+
+const url = import.meta.env.VITE_BASE_URL
 
 export function EmailGenerator({ emailGenerated }) {
     const [prompt, setPrompt] = useState("");
@@ -13,7 +15,9 @@ export function EmailGenerator({ emailGenerated }) {
     const [error, setError] = useState(null);
     const [bottomPrompt, setBottomPrompt] = useState("");
     const [showOutput, setShowOutput] = useState(false);
+    const [emailId, setEmailId] = useState("")
     const { toast } = useToast();
+    const { updateSidebar, setUpdateSidebar } = useContext(sidebarContext)
 
     const user = useSelector(state => state.auth.userData)
     const userId = user?.userData?._id
@@ -26,19 +30,21 @@ export function EmailGenerator({ emailGenerated }) {
       emailGenerated(true);
 
       try {
-        const response = await axios.post('/api/v1/email/generate-email', { prompt, userId }, 
+        const response = await axios.post(`${url}/api/v1/email/generate-email`, { prompt, userId }, 
           { withCredentials: true}
         );
 
         if (response.data.success) {
           setGeneratedEmail(response.data.fullEmail);
-        } else {
+          setEmailId(response.data.emailId)
+          setUpdateSidebar(!updateSidebar)
+      } else {
           throw new Error(response.data.error || 'Failed to generate email');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
         toast({
-          title: "Error",
+          title: "Error Occurred !!",
           description: err instanceof Error ? err.message : "Something went wrong",
           variant: "destructive",
         });
@@ -47,7 +53,6 @@ export function EmailGenerator({ emailGenerated }) {
       }
     };
 
-    
 
     const updateEmail = async () => {
       if (!bottomPrompt) return;
@@ -55,13 +60,15 @@ export function EmailGenerator({ emailGenerated }) {
       setError(null);
 
       try {
-        const response = await axios.post('/api/v1/update-email', {
+        const response = await axios.post(`${url}/api/v1/email/update-email`, {
           baseEmail: generatedEmail,
-          modifications: bottomPrompt
+          modifications: bottomPrompt,
+          emailId
+        }, {
+          withCredentials: true
         });
         if (response.data.success) {
           setGeneratedEmail(response.data.updatedEmail);
-          setBottomPrompt("");
         } else {
           throw new Error(response.data.error || 'Failed to update email');
         }
@@ -73,12 +80,14 @@ export function EmailGenerator({ emailGenerated }) {
           variant: "destructive",
         });
       } finally {
+        setBottomPrompt("");
         setLoading(false);
       }
     };
 
+
   return (
-    <div className="w-full max-w-[1400px] mx-auto relative h-full overflow-hidden">
+    <div className="w-full max-w-[1400px] mx-auto relative h-full -top-6 sm:-top-4">
         <div 
           className={`
             w-full
@@ -96,8 +105,8 @@ export function EmailGenerator({ emailGenerated }) {
 
         <div 
           className={`
-            w-full h-full mt-6
-            transition-all duration-500 ease-in-out 
+            w-full h-full mt-6 pb-8
+            transition-all duration-500 ease-in-out overflow-y-auto custom-scroll
             ${showOutput ? 'transform translate-y-0 opacity-100' : 'transform translate-y-full opacity-0'}
             absolute top-0 left-0 bottom-0
           `}
@@ -114,18 +123,19 @@ export function EmailGenerator({ emailGenerated }) {
               setGeneratedEmail("");
               emailGenerated(false);
               setPrompt("")
+              setError("")
             }}
           />
       </div>
 
-
-      {error && (
-        <div className="text-red-400 text-center mt-4 p-4 rounded-lg bg-red-500/10 backdrop-blur-sm">
+      {/* {error && (
+        <div className="text-red-400 text-center mt-4 p-4 rounded-lg bg-red-500/10 backdrop-blur-sm z-50">
           {error}
         </div>
-      )}
+      )} */}
 
       {/* <Toaster /> */}
     </div>
   );
 }
+

@@ -1,8 +1,6 @@
 import express from "express"
 import { currentUser, login, logoutUser, register } from "../controller/user.controller.js"
 import { verifyJWT } from "../middleware/auth.middleware.js"
-import passport from "passport"
-import jwt from "jsonwebtoken"
 import { verifyGoogleToken } from "../controller/google.auth.controller.js"
 
 const router = express()

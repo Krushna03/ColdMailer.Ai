@@ -1,6 +1,6 @@
-import { OAuth2Client } from 'google-auth-library';
 import UserModel from '../model/User.models.js';
 import bcrypt from "bcryptjs"
+import { client } from '../index.js';
 
 
 const generateAccessAndRefreshTokens = async (userID) => {
@@ -26,8 +26,6 @@ const generateAccessAndRefreshTokens = async (userID) => {
 }
 
 
-
-const client = new OAuth2Client('296248819606-0bule3v4ta7cqqbvmdcen5a70ammpepv.apps.googleusercontent.com');
 
 const verifyGoogleToken = async (req, res) => {
   try {

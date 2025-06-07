@@ -8,6 +8,7 @@ export default function Contact() {
 
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
+  const url = import.meta.env.VITE_BASE_URL
 
   const [formData, setFormData] = useState({
     name: "",
@@ -20,13 +21,14 @@ export default function Contact() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     formData.email.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
     setLoading(true)
 
     try {
-      const res = await axios.post('/api/v1/contact/new-contact', formData, { withCredentials : true });
+      const res = await axios.post(`${url}/api/v1/contact/new-contact`, formData, { withCredentials : true });
   
       if (res.status === 200) {
         toast({
@@ -82,13 +84,13 @@ export default function Contact() {
       <div className="absolute top-1/3 -rotate-12 w-full h-24 bg-[#6f34ed] opacity-30 blur-3xl"></div>
 
       {/* Left side - Text content */}
-      <div className="lg:w-1/2 space-y-8">
-        <h1 className="text-5xl font-bold leading-tight text-white">Ask whatever you have in your mind</h1>
-        <p className="text-gray-400 text-lg">
+      <div className="lg:w-1/2 space-y-6 sm:space-y-8">
+        <h1 className="text-2xl md:text-5xl font-bold leading-tight text-white">Ask whatever you have in your mind</h1>
+        <p className="text-gray-400 text-base md:text-lg">
           Whether you have questions or want to boost your outreach, we're here to help. Let's connect today.
         </p>
 
-        <div className="space-y-2 pt-8">
+        <div className="space-y-2 md:pt-8">
           <p className="text-gray-400">krushnasakhare965@gmail.com</p>
           <p className="text-gray-400">7385664978</p>
           <p className="text-gray-400">Nagpur India, Maharashtra</p>
@@ -149,7 +151,7 @@ export default function Contact() {
               !formData.name.trim() ||
               !formData.email.trim() ||
               !formData.message.trim()}
-            className="w-full py-3 px-4 bg-[#3f1cbc] hover:bg-[#2c1679] text-white font-medium rounded-md transition-colors"
+            className="w-full py-2 md:py-3 md:px-4 bg-[#3f1cbc] hover:bg-[#2c1679] text-white font-medium rounded-md transition-colors"
           >
             {loading ? "Sending..." : "Submit"}
           </button>
