@@ -145,9 +145,10 @@ const updateEmail = async (req, res) => {
 }
 
 
+
 const getUserEmailHistory = async (req, res) => {
     try {
-      const { userID } = req.query;
+      const { userID, limit=10, page=0 } = req.query;
 
       if(!userID){
         return res.status(500).json({
@@ -156,25 +157,25 @@ const getUserEmailHistory = async (req, res) => {
         })
       }
 
-      const getEmails = await Email.find({ userId: userID }).sort({ createdAt: -1})
+      const pageInt = parseInt(page, 10);
+      const limitInt = parseInt(limit, 10);
+
+      const getEmails = await Email.find({ userId: userID })
+                                    .sort({ createdAt: -1})
+                                    .limit(limitInt)
+                                    .skip(pageInt * limitInt);
 
       if (!getEmails || getEmails.length === 0) {
-        return res.status(500).json({
-          success: false,
+        return res.status(200).json({
+          success: true,
+          emails: [],
           message: "No emails found"
-        })
+        });
       }
-
-      const updatedEmails = getEmails.map(email => {
-        return {
-          ...email._doc,
-          chatEmails: [...email.chatEmails].reverse()
-        };
-      });
-
+                                    
       return res.status(200).json({
         success: true,
-        emails: updatedEmails,
+        emails: getEmails,
         message: "Emails fetched successfully"
       })
 
@@ -186,6 +187,7 @@ const getUserEmailHistory = async (req, res) => {
       });
     }
 }
+
 
 
 const updateEmailHistory = async (req, res) => {
@@ -236,9 +238,6 @@ const updateEmailHistory = async (req, res) => {
     - No additional sections or suggestions
     - Clean, ready-to-use email format only`;
 
-
-    console.log("SystemPrompt", systemPrompt);
-
     const result = await model.generateContent({
       contents: [
         {
@@ -276,6 +275,7 @@ const updateEmailHistory = async (req, res) => {
 }
 
 
+
 const deleteEmail = async (req, res) => {
     const { emailId } = req.body
 
@@ -300,5 +300,7 @@ const deleteEmail = async (req, res) => {
       message: "Email deleted successfully"
     });
 }
+
+
 
 export { generateEmail, updateEmail, getUserEmailHistory, updateEmailHistory, deleteEmail }

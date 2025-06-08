@@ -1,6 +1,5 @@
 export const extractEmailAndContent = (fullText) => {
   // Handle empty or invalid input
-  console.log("emaui", fullText);
   if (!fullText || typeof fullText !== 'string') {
     return { 
       email: "No valid input provided.", 

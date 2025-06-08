@@ -13,7 +13,7 @@ export const processGeneratedEmail = (rawResponse) => {
   
   // If there are issues with the extraction, you can handle them
   if (!validation.isValid) {
-    console.warn("Email extraction may have issues:", validation.hasMissingElements);
+    // console.warn("Email extraction may have issues:", validation.hasMissingElements);
     // You could potentially trigger a regeneration or display a warning
   }
   

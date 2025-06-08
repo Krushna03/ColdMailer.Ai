@@ -24,8 +24,6 @@ export default function RegisterPage() {
     try {
       const res = await axios.post(`${url}/api/v1/user/register`, data, { withCredentials: true })
 
-      console.log("response", res.data?.data.user);
-
       if (res.status === 200) { 
         toast({
           title: "Registeration Successfull !",

@@ -28,7 +28,7 @@ const LandingPage = () => {
               </span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 bg-[rgba(63,62,62,0.3)] px-5 py-3 rounded-2xl">
+          <nav className="hidden lg:flex items-center gap-8 bg-[rgba(63,62,62,0.3)] px-5 py-3 rounded-2xl">
             <a href="#features" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
               Features
             </a>
