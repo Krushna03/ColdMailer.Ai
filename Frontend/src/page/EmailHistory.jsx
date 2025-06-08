@@ -10,6 +10,8 @@ import { useLocation, useNavigate } from "react-router-dom"
 import Sidebar from "../components/Sidebar"
 import { TiArrowBack } from "react-icons/ti"
 import axios from "axios"
+import EmailUpdateLoader from "../loader/loader"
+
 const url = import.meta.env.VITE_BASE_URL
 
 const parseEmail = (emailStr = "") => {
@@ -262,17 +264,17 @@ export default function EmailHistory() {
                       placeholder="Generate more cold mail..."
                       value={newModification}
                       onChange={(e) => setNewModification(e.target.value)}
-                      className="min-h-[15px] lg:min-h-[130px] resize-none sm:placeholder:text-base border border-gray-400 rounded-xl placeholder:text-sm placeholder:font-medium placeholder:text-gray-500 focus:outline-none custom-scroll"
+                      className="min-h-[15px] lg:min-h-[130px] resize-none sm:placeholder:text-base border border-gray-400 rounded-xl placeholder:text-sm placeholder:font-medium placeholder:text-gray-500 focus:outline-none focus:ring-0 focus:border-none custom-scroll"
                     />
                   </div>
                   <button
                     type="submit"
-                    className={`w-full py-1 text-gray-200 rounded-lg ${!newModification.trim() ? 'bg-[#2e137a] text-gray-300' : 'bg-[#3b1cab] text-gray-50 cursor-pointer'} text-sm sm:text-lg font-normal mt-2 mb-6 sm:mb-0`}
+                    className={`w-full py-2 text-gray-200 rounded-lg ${!newModification.trim() ? 'bg-[#2e137a] text-gray-300' : 'bg-[#3b1cab] text-gray-50 cursor-pointer'} flex justify-center items-center gap-1 text-sm sm:text-lg font-normal mt-3 mb-6 sm:mb-0`}
                   >
                     {isGenerating ? (
                       <>
-                        {/* <EmailUpdateLoader /> */}
-                        Generating.....
+                        Generating...
+                        <EmailUpdateLoader />
                       </>
                     ) : (
                       <>

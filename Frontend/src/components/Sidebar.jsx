@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
 import { MdDelete } from "react-icons/md";
 import sidebarContext from "../context/SidebarContext";
+import { MoreVertical } from "lucide-react";
+import { Button } from "../components/ui/button";
 
 const url = import.meta.env.VITE_BASE_URL;
 
@@ -86,7 +88,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     fetchUserEmailHistory(page);
-  }, [page, emailDeleted, updateSidebar]);
+  }, [userID, page, emailDeleted, updateSidebar]);
 
 
   const handleEmailDelete = async (emailId) => {
@@ -145,7 +147,7 @@ export default function Sidebar() {
       scrollContainer.removeEventListener("scroll", handleSidebarScroll);
     };
   }, [loading, hasMore]);
-  
+
 
   return (
     <>
@@ -165,23 +167,23 @@ export default function Sidebar() {
           sidebarActive ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="p-4 font-semibold text-center text-lg border-b border-gray-700">
-          Email History
-        </div>
+        <div className="p-4 font-semibold text-center text-lg border-b border-gray-700 flex gap-2 justify-start">
+          <img src="/white-logo.png" alt="logo" className="ml-5 h-8 w-8 p-1 rounded" /> Your Email History
+        </div> 
 
         <ul
           ref={sidebarScrollRef}
-          className="h-[86%] overflow-y-auto sidebar-scroll p-4 px-3 space-y-4"
+          className="h-[83%] overflow-y-auto sidebar-scroll p-4 px-3 space-y-4"
         >
           {emailHistory.length > 0 ? (
             emailHistory.map((email) => (
               <li
                 key={email._id}
-                className="sidebar-font cursor-pointer text-sm text-[#d7d7db] hover:bg-[#2f2f37bc] rounded-lg px-2 py-1 flex items-center justify-between"
+                className="group sidebar-font cursor-pointer text-sm text-[#f0f0f6] hover:bg-[#2f2f37bc] rounded-lg px-2 py-1 flex items-center justify-between"
               >
                 <span
                   onClick={handleMailNavigation(email)}
-                  className="text-sm truncate w-[90%] p-1"
+                  className="text-base truncate w-[100%] p-1"
                   title={email.prompt}
                 >
                   {email.prompt.charAt(0).toUpperCase() + email.prompt.slice(1)}
@@ -189,13 +191,19 @@ export default function Sidebar() {
 
                 <DropdownMenu className="ml-3">
                   <DropdownMenuTrigger asChild>
-                    <BsThreeDotsVertical className="w-4 h-4 text-[#d7d7db]" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-6 p-0 text-slate-400 hover:text-white hover:bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-24 bg-[#44434af3] text-white border-none mt-2">
                     <DropdownMenuGroup>
                       <DropdownMenuItem
                         onClick={() => handleEmailDelete(email._id)}
-                        className="flex gap-2 cursor-pointer"
+                        className="flex gap-1 cursor-pointer text-red-200"
                       >
                         <MdDelete color="#de473c" /> Delete
                       </DropdownMenuItem>
@@ -218,8 +226,11 @@ export default function Sidebar() {
           {loading && <SidebarLoader />}
         </ul>
 
-        <div className="bg-[#16161c] pt-3 text-sm font-normal text-gray-300 border-t border-gray-700 text-center">
-          Powered By ColmailerAi
+        <div className="p-3 border-t border-white/10">
+          <div className="text-center">
+            <p className="text-slate-400 text-xs">Powered By</p>
+            <p className="text-white font-medium text-sm">ColmailerAi</p>
+          </div>
         </div>
       </div>
     </>
