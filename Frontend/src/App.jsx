@@ -6,6 +6,7 @@ import Protected from './components/Protected'
 import NotFound from './components/NotFound'
 import LandingPage from './Landing/Landing'
 import EmailHistory from './page/EmailHistory'
+import PaymentComponent from './components/Payment'
 
 
 function App() {
@@ -38,11 +39,19 @@ function App() {
     {
       path: "/email/:id",
       element: (
-        // <Protected>
+        <Protected>
             <EmailHistory />
-        // </Protected>
+        </Protected>
       ) 
     },
+    // {
+    //   path: "/payment",
+    //   element: (
+    //     <Protected>
+    //       <PaymentComponent />
+    //     </Protected>
+    //   ) 
+    // },
   ]) 
 
   return <RouterProvider router={router} />

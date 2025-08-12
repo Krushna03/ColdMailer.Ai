@@ -9,6 +9,7 @@ import axios from 'axios';
 import { login, logout } from '../context/authSlice';
 import { useToast } from '../hooks/use-toast';
 import Sidebar from '../components/Sidebar';
+import { isTokenExpired, useLogout } from '../Helper/tokenValidation';
 
 export const GenerateEmail = () => {
 
@@ -16,12 +17,22 @@ export const GenerateEmail = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const logoutUser = useLogout()
   const url = import.meta.env.VITE_BASE_URL
 
   const token = JSON.parse(localStorage.getItem('token')) || null;
 
-  
   const validateANDFetchUser = async () => {
+    if (!token) {
+      logoutUser("No authentication token found.");
+      return;
+    }
+
+    if (isTokenExpired(token)) {
+      logoutUser("Session expired. Please log in again.");
+      return;
+    }
+
     try {
       const response = await axios.get(`${url}/api/v1/user/getCurrentUser`,
         {
@@ -54,7 +65,7 @@ export const GenerateEmail = () => {
     if (token) {
       validateANDFetchUser()
     }
-}, [dispatch])
+  }, [])
   
   return (
     <>
@@ -68,7 +79,7 @@ export const GenerateEmail = () => {
     
         <MovingDots />
         <Header />
-        <main className="z-50 h-full custom-scroll flex-1 flex sm:flex-col items-center justify-center px-2">
+        <main className="z-20 h-full custom-scroll flex-1 flex sm:flex-col items-center justify-center px-2">
           <EmailGenerator emailGenerated={setGeneratedEmails} />
         </main>
     

@@ -2,14 +2,15 @@ import axios from "axios";
 import { useContext, useEffect, useRef, useState } from "react";
 import { GoSidebarCollapse } from "react-icons/go";
 import { useToast } from "@/hooks/use-toast";
-import { BsThreeDotsVertical } from "react-icons/bs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import SidebarLoader from "../loader/SidebarLoader";
 import { useNavigate } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
 import { MdDelete } from "react-icons/md";
-import sidebarContext from "../context/SidebarContext";
+import { useSidebarContext } from "../context/SidebarContext";
 import { MoreVertical } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { isTokenExpired, useLogout } from "../Helper/tokenValidation";
 
 const url = import.meta.env.VITE_BASE_URL;
 
@@ -23,9 +24,11 @@ export default function Sidebar() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
+  const token = JSON.parse(localStorage.getItem('token')) || null;
   const userData = JSON.parse(localStorage.getItem("data") || null);
   const userID = userData?.userData?._id || null;
-  const { updateSidebar } = useContext(sidebarContext);
+  const { updateSidebar } = useSidebarContext();
+  const logoutUser = useLogout();
 
   const sidebarRef = useRef(null);
   const sidebarScrollRef = useRef(null);
@@ -46,6 +49,16 @@ export default function Sidebar() {
   const fetchUserEmailHistory = async (currentPage) => {
     if (!userID || loading || !hasMore) return;
 
+    if (!token) {
+      logoutUser("No authentication token found.");
+      return;
+    }
+
+    if (isTokenExpired(token)) {
+      logoutUser("Session expired. Please log in again.");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await axios.get(`${url}/api/v1/email/get-user-email-history`, {
@@ -55,12 +68,16 @@ export default function Sidebar() {
           page: currentPage,
         },
         withCredentials: true,
-      });
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
       if (res.status === 200) {
         const newEmails = res.data.emails;
 
-        if (newEmails.length === 0) {
+        if (newEmails?.length === 0) {
           setHasMore(false);
         }
 
@@ -92,11 +109,24 @@ export default function Sidebar() {
 
 
   const handleEmailDelete = async (emailId) => {
+    if (!token) {
+      logoutUser("No authentication token found.");
+      return;
+    }
+
+    if (isTokenExpired(token)) {
+      logoutUser("Session expired. Please log in again.");
+      return;
+    }
+    
     setLoading(true);
     try {
       const res = await axios.delete(`${url}/api/v1/email/delete-email`, {
-        data: { emailId },
+        data: { emailId }, 
         withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (res.status === 200) {
@@ -173,10 +203,10 @@ export default function Sidebar() {
 
         <ul
           ref={sidebarScrollRef}
-          className="h-[83%] overflow-y-auto sidebar-scroll p-4 px-3 space-y-4"
+          className="h-[83%] overflow-y-auto sidebar-scroll p-4 px-2 space-y-4"
         >
-          {emailHistory.length > 0 ? (
-            emailHistory.map((email) => (
+          {emailHistory?.length > 0 ? (
+            emailHistory.map((email, index) => (
               <li
                 key={email._id}
                 className="group sidebar-font cursor-pointer text-sm text-[#f0f0f6] hover:bg-[#2f2f37bc] rounded-lg px-2 py-1 flex items-center justify-between"
@@ -184,12 +214,20 @@ export default function Sidebar() {
                 <span
                   onClick={handleMailNavigation(email)}
                   className="text-base truncate w-[100%] p-1"
-                  title={email.prompt}
                 >
-                  {email.prompt.charAt(0).toUpperCase() + email.prompt.slice(1)}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-block">
+                        {(index + 1) + ". " + email.prompt.charAt(0).toUpperCase() + email.prompt.slice(1)}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" sideOffset={4} align="start">
+                      <p>{email.prompt}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </span>
 
-                <DropdownMenu className="ml-3">
+                <DropdownMenu className="ml-5">
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"

@@ -168,4 +168,26 @@ const logoutUser = async (req, res) => {
 
 
 
-export { register, login, logoutUser, currentUser}
+const getUserCount = async (req, res) => {
+  try {
+    const userCount = await UserModel.countDocuments();
+    
+    return res.status(200).json({
+      success: true,
+      message: 'User count retrieved successfully',
+      data: {
+        totalUsers: userCount
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching user count:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while fetching user count',
+      error: error.message
+    });
+  }
+};
+
+
+export { register, login, logoutUser, currentUser, getUserCount}

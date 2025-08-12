@@ -1,5 +1,5 @@
 import express from "express"
-import { currentUser, login, logoutUser, register } from "../controller/user.controller.js"
+import { currentUser, getUserCount, login, logoutUser, register } from "../controller/user.controller.js"
 import { verifyJWT } from "../middleware/auth.middleware.js"
 import { verifyGoogleToken } from "../controller/google.auth.controller.js"
 
@@ -14,6 +14,8 @@ router.route('/getCurrentUser').get(verifyJWT, currentUser)
 router.route('/logout').post(verifyJWT, logoutUser)
 
 router.route('/google/callback').get(verifyGoogleToken);
+
+router.route('/get-user-count').get(getUserCount);
 
 
 export default router;

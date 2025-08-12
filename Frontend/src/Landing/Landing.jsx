@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { NavLink } from "react-router-dom"
 import Faq from './Faq';
 import Contact from './Contact';
@@ -6,31 +6,57 @@ import Footer from './Footer';
 import CallToAction from './CallToAction';
 import {MovingDots} from "../components/moving-dots"
 import { RiMailSendFill, RiMoneyDollarCircleLine } from "react-icons/ri";
+import { User } from 'lucide-react';
+import axios from 'axios';
+import PricingSection from './Pricing';
 
 const LandingPage = () => {
+
+  const [userCount, setuserCount] = useState()
+  const url = import.meta.env.VITE_BASE_URL
+
+  useEffect(() => {
+    const fetchUserCount = async () => {
+      try {
+        const response = await axios.get(`${url}/api/v1/user/get-user-count`, {
+          withCredentials: true
+        })
+        console.log("res", response.data?.data?.totalUsers);
+        if (response.status === 200) {
+          setuserCount(response.data?.data?.totalUsers)
+        }
+      } catch (error) {
+        console.error(`Error in logout`, error);
+      }
+    }
+    fetchUserCount()
+  }, [])
 
   return (
     <>
       {/* Navbar & hero  */}
       <div id='home' className="min-h-screen bg-black text-white relative overflow-hidden">
         
-      <MovingDots />
+        <MovingDots />
 
         <div className="absolute top-10 -left-14 w-1/2 h-72 bg-[#6f34ed] opacity-30 blur-3xl"></div>
         <div className="absolute bottom-10 -right-0 w-1/2 h-64 bg-[#6f34ed] opacity-30 blur-3xl"></div>
 
         {/* Navigation */}
-        <header className="relative z-10 flex items-center justify-between px-4 py-6 md:py-5 md:px-16">
-          <div className="flex items-center">
+        <header className="relative z-10 flex items-center justify-between px-4 py-6 md:py-5 md:px-16 lg:gap-20">
+        <div className="flex items-center">
           <img src="/white-logo.png" alt="logo" className="h-9 w-9 md:h-11 md:w-11 p-1 rounded" />
               <span className="font-medium text-gray-100 text-xl md:text-2xl">
                 𝐂𝐨𝐥𝐝𝐌𝐚𝐢𝐥𝐞𝐫.𝐀𝐢
               </span>
           </div>
 
-          <nav className="hidden lg:flex items-center gap-8 bg-[rgba(63,62,62,0.3)] px-5 py-3 rounded-2xl">
+          <nav className="hidden lg:flex items-center gap-7 bg-[rgba(63,62,62,0.3)] px-5 lg:mt-1 py-3 rounded-2xl lg:ml-14">
             <a href="#features" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
               Features
+            </a>
+            <a href="#pricing" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
+              Pricing
             </a>
             <a href="#faqs" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
               Faqs
@@ -38,17 +64,24 @@ const LandingPage = () => {
             <a href="#contact" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
               Contact
             </a>
-            <NavLink to="/sign-up" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
-              Register
-            </NavLink>
           </nav>
 
-          <NavLink
-            to="/generate-email"
-            className="bg-[#5d30d1] hover:bg-[#482ab5] text-white px-2 md:px-4 py-2 md:py-3 rounded-lg transition-colors flex items-center gap-1 md:gap-2 text-xs md:text-base"
-          >
+          <div className='flex gap-3 items-center'>
+            <div className='hidden sm:flex items-center gap-1 px-3 py-2 rounded-xl bg-white/10 backdrop-blur-sm text-white font-medium text-sm shadow-md'>
+              <span className='relative flex h-2 w-2'>
+                <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
+              <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
+              </span>
+              {userCount ? userCount : "200+" }
+              <User className='h-4 w-4 text-white' />
+            </div>
+            <NavLink
+              to="/generate-email"
+              className="bg-[#5d30d1] hover:bg-[#482ab5] text-white px-2 md:px-4 py-2 md:py-2 rounded-lg transition-colors flex items-center gap-1 md:gap-2 text-xs md:text-base"
+            >
             <RiMailSendFill className='h-4 w-4' /> Generate Email
-          </NavLink>
+            </NavLink>
+          </div>
         </header>
 
         {/* Hero Section */}
@@ -116,7 +149,7 @@ const LandingPage = () => {
 
       {/* Feature */}
       <div id='features' className='min-h-screen bg-black relative overflow-hidden'>
-        <section className="w-full max-w-7xl mx-auto py-10 ">
+        <section className="w-full max-w-7xl mx-auto py-10">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-sm sm:text-base font-normal text-gray-200">Features</span>
           </div>
@@ -142,6 +175,10 @@ const LandingPage = () => {
             }
           </div>
         </section>
+      </div>
+
+      <div id='pricing' className='min-h-screen bg-black relative overflow-hidden'>
+        <PricingSection />
       </div>
 
       {/* Faqs */}

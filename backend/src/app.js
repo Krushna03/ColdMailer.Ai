@@ -18,7 +18,9 @@ app.use(cookieParser())
 import ContactRoute from './routes/contact.routes.js' 
 import UserRoute from './routes/user.route.js' 
 import EmailRoute from './routes/email.routes.js' 
+import PaymentRoute from './routes/payment.routes.js'
 
+app.use('/api/v1/payment', PaymentRoute)
 app.use('/api/v1/contact', ContactRoute)
 app.use('/api/v1/user', UserRoute)
 app.use('/api/v1/email', EmailRoute)

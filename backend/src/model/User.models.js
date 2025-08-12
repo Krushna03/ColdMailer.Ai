@@ -31,7 +31,23 @@ const UserSchema = new Schema({
       type: String,
       default: null
     },
+
+    isPaidUser: {
+      type: Boolean,
+      default: false
+    },
+
+    planName: {
+      type: String,
+      default: 'Free'
+    },
     
+    paymentInfo: {
+      razorpay_order_id: String,
+      razorpay_payment_id: String,
+      razorpay_signature: String,
+      paymentDate: Date
+    }
   }, 
   { timestamps: true }
 )

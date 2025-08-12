@@ -23,7 +23,7 @@ export function EmailOutput({
   userInitial = userInitial?.slice(0, 1)
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedEmail);
+    navigator.clipboard.writeText(email);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

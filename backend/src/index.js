@@ -3,10 +3,17 @@ import { app } from './app.js'
 import dotenv from 'dotenv'
 import connectDB from './databse/db.js'
 import { OAuth2Client } from 'google-auth-library';
+import Razorpay from 'razorpay';
 
 dotenv.config({
   path: "./.env"
 })
+
+export const razorpayInstance = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
 
 export const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
