@@ -21,7 +21,7 @@ const LandingPage = () => {
         const response = await axios.get(`${url}/api/v1/user/get-user-count`, {
           withCredentials: true
         })
-        console.log("res", response.data?.data?.totalUsers);
+        
         if (response.status === 200) {
           setuserCount(response.data?.data?.totalUsers)
         }
