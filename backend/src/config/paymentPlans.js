@@ -1,0 +1,58 @@
+const PAYMENT_PLANS = Object.freeze({
+  GETSTARTED: {
+    id: 'GETSTARTED',
+    name: 'Starter Plan',
+    amount: 0,
+    currency: 'INR',
+    description: 'Perfect for trying AI-powered email generation',
+    features: [
+      '50 emails per month',
+      'Basic email templates',
+      'Standard tone options',
+      'Copy & export functionality'
+    ],
+    billingPeriod: 'forever',
+    requiresPayment: false,
+    buttonText: 'Get Started',
+    popular: false
+  },
+  STARTFREETRIAL: {
+    id: 'STARTFREETRIAL',
+    name: 'Professional Plan',
+    amount: 900, // ₹9 converted to paise
+    currency: 'INR',
+    description: 'Ideal for professionals and small teams',
+    features: [
+      '500 emails per month',
+      'Advanced personalization',
+      'All tone customizations',
+      'Priority email support',
+      'Unlimited revisions'
+    ],
+    billingPeriod: 'month',
+    requiresPayment: true,
+    buttonText: 'Start Free Trial',
+    popular: true
+  }
+});
+
+const normalizePlanType = (planType = '') => planType.trim().toUpperCase();
+
+const getPlanByType = (planType = '') => {
+  if (!planType) return null;
+  return PAYMENT_PLANS[normalizePlanType(planType)] || null;
+};
+
+const PAYABLE_PLAN_IDS = Object.freeze(
+  Object.keys(PAYMENT_PLANS).filter(
+    (planType) => PAYMENT_PLANS[planType].requiresPayment
+  )
+);
+
+export {
+  PAYMENT_PLANS,
+  PAYABLE_PLAN_IDS,
+  getPlanByType,
+  normalizePlanType
+};
+
