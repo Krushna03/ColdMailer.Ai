@@ -44,14 +44,14 @@ function App() {
         </Protected>
       ) 
     },
-    // {
-    //   path: "/payment",
-    //   element: (
-    //     <Protected>
-    //       <PaymentComponent />
-    //     </Protected>
-    //   ) 
-    // },
+    {
+      path: "/payment",
+      element: (
+        <Protected>
+          <PaymentComponent />
+        </Protected>
+      ) 
+    },
   ]) 
 
   return <RouterProvider router={router} />

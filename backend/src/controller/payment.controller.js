@@ -1,25 +1,23 @@
 import crypto from 'crypto';
 import { razorpayInstance } from '../index.js';
 import UserModel from '../model/User.models.js';
-
-const PAYMENT_PLANS = {
-  STARTFREETRIAL: {
-    name: 'Professional Plan',
-    amount: 100, // in paise (₹1.00)
-    currency: 'INR',
-  }
-};
+import {
+  PAYMENT_PLANS,
+  getPlanByType,
+  normalizePlanType
+} from '../config/paymentPlans.js';
 
 // Create Order
 const createOrder = async (req, res) => {
   try {
     const { planType } = req.body;
     const userId = req.user?._id;
+    const plan = getPlanByType(planType);
 
-    if (!planType || !PAYMENT_PLANS[planType.toUpperCase()]) {
+    if (!plan || !plan.requiresPayment) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid plan type',
+        message: 'Invalid or unsupported plan type for payment',
       });
     }
 
@@ -38,14 +36,12 @@ const createOrder = async (req, res) => {
       });
     }
 
-    if (user.isPaidUser && user.planName !== 'Free') {
+    if (user.isPaidUser && user.planName && user.planName !== 'Free') {
       return res.status(400).json({
         success: false,
         message: 'User already has an active subscription',
       });
     }
-
-    const plan = PAYMENT_PLANS[planType.toUpperCase()];
 
     const orderOptions = {
       amount: plan.amount,
@@ -53,7 +49,7 @@ const createOrder = async (req, res) => {
       receipt: `o${userId}_${Date.now()}`,
       notes: {
         userId: userId.toString(),
-        planType: planType.toUpperCase(),
+        planType: plan.id,
         userEmail: user.email,
         username: user.username
       }
@@ -61,7 +57,7 @@ const createOrder = async (req, res) => {
 
     const razorpayOrder = await razorpayInstance.orders.create(orderOptions);
 
-    if (!razorpayOrder) {
+    if (!razorpayOrder?.id) {
       return res.status(500).json({
         success: false,
         message: 'Failed to create Razorpay order',
@@ -74,10 +70,12 @@ const createOrder = async (req, res) => {
       data: {
         orderId: razorpayOrder.id,
         amount: plan.amount,
+        amountInRupees: plan.amount / 100,
         currency: plan.currency,
         key: process.env.RAZORPAY_KEY_ID,
         planName: plan.name,
-        planType: planType.toUpperCase(),
+        planType: plan.id,
+        planDescription: plan.description,
         userEmail: user.email,
         username: user.username,
       }
@@ -95,8 +93,14 @@ const createOrder = async (req, res) => {
 // Verify Payment
 const verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planType } = req.body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      planType
+    } = req.body;
     const userId = req.user?._id;
+    const plan = getPlanByType(planType);
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({
@@ -112,7 +116,7 @@ const verifyPayment = async (req, res) => {
       });
     }
 
-    if (!planType || !PAYMENT_PLANS[planType.toUpperCase()]) {
+    if (!plan || !plan.requiresPayment) {
       return res.status(400).json({
         success: false,
         message: 'Invalid plan type',
@@ -150,6 +154,20 @@ const verifyPayment = async (req, res) => {
       });
     }
 
+    if (paymentDetails.order_id !== razorpay_order_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment/order mismatch detected',
+      });
+    }
+
+    if (paymentDetails.amount !== plan.amount || paymentDetails.currency !== plan.currency) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment details do not match plan configuration',
+      });
+    }
+
     let orderDetails;
     try {
       orderDetails = await razorpayInstance.orders.fetch(razorpay_order_id);
@@ -161,11 +179,24 @@ const verifyPayment = async (req, res) => {
       });
     }
 
-    const plan = PAYMENT_PLANS[planType.toUpperCase()];
-    if (orderDetails.amount !== plan.amount) {
+    if (orderDetails.amount !== plan.amount || orderDetails.currency !== plan.currency) {
       return res.status(400).json({
         success: false,
         message: 'Payment amount mismatch',
+      });
+    }
+
+    if (!orderDetails?.notes?.userId || orderDetails.notes.userId !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Order does not belong to the authenticated user',
+      });
+    }
+
+    if (!orderDetails?.notes?.planType || normalizePlanType(orderDetails.notes.planType) !== plan.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Plan mismatch detected for this order',
       });
     }
 
@@ -192,8 +223,6 @@ const verifyPayment = async (req, res) => {
         message: 'User not found',
       });
     }
-
-    console.log(`Payment successful for user ${userId}: ${razorpay_payment_id}`);
 
     return res.status(200).json({
       success: true,
@@ -224,12 +253,18 @@ const verifyPayment = async (req, res) => {
 // Get Payment Plans
 const getPaymentPlans = async (req, res) => {
   try {
-    const plans = Object.entries(PAYMENT_PLANS).map(([key, plan]) => ({
-      id: key,
+    const plans = Object.values(PAYMENT_PLANS).map((plan) => ({
+      id: plan.id,
       name: plan.name,
       amount: plan.amount,
       amountInRupees: plan.amount / 100,
       currency: plan.currency,
+      description: plan.description,
+      features: plan.features,
+      billingPeriod: plan.billingPeriod,
+      requiresPayment: plan.requiresPayment,
+      buttonText: plan.buttonText,
+      popular: plan.popular
     }));
 
     return res.status(200).json({
@@ -296,11 +331,12 @@ const handlePaymentFailure = async (req, res) => {
   try {
     const { error, orderId } = req.body;
     const userId = req.user?._id;
+    const failureReason = typeof error === 'string' ? error : error?.description || 'Unknown error';
 
     console.error('Payment failed:', {
       userId,
       orderId,
-      error: error || 'Unknown error'
+      error: failureReason
     });
 
     return res.status(200).json({

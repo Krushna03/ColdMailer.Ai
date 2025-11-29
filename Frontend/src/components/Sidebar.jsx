@@ -264,7 +264,13 @@ export default function Sidebar() {
           {loading && <SidebarLoader />}
         </ul>
 
-        <div className="p-3 border-t border-white/10">
+        <div className="p-3 border-t border-white/10 space-y-3">
+          <Button
+            className="w-full rounded-xl bg-[#6f34ed] text-white hover:bg-[#7c3ffc]"
+            onClick={() => navigate('/payment')}
+          >
+            Manage Plan
+          </Button>
           <div className="text-center">
             <p className="text-slate-400 text-xs">Powered By</p>
             <p className="text-white font-medium text-sm">ColmailerAi</p>

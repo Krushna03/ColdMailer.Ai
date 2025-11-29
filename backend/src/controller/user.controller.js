@@ -27,7 +27,7 @@ const register = async (req, res) => {
     const existingUser = await UserModel.findOne({email});
 
     if (existingUser) {
-      return res.status(500).json(
+      return res.status(409).json(
         {
           success: false,
           message: 'User already Exists',
@@ -58,7 +58,7 @@ const register = async (req, res) => {
         sameSite: 'none',
       }
   
-      return res.status(200) 
+      return res.status(201) 
         .cookie('accessToken', accessToken, options)
         .json({
             success: true,

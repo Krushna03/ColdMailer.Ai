@@ -2,6 +2,8 @@
 import { useState, useCallback } from 'react';
 import axios from 'axios';
 import { useToast } from '@/hooks/use-toast'; // ✅ Import toast hook
+import { useDispatch } from 'react-redux';
+import { login } from '@/context/authSlice';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:5000/api/v1';
 
@@ -26,16 +28,31 @@ api.interceptors.response.use(
 
 export const usePayment = () => {
   const { toast } = useToast(); // ✅ Initialize toast
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
   // Load Razorpay script
   const loadRazorpayScript = useCallback(() => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      if (typeof window !== 'undefined' && window.Razorpay) {
+        resolve(true);
+        return;
+      }
+
       const existingScript = document.getElementById('razorpay-script');
       if (existingScript) {
-        resolve(true);
+        existingScript.addEventListener(
+          'load',
+          () => resolve(true),
+          { once: true }
+        );
+        existingScript.addEventListener(
+          'error',
+          () => reject(new Error('Failed to load Razorpay SDK.')),
+          { once: true }
+        );
         return;
       }
 
@@ -43,7 +60,7 @@ export const usePayment = () => {
       script.id = 'razorpay-script';
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
+      script.onerror = () => reject(new Error('Failed to load Razorpay SDK.'));
       document.body.appendChild(script);
     });
   }, []);
@@ -70,7 +87,6 @@ export const usePayment = () => {
   // Create order
   const createOrder = useCallback(async (planType) => {
     try {
-      setLoading(true);
       setError(null);
       
       const response = await api.post('/api/v1/payment/create-order', { planType });
@@ -81,15 +97,12 @@ export const usePayment = () => {
       setError(errorMessage);
       toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); // ✅ Toast error
       throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
     }
   }, [toast]);
 
   // Verify payment
   const verifyPayment = useCallback(async (paymentData) => {
     try {
-      setLoading(true);
       setError(null);
       
       const response = await api.post('/api/v1/payment/verify-payment', paymentData);
@@ -101,8 +114,6 @@ export const usePayment = () => {
       setError(errorMessage);
       toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); // ✅ Toast error
       throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
     }
   }, [toast]);
 
@@ -144,8 +155,8 @@ export const usePayment = () => {
 
       // Load Razorpay script
       const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        toast({ title: "Error", description: "Failed to load Razorpay SDK.", variant: "destructive", duration: 5000 });
+      if (!scriptLoaded || !window.Razorpay) {
+        throw new Error('Failed to load Razorpay SDK.');
       }
 
       // Create order
@@ -181,6 +192,7 @@ export const usePayment = () => {
         },
         handler: async (response) => {
           try {
+            setLoading(true);
             const verificationData = {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
@@ -189,9 +201,14 @@ export const usePayment = () => {
             };
 
             const verificationResult = await verifyPayment(verificationData);
+            if (verificationResult?.user) {
+              dispatch(login({ userData: verificationResult.user }));
+            }
+            setLoading(false);
             return verificationResult;
           } catch (verificationError) {
             console.error('Payment verification failed:', verificationError);
+            setLoading(false);
             await handlePaymentFailure(verificationError.message, orderData.orderId);
             throw verificationError;
           }
@@ -204,10 +221,12 @@ export const usePayment = () => {
         const errorMessage = response.error?.description || 'Payment failed';
         setError(errorMessage);
         toast({ title: "Payment Failed", description: errorMessage, variant: "destructive", duration: 5000 }); // ✅ Toast fail
+        setLoading(false);
         await handlePaymentFailure(errorMessage, orderData.orderId);
       });
 
       razorpay.open();
+      setLoading(false);
       
     } catch (err) {
       console.error('Payment process error:', err);
@@ -216,7 +235,7 @@ export const usePayment = () => {
       setLoading(false);
       throw err;
     }
-  }, [toast, createOrder, verifyPayment, handlePaymentFailure, loadRazorpayScript]);
+  }, [toast, createOrder, verifyPayment, handlePaymentFailure, loadRazorpayScript, dispatch]);
 
   // Reset state
   const resetPaymentState = useCallback(() => {

@@ -1,8 +1,18 @@
 import express from 'express'
 import cors from "cors"
 import cookieParser from 'cookie-parser'
+import { errorHandler } from './middleware/errorHandler.js'
+import helmet from "helmet"
+import rateLimit from "express-rate-limit"
 
 const app = express()
+
+app.use(helmet())
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests, please try again later."
+}));
 
 app.use(cors({
   origin: [ process.env.CLIENT_URL, 'http://localhost:5173', 'http://localhost:5174'],
@@ -14,6 +24,12 @@ app.use(express.json({ limit: '20kb' }))
 app.use(express.urlencoded({ extended: true, limit: '20kb'}))
 app.use(express.static('public'))
 app.use(cookieParser())
+app.use(errorHandler);
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", uptime: process.uptime() });
+});
+
 
 import ContactRoute from './routes/contact.routes.js' 
 import UserRoute from './routes/user.route.js' 

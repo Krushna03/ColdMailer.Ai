@@ -8,6 +8,7 @@ const UpdateEmailSchema = new Schema({
     
     generatedEmail: { 
       type: String,
+      required: true
     },
   },
   { timestamps: true }
@@ -23,6 +24,7 @@ const EmailSchema = new Schema({
     
     generatedEmail: { 
       type: String,
+      required: true
     },
 
     userId: { 
@@ -36,5 +38,7 @@ const EmailSchema = new Schema({
   },
   { timestamps: true }
 );
+
+EmailSchema.index({ userId: 1, createdAt: -1 });
 
 export const Email = mongoose.model('Email', EmailSchema);

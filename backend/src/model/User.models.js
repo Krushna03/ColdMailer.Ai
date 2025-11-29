@@ -18,7 +18,7 @@ const UserSchema = new Schema({
     },
 
     password: {
-      type: String ,
+      type: String,
       required: [true, "Password is required"],
     },
     
@@ -42,12 +42,15 @@ const UserSchema = new Schema({
       default: 'Free'
     },
     
+    // Update it to a  array of objects to stor multiple payments details
     paymentInfo: {
       razorpay_order_id: String,
       razorpay_payment_id: String,
       razorpay_signature: String,
       paymentDate: Date
-    }
+    },
+
+    // lastLogin: { type: Date }
   }, 
   { timestamps: true }
 )

@@ -1,11 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { usePayment } from '../hooks/usePayment';
-import { isTokenExpired } from '../Helper/tokenValidation';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+import { ShieldCheck, Sparkles, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { usePayment } from '../hooks/usePayment';
+import { isTokenExpired, useLogout } from '../Helper/tokenValidation';
+import { MovingDots } from './moving-dots';
+import { Header } from './Header';
+import HeroSection from './payment/HeroSection';
+import Highlights from './payment/Highlights';
+import PlanInsights from './payment/PlanInsights';
+import WhyUpgrade from './payment/WhyUpgrade';
+import PlanGrid from './payment/PlanGrid';
+import HistoryModal from './payment/HistoryModal';
+import { formatDate } from './payment/utils';
 
-const PaymentComponent = ({ user }) => {
+const PaymentComponent = () => {
   const {
-    loading,
+    loading: paymentLoading,
     error,
     success,
     processPayment,
@@ -15,187 +27,217 @@ const PaymentComponent = ({ user }) => {
   } = usePayment();
 
   const [plans, setPlans] = useState([]);
+  const [plansLoading, setPlansLoading] = useState(true);
   const [paymentHistory, setPaymentHistory] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+
   const token = JSON.parse(localStorage.getItem('token')) || null;
   const userData = useSelector(state => state.auth.userData);
+  const storedUserData = useMemo(() => {
+    const stored = localStorage.getItem('data');
+    return stored ? JSON.parse(stored) : null;
+  }, []);
+  const user = userData?.userData || userData || storedUserData?.userData || storedUserData || null;
+  const logoutUser = useLogout();
+  const { toast } = useToast();
 
-  // Fetch payment plans on component mount
   useEffect(() => {
     const fetchPlans = async () => {
       try {
+        setPlansLoading(true);
         const planData = await getPaymentPlans();
         setPlans(planData);
       } catch (err) {
         console.error('Failed to fetch plans:', err);
+      } finally {
+        setPlansLoading(false);
       }
     };
     fetchPlans();
   }, [getPaymentPlans]);
 
-  // Fetch payment history
-  const handleViewHistory = async () => {
+  const loadPaymentHistory = useCallback(async (shouldOpenModal = false) => {
+    if (!token) {
+      logoutUser('No authentication token found.');
+      return;
+    }
+
+    if (isTokenExpired(token)) {
+      logoutUser('Session expired. Please log in again.');
+      return;
+    }
+
+    setHistoryLoading(true);
     try {
       const history = await getPaymentHistory();
       setPaymentHistory(history);
-      setShowHistory(true);
+      if (shouldOpenModal) {
+        setShowHistory(true);
+      }
     } catch (err) {
       console.error('Failed to fetch payment history:', err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [token, getPaymentHistory, logoutUser]);
+
+  useEffect(() => {
+    if (user && token && !paymentHistory) {
+      loadPaymentHistory(false);
+    }
+  }, [user, token, paymentHistory, loadPaymentHistory]);
+
+  const handleHistoryModal = () => {
+    if (paymentHistory) {
+      setShowHistory(true);
+      return;
+    }
+    loadPaymentHistory(true);
+  };
+
+  const handlePayment = async (planId) => {
+    if (!token) {
+      logoutUser('No authentication token found.');
+      return;
+    }
+
+    if (isTokenExpired(token)) {
+      logoutUser('Session expired. Please log in again.');
+      return;
+    }
+
+    const selectedPlan = plans.find((plan) => plan.id === planId);
+
+    if (!selectedPlan) {
+      toast({
+        title: 'Plan unavailable',
+        description: 'Please refresh the page and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!selectedPlan.requiresPayment) {
+      toast({
+        title: 'No payment required',
+        description: 'This plan is already included in your account.',
+      });
+      return;
+    }
+
+    if (user?.isPaidUser && user?.planName && user.planName !== 'Free') {
+      toast({
+        title: 'Plan already active',
+        description: `You already have the ${user.planName} plan.`,
+      });
+      return;
+    }
+
+    try {
+      resetPaymentState();
+      await processPayment(selectedPlan.id, {
+        username: user?.username,
+        email: user?.email,
+        userId: user?._id,
+        phone: user?.phoneNumber || user?.contactNumber || ''
+      });
+      await loadPaymentHistory(false);
+    } catch (err) {
+      console.error('Payment failed:', err);
     }
   };
 
-  // Handle plan selection and payment
-  // const handlePayment = async (planType) => {
-  //   console.log("Plan", planType);
-  //   if (!token) {
-  //     handleLogout("No authentication token found.");
-  //     return;
-  //   }
+  const paidPlanId = useMemo(() => plans.find((plan) => plan.requiresPayment)?.id, [plans]);
+  const highlightCards = useMemo(() => {
+    const membershipDate = paymentHistory?.memberSince || user?.createdAt || null;
+    const lastPaymentDate = paymentHistory?.paymentInfo?.paymentDate || null;
 
-  //   if (isTokenExpired(token)) {
-  //     handleLogout("Session expired. Please log in again.");
-  //     return;
-  //   }
+    return [
+      {
+        title: 'Current Plan',
+        value: user?.planName || 'Free',
+        subtext: user?.isPaidUser ? 'Premium access active' : 'Free tier running',
+        icon: ShieldCheck,
+      },
+      {
+        title: 'Billing Status',
+        value: user?.isPaidUser ? 'Active' : 'Trial',
+        subtext: lastPaymentDate ? `Renewed on ${formatDate(lastPaymentDate)}` : 'No payments yet',
+        icon: Sparkles,
+      },
+      {
+        title: 'Member Since',
+        value: formatDate(membershipDate),
+        subtext: 'Thanks for growing with us',
+        icon: Clock,
+      },
+    ];
+  }, [user, paymentHistory]);
 
-  //   // try {
-  //   //   resetPaymentState();
-  //   //   const data = await processPayment(planType, {
-  //   //     username: userData.username,
-  //   //     email: userData.email,
-  //   //     userId: userData._id,
-  //   //   });
-  //   //   console.log(data);
-  //   //   alert('Payment successful! Your plan has been activated.');
-  //   // } catch (err) {
-  //   //   console.error('Payment failed:', err);
-  //   // }
-  // };
-
-  const formatPrice = (amount) => (amount / 100).toLocaleString('en-IN');
-
-  /** ------------------- PAYMENT HISTORY VIEW ------------------- **/
-  if (showHistory && paymentHistory) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Payment History</h2>
-            <button
-              onClick={() => setShowHistory(false)}
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-            >
-              Back to Plans
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-gray-700 mb-2">Current Plan</h3>
-                <p className="text-lg font-bold text-blue-600">{paymentHistory.currentPlan}</p>
-                <p className="text-sm text-gray-600">
-                  Status: {paymentHistory.isPaidUser ? 'Active' : 'Free Plan'}
-                </p>
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-gray-700 mb-2">Member Since</h3>
-                <p className="text-lg">
-                  {new Date(paymentHistory.memberSince).toLocaleDateString('en-IN')}
-                </p>
-              </div>
-            </div>
-
-            {paymentHistory.paymentInfo && (
-              <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-                <h3 className="font-semibold text-green-700 mb-2">Last Payment</h3>
-                <div className="space-y-2 text-sm">
-                  <p><span className="font-medium">Payment ID:</span> {paymentHistory.paymentInfo.razorpay_payment_id}</p>
-                  <p><span className="font-medium">Order ID:</span> {paymentHistory.paymentInfo.razorpay_order_id}</p>
-                  <p><span className="font-medium">Date:</span> {new Date(paymentHistory.paymentInfo.paymentDate).toLocaleDateString('en-IN')}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  /** ------------------- PLAN SELECTION VIEW ------------------- **/
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Choose Your Plan</h1>
-        <p className="text-gray-600">Select the perfect plan for your needs</p>
+    <div className="relative min-h-screen overflow-hidden bg-[#05060a] text-white">
+      <MovingDots />
+      <Header />
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute top-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-[#6f34ed]/30 blur-[160px]" />
+        <div className="absolute -bottom-10 -left-10 h-[20rem] w-[20rem] rounded-full bg-blue-500/20 blur-[130px]" />
+      </div>
 
-        {user?.isPaidUser && (
-          <div className="mt-4 flex justify-center gap-4">
-            <div className="bg-green-100 border border-green-300 text-green-700 px-4 py-2 rounded-lg">
-              Current Plan: {user.planName}
-            </div>
-            <button
-              onClick={handleViewHistory}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              View Payment History
-            </button>
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 space-y-10">
+        <HeroSection
+          user={user}
+          paidPlanId={paidPlanId}
+          plansLoading={plansLoading}
+          paymentLoading={paymentLoading}
+          historyLoading={historyLoading}
+          onUpgrade={handlePayment}
+          onHistory={handleHistoryModal}
+        />
+
+        {error && (
+          <div className="rounded-3xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {error}
+          </div>
+        )}
+
+        <Highlights cards={highlightCards} />
+
+        <section className="grid gap-6 lg:grid-cols-[1.4fr,0.6fr]">
+          <PlanInsights
+            user={user}
+            paymentHistory={paymentHistory}
+            historyLoading={historyLoading}
+            onHistory={handleHistoryModal}
+          />
+          <WhyUpgrade />
+        </section>
+
+        <PlanGrid
+          plans={plans}
+          plansLoading={plansLoading}
+          user={user}
+          onSelectPlan={handlePayment}
+        />
+
+        {success && (
+          <div className="flex justify-center">
+            <Badge className="bg-green-500/20 text-green-200 border border-green-400/30">
+              Payment verified!
+            </Badge>
           </div>
         )}
       </div>
 
-      {/* Error Display */}
-      {error && (
-        <div className="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg flex items-center">
-          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M18 10A8 8 0 11.001 10 8 8 0 0118 10zM9 6h2v4H9V6zm0 6h2v2H9v-2z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span>{error}</span>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {loading && <p className="text-center text-gray-500">Loading plans...</p>}
-
-      {/* Plans List */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {plans.map((plan) => (
-          <div
-            key={plan.id}
-            className="bg-white shadow-md rounded-lg p-6 flex flex-col justify-between"
-          >
-            <div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">{plan.name}</h3>
-              <p className="text-2xl font-bold text-blue-600 mb-4">₹{formatPrice(plan.amount)}</p>
-              <ul className="text-gray-600 mb-4 list-disc pl-5 space-y-1">
-                {plan.features?.map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
-              </ul>
-            </div>
-            <button
-              onClick={() => handlePayment(plan.id)}
-              className="mt-auto px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Choose Plan
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* Success Message */}
-      {success && (
-        <div className="mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
-          Payment successful! Your plan is now active.
-        </div>
-      )}
+      <HistoryModal
+        open={showHistory && Boolean(paymentHistory)}
+        paymentHistory={paymentHistory}
+        loading={historyLoading}
+        onClose={() => setShowHistory(false)}
+      />
     </div>
   );
 };
 
 export default PaymentComponent;
+

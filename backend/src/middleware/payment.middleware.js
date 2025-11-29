@@ -1,4 +1,5 @@
 import { ApiError } from '../utils/ApiError.js';
+import { getPlanByType, normalizePlanType } from '../config/paymentPlans.js';
 
 // Middleware to validate payment data
 export const validatePaymentData = (req, res, next) => {
@@ -45,8 +46,8 @@ export const validatePaymentData = (req, res, next) => {
   }
 
   // Validate plan type
-  const validPlanTypes = ['BASIC', 'PREMIUM', 'STARTFREETRIAL'];
-  if (!validPlanTypes.includes(planType.toUpperCase())) {
+  const normalizedPlan = getPlanByType(normalizePlanType(planType));
+  if (!normalizedPlan || !normalizedPlan.requiresPayment) {
     throw new ApiError(400, 'Invalid plan type');
   }
 

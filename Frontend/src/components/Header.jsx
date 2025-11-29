@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom"
+import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { ShimmerButton } from "./ui/spinner-button"
 import { User } from "lucide-react"
 import { useToast } from "../hooks/use-toast"
@@ -17,7 +17,9 @@ export function Header() {
   const user = useSelector(state => state.auth.userData)
   const token = localStorage.getItem('token') || null;
   const url = import.meta.env.VITE_BASE_URL
-
+  const location = useLocation()
+  const textToShow = location.pathname === "/payment" ? "Generate Email" : "Manage Plan"
+  
   const handleLogout = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -63,6 +65,15 @@ export function Header() {
           {
             token ? (
               <>
+              <NavLink to={location.pathname === "/payment" ? "/generate-email" : "/payment"}>
+                <ShimmerButton background="#6f34ed" className="hidden sm:block shadow-2xl hover:scale-[1.01]">
+                  <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none text-white lg:text-base tracking-wider">
+                    {
+                      textToShow
+                    }
+                  </span>
+                </ShimmerButton>
+              </NavLink>
               <NavLink to={"/sign-in"}>
                 <ShimmerButton className="hidden sm:block shadow-2xl" onClick={handleLogout}>
                   <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none text-white dark:from-white dark:to-slate-900/10 lg:text-base tracking-wider">

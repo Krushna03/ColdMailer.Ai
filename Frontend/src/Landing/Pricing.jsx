@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, Zap, Crown, Rocket } from "lucide-react"
+import { Check, Zap, Crown } from "lucide-react"
 import { isTokenExpired, useLogout } from "../Helper/tokenValidation"
 import { useNavigate } from "react-router-dom"
 import { usePayment } from "../hooks/usePayment"
