@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { MovingDots } from '../components/moving-dots';
 import { Header } from '../components/Header';
 import { EmailGenerator } from '../components/email-generator';
@@ -22,7 +22,7 @@ export const GenerateEmail = () => {
 
   const token = JSON.parse(localStorage.getItem('token')) || null;
 
-  const validateANDFetchUser = async () => {
+  const validateANDFetchUser = useCallback(async () => {
     if (!token) {
       logoutUser("No authentication token found.");
       return;
@@ -59,7 +59,7 @@ export const GenerateEmail = () => {
       });
       navigate('/sign-in')
     }
-  } 
+  }, [token, logoutUser, url])
 
   useEffect(() => {
     if (token) {

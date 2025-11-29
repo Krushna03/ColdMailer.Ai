@@ -4,11 +4,11 @@ import { verifyJWT } from "../middleware/auth.middleware.js"
 import { verifyGoogleToken } from "../controller/google.auth.controller.js"
 import { validateRegister, validateLogin } from "../utils/Zod-Validations/User.validations.js"
 
-const router = express()
+const router = express.Router()
 
 router.route("/register").post(validateRegister, register)
 
-router.route("/login").post(login)
+router.route("/login").post(validateLogin, login)
 
 router.route('/getCurrentUser').get(verifyJWT, currentUser)
 

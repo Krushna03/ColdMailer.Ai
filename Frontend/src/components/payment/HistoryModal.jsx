@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, X } from 'lucide-react';
-import { formatDate } from './utils';
+import { formatDate, formatDaysLabel } from './utils';
 
 const HistoryModal = ({ open, paymentHistory, loading, onClose }) => {
   if (!open || !paymentHistory) return null;
@@ -29,7 +29,7 @@ const HistoryModal = ({ open, paymentHistory, loading, onClose }) => {
             <h3 className="text-2xl font-semibold">Latest billing snapshot</h3>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
               <p className="text-sm text-slate-400">Current plan</p>
               <p className="text-xl font-semibold mt-2">{paymentHistory.currentPlan || 'Free'}</p>
@@ -42,6 +42,23 @@ const HistoryModal = ({ open, paymentHistory, loading, onClose }) => {
               <p className="text-sm text-slate-400">Member since</p>
               <p className="text-xl font-semibold mt-2">{formatDate(paymentHistory.memberSince)}</p>
               <p className="text-xs text-slate-500 mt-1">Automatic billing records enabled</p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-sm text-slate-400">Plan expires</p>
+              <p className="text-xl font-semibold mt-2">
+                {paymentHistory.planExpiresAt ? formatDate(paymentHistory.planExpiresAt) : '--'}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                {paymentHistory.planExpiresAt
+                  ? (typeof paymentHistory.daysUntilExpiry === 'number' && paymentHistory.daysUntilExpiry > 0
+                      ? `${formatDaysLabel(paymentHistory.daysUntilExpiry)} remaining`
+                      : 'Renew to keep premium access')
+                  : 'Upgrade to unlock reminders'}
+                {paymentHistory.planExpiresAt && paymentHistory.reminderWindowInDays
+                  ? ` • Reminder ${paymentHistory.reminderWindowInDays} days prior`
+                  : ''}
+              </p>
             </div>
           </div>
 

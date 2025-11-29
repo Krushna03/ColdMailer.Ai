@@ -6,72 +6,65 @@ import { useNavigate } from "react-router-dom"
 import { usePayment } from "../hooks/usePayment"
 import { useSelector } from "react-redux"
 
+const plans = [
+  {
+    name: "Starter",
+    price: "Free",
+    period: "forever",
+    description: "Perfect for trying AI-powered email generation",
+    icon: <Zap className="h-6 w-6 text-[#6f34ed]" />,
+    features: [
+      "50 emails per month",
+      "Basic email templates",
+      "Standard tone options",
+      "Copy & export functionality",
+    ],
+    buttonText: "Get Started",
+    id: "GETSTARTED",
+    buttonVariant: "outline",
+    popular: false,
+  },
+  {
+    name: "Professional",
+    price: "₹9",
+    period: "per month",
+    description: "Ideal for professionals and small teams",
+    icon: <Crown className="h-6 w-6 text-[#6f34ed]" />,
+    features: [
+      "500 emails per month",
+      "Advanced personalization",
+      "All tone customizations",
+      "Priority email support",
+      // "CRM integrations",
+      // "Analytics dashboard",
+      "Unlimited revisions",
+    ],
+    buttonText: "Start Free Trial",
+    id: "STARTFREETRIAL",
+    buttonVariant: "default",
+    popular: true,
+  },
+]
+
 export default function PricingSection() {
 
   const userData = useSelector(state => state.auth.userData);
   const navigate = useNavigate()
   const logoutUser = useLogout();
   const {
-    loading,
-    error,
-    success,
     processPayment,
-    getPaymentPlans,
-    getPaymentHistory,
     resetPaymentState,
   } = usePayment();
 
-  const plans = [
-    {
-      name: "Starter",
-      price: "Free",
-      period: "forever",
-      description: "Perfect for trying AI-powered email generation",
-      icon: <Zap className="h-6 w-6 text-[#6f34ed]" />,
-      features: [
-        "50 emails per month",
-        "Basic email templates",
-        "Standard tone options",
-        "Copy & export functionality",
-      ],
-      buttonText: "Get Started",
-      id: "GETSTARTED",
-      buttonVariant: "outline",
-      popular: false,
-    },
-    {
-      name: "Professional",
-      price: "₹9",
-      period: "per month",
-      description: "Ideal for professionals and small teams",
-      icon: <Crown className="h-6 w-6 text-[#6f34ed]" />,
-      features: [
-        "500 emails per month",
-        "Advanced personalization",
-        "All tone customizations",
-        "Priority email support",
-        // "CRM integrations",
-        // "Analytics dashboard",
-        "Unlimited revisions",
-      ],
-      buttonText: "Start Free Trial",
-      id: "STARTFREETRIAL",
-      buttonVariant: "default",
-      popular: true,
-    },
-  ]
-
   const token = JSON.parse(localStorage.getItem('token')) || null;
   
-  const handleNavigation = async (buttonName) => {
-    console.log("button", buttonName);
-  
+  const handleNavigation = async (buttonName) => {  
     if (!token) {
-      logoutUser("Please Login, Token not found. ");
+      logoutUser("Please Login First");
       return;
     }
     if (isTokenExpired(token)) {
-      logoutUser("Session expired. Please log in again.");
+      logoutUser("Session expired. Please Login Again.");
       return;
     }
     

@@ -27,25 +27,21 @@ export const extractEmailAndContent = (fullText) => {
   
   // Find the starting position of the email - use the first occurrence of any marker
   let emailStartIndex = -1;
-  let startMarker = "";
   
   for (const marker of emailMarkers) {
     const index = fullText.indexOf(marker);
     if (index !== -1 && (emailStartIndex === -1 || index < emailStartIndex)) {
       emailStartIndex = index;
-      startMarker = marker;
     }
   }
   
   // Find the starting position of the additional content
   let contentStartIndex = -1;
-  let contentMarker = "";
   
   for (const marker of contentMarkers) {
     const index = fullText.indexOf(marker);
     if (index !== -1 && (contentStartIndex === -1 || index < contentStartIndex)) {
       contentStartIndex = index;
-      contentMarker = marker;
     }
   }
   

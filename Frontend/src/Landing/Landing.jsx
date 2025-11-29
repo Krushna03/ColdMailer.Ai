@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { NavLink } from "react-router-dom"
+import { Link as ScrollLink, Element } from "react-scroll"
 import Faq from './Faq';
 import Contact from './Contact';
 import Footer from './Footer';
@@ -13,6 +14,7 @@ import PricingSection from './Pricing';
 const LandingPage = () => {
 
   const [userCount, setuserCount] = useState()
+  const [showMidHeader, setShowMidHeader] = useState(false)
   const url = import.meta.env.VITE_BASE_URL
 
   useEffect(() => {
@@ -30,21 +32,68 @@ const LandingPage = () => {
       }
     }
     fetchUserCount()
+  }, [url])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (typeof window === "undefined") return
+      const featureSection = document.getElementById('features')
+      if (!featureSection) return
+      const triggerPoint = featureSection.offsetTop - 120
+      setShowMidHeader(window.scrollY >= triggerPoint)
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   return (
     <>
       {/* Navbar & hero  */}
-      <div id='home' className="min-h-screen bg-black text-white relative overflow-hidden">
+      <Element name='home' id='home' className="min-h-screen bg-black text-white relative overflow-hidden">
         
         <MovingDots />
+
+        <div className={`fixed inset-x-0 top-4 z-50 flex justify-center transition-all duration-300 ${showMidHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-3 pointer-events-none'}`}>
+          <div className="hidden lg:flex items-center gap-6 rounded-2xl bg-gradient-to-r from-[#1b1727] to-[#1f1a2e] px-4 py-2 shadow-2xl border border-white/10 backdrop-blur-2xl">
+            <div className="flex items-center gap-2 cursor-pointer">
+              <img src="/white-logo.png" alt="logo" className="h-8 w-8 p-1 rounded cursor-pointer" />
+            </div>
+            
+            <div className="flex items-center gap-6">
+              {
+                navigationLinks.map((item) => (
+                  <ScrollLink
+                    key={`mid-${item.target}`}
+                    to={item.target}
+                    smooth={true}
+                    duration={550}
+                    offset={item.offset}
+                    spy={true}
+                    className="cursor-pointer text-sm text-gray-200 hover:text-[#a18cef] transition-colors"
+                    activeStyle={{ color: "#a18cef", fontWeight: "bold" }}
+                  >
+                    {item.label}
+                  </ScrollLink>
+                ))
+              }
+            </div>
+            <NavLink
+              to="/generate-email"
+              className="bg-[#5d30d1] hover:bg-[#482ab5] text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-all cursor-pointer"
+            >
+              Generate Email
+            </NavLink>
+          </div>
+        </div>
 
         <div className="absolute top-10 -left-14 w-1/2 h-72 bg-[#6f34ed] opacity-30 blur-3xl"></div>
         <div className="absolute bottom-10 -right-0 w-1/2 h-64 bg-[#6f34ed] opacity-30 blur-3xl"></div>
 
         {/* Navigation */}
         <header className="relative z-10 flex items-center justify-between px-4 py-6 md:py-5 md:px-16 lg:gap-20">
-        <div className="flex items-center">
+        <div className="flex items-center cursor-pointer">
           <img src="/white-logo.png" alt="logo" className="h-9 w-9 md:h-11 md:w-11 p-1 rounded" />
               <span className="font-medium text-gray-100 text-xl md:text-2xl">
                 𝐂𝐨𝐥𝐝𝐌𝐚𝐢𝐥𝐞𝐫.𝐀𝐢
@@ -52,18 +101,22 @@ const LandingPage = () => {
           </div>
 
           <nav className="hidden lg:flex items-center gap-7 bg-[rgba(63,62,62,0.3)] px-5 lg:mt-1 py-3 rounded-2xl lg:ml-14">
-            <a href="#features" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
-              Features
-            </a>
-            <a href="#pricing" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
-              Pricing
-            </a>
-            <a href="#faqs" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
-              Faqs
-            </a>
-            <a href="#contact" className="hover:text-[#a18cef] hover:font-semibold transition-colors">
-              Contact
-            </a>
+            {
+              navigationLinks.map((item) => (
+                <ScrollLink
+                  key={item.target}
+                  to={item.target}
+                  smooth={true}
+                  duration={600}
+                  offset={item.offset}
+                  spy={true}
+                  className="cursor-pointer hover:text-[#a18cef] transition-colors"
+                  activeClass="text-[#a18cef] font-semibold"
+                >
+                  {item.label}
+                </ScrollLink>
+              ))
+            }
           </nav>
 
           <div className='flex gap-3 items-center'>
@@ -145,10 +198,10 @@ const LandingPage = () => {
             </div>
           </div>
         </main>
-      </div>
+      </Element>
 
       {/* Feature */}
-      <div id='features' className='min-h-screen bg-black relative overflow-hidden'>
+      <Element name='features' id='features' className='min-h-screen bg-black relative overflow-hidden'>
         <section className="w-full max-w-7xl mx-auto py-10">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-sm sm:text-base font-normal text-gray-200">Features</span>
@@ -175,14 +228,14 @@ const LandingPage = () => {
             }
           </div>
         </section>
-      </div>
+      </Element>
 
-      <div id='pricing' className='min-h-screen bg-black relative overflow-hidden'>
+      <Element name='pricing' id='pricing' className='min-h-screen bg-black relative overflow-hidden'>
         <PricingSection />
-      </div>
+      </Element>
 
       {/* Faqs */}
-      <div id='faqs' className='min-h-screen bg-black relative overflow-hidden'>
+      <Element name='faqs' id='faqs' className='z-10 min-h-screen bg-black relative overflow-hidden'>
         <section className="w-full max-w-5xl mx-auto py-10 px-2 md:px-0">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-sm sm:text-base font-normal text-gray-200">FAQs</span>
@@ -194,17 +247,17 @@ const LandingPage = () => {
           </p>
           <Faq />
         </section>
-      </div>
+      </Element>
       
       {/* Contact */}
-      <div id='contact' className='min-h-screen bg-black relative overflow-hidden'>
+      <Element name='contact' id='contact' className='z-10 min-h-screen bg-black relative overflow-hidden'>
         <section className="w-full max-w-7xl mx-auto py-10">
           <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-2 md:mb-8">
             <span className="text-sm sm:text-base font-normal text-gray-200">Contacts</span>
           </div>
           <Contact />
         </section>
-      </div>
+      </Element>
 
       <CallToAction />
 
@@ -215,6 +268,13 @@ const LandingPage = () => {
 
 export default LandingPage
 
+
+const navigationLinks = [
+  { label: "Features", target: "features", offset: -80 },
+  { label: "Pricing", target: "pricing", offset: -80 },
+  { label: "Faqs", target: "faqs", offset: -80 },
+  { label: "Contact", target: "contact", offset: -80 },
+]
 
 const features = [
   {

@@ -6,6 +6,14 @@ import {
   getPlanByType,
   normalizePlanType
 } from '../config/paymentPlans.js';
+import {
+  calculatePlanExpiry,
+  getRenewalReminderDate,
+  getDaysUntilExpiry,
+  isReminderDue
+} from '../utils/subscription.js';
+
+const REMINDER_WINDOW_DAYS = 2;
 
 // Create Order
 const createOrder = async (req, res) => {
@@ -200,12 +208,17 @@ const verifyPayment = async (req, res) => {
       });
     }
 
+    const planActivatedAt = new Date();
+    const planExpiresAt = calculatePlanExpiry(planActivatedAt, plan);
+
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
       {
         $set: {
           isPaidUser: true,
           planName: plan.name,
+          planActivatedAt,
+          planExpiresAt,
           paymentInfo: {
             razorpay_order_id,
             razorpay_payment_id,
@@ -234,7 +247,9 @@ const verifyPayment = async (req, res) => {
           username: updatedUser.username,
           isPaidUser: updatedUser.isPaidUser,
           planName: updatedUser.planName,
-          paymentDate: updatedUser.paymentInfo.paymentDate
+          paymentDate: updatedUser.paymentInfo?.paymentDate,
+          planActivatedAt: updatedUser.planActivatedAt,
+          planExpiresAt: updatedUser.planExpiresAt
         },
         paymentId: razorpay_payment_id,
         planName: plan.name
@@ -294,7 +309,7 @@ const getPaymentHistory = async (req, res) => {
     }
 
     const user = await UserModel.findById(userId)
-      .select('isPaidUser planName paymentInfo createdAt')
+      .select('isPaidUser planName paymentInfo createdAt planActivatedAt planExpiresAt')
       .lean();
 
     if (!user) {
@@ -308,7 +323,16 @@ const getPaymentHistory = async (req, res) => {
       isPaidUser: user.isPaidUser,
       currentPlan: user.planName,
       paymentInfo: user.paymentInfo || null,
-      memberSince: user.createdAt
+      memberSince: user.createdAt,
+      planActivatedAt: user.planActivatedAt || null,
+      planExpiresAt: user.planExpiresAt || null,
+      renewalReminderDate: getRenewalReminderDate(user.planExpiresAt, REMINDER_WINDOW_DAYS),
+      daysUntilExpiry: getDaysUntilExpiry(user.planExpiresAt),
+      reminderWindowInDays: REMINDER_WINDOW_DAYS,
+      isRenewalReminderDue: isReminderDue({
+        expiresAt: user.planExpiresAt,
+        reminderDays: REMINDER_WINDOW_DAYS
+      })
     };
 
     return res.status(200).json({

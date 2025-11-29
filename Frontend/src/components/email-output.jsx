@@ -28,7 +28,7 @@ export function EmailOutput({
     setTimeout(() => setCopied(false), 2000);
   };
   
-  const { email, content, isValid } = processGeneratedEmail(generatedEmail);
+  const { email, content } = processGeneratedEmail(generatedEmail);
 
   const formatAdditionalContent = (content) => {
     return formatBulletPoints(content);

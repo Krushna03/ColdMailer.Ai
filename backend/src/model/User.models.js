@@ -41,6 +41,16 @@ const UserSchema = new Schema({
       type: String,
       default: 'Free'
     },
+
+    planActivatedAt: {
+      type: Date,
+      default: null
+    },
+
+    planExpiresAt: {
+      type: Date,
+      default: null
+    },
     
     // Update it to a  array of objects to stor multiple payments details
     paymentInfo: {

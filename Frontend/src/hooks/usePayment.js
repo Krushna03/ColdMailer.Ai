@@ -1,25 +1,21 @@
-// hooks/usePayment.js
 import { useState, useCallback } from 'react';
 import axios from 'axios';
-import { useToast } from '@/hooks/use-toast'; // ✅ Import toast hook
+import { useToast } from '@/hooks/use-toast'; 
 import { useDispatch } from 'react-redux';
 import { login } from '@/context/authSlice';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:5000/api/v1';
-
-// Configure axios instance
+  
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   timeout: 30000,
 });
 
-// Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -27,13 +23,12 @@ api.interceptors.response.use(
 );
 
 export const usePayment = () => {
-  const { toast } = useToast(); // ✅ Initialize toast
+  const { toast } = useToast(); 
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Load Razorpay script
   const loadRazorpayScript = useCallback(() => {
     return new Promise((resolve, reject) => {
       if (typeof window !== 'undefined' && window.Razorpay) {
@@ -65,104 +60,92 @@ export const usePayment = () => {
     });
   }, []);
 
-  // Get payment plans
   const getPaymentPlans = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
       const response = await api.get('/api/v1/payment/plans');
-      toast({ title: "Plans Loaded", description: "Available payment plans fetched successfully." }); // ✅ Toast success
       return response.data.data;
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to fetch payment plans';
       setError(errorMessage);
-      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); // ✅ Toast error
+      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
       throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   }, [toast]);
 
-  // Create order
   const createOrder = useCallback(async (planType) => {
     try {
       setError(null);
       
       const response = await api.post('/api/v1/payment/create-order', { planType });
-      toast({ title: "Order Created", description: `Order for ${planType} plan created successfully.` }); // ✅ Toast success
       return response.data.data;
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to create order';
       setError(errorMessage);
-      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); // ✅ Toast error
+      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
       throw new Error(errorMessage);
     }
   }, [toast]);
 
-  // Verify payment
   const verifyPayment = useCallback(async (paymentData) => {
     try {
       setError(null);
       
       const response = await api.post('/api/v1/payment/verify-payment', paymentData);
       setSuccess(true);
-      toast({ title: "Payment Successful", description: "Your payment has been verified successfully." }); // ✅ Toast success
+      toast({ title: "Payment Successful", description: "Your payment has been verified successfully." }); 
       return response.data.data;
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Payment verification failed';
       setError(errorMessage);
-      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); // ✅ Toast error
+      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
       throw new Error(errorMessage);
     }
   }, [toast]);
 
-  // Handle payment failure
   const handlePaymentFailure = useCallback(async (error, orderId) => {
     try {
       await api.post('/api/v1/payment/failure', { error, orderId });
-      toast({ title: "Payment Failed", description: error, variant: "destructive", duration: 5000 }); // ✅ Toast error
+      toast({ title: "Payment Failed", description: error, variant: "destructive", duration: 5000 }); 
     } catch (err) {
       console.error('Failed to log payment failure:', err);
     }
   }, [toast]);
 
-  // Get payment history
   const getPaymentHistory = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
       const response = await api.get('/api/v1/payment/history');
-      toast({ title: "History Loaded", description: "Payment history fetched successfully." }); // ✅ Toast success
       return response.data.data;
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to fetch payment history';
       setError(errorMessage);
-      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); // ✅ Toast error
+      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
       throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   }, [toast]);
 
-  // Main payment processing function
   const processPayment = useCallback(async (planType, userInfo = {}) => {
     try {
       setLoading(true);
       setError(null);
       setSuccess(false);
 
-      // Load Razorpay script
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded || !window.Razorpay) {
         throw new Error('Failed to load Razorpay SDK.');
       }
 
-      // Create order
       const orderData = await createOrder(planType);
 
-      // Configure Razorpay options
       const options = {
         key: orderData.key,
         amount: orderData.amount,
@@ -186,7 +169,7 @@ export const usePayment = () => {
         modal: {
           ondismiss: () => {
             setError('Payment cancelled by user');
-            toast({ title: "Payment Cancelled", description: "You cancelled the payment.", variant: "destructive", duration: 5000 }); // ✅ Toast cancel
+            toast({ title: "Payment Cancelled", description: "You cancelled the payment.", variant: "destructive", duration: 5000 }); 
             setLoading(false);
           },
         },
@@ -220,7 +203,7 @@ export const usePayment = () => {
       razorpay.on('payment.failed', async (response) => {
         const errorMessage = response.error?.description || 'Payment failed';
         setError(errorMessage);
-        toast({ title: "Payment Failed", description: errorMessage, variant: "destructive", duration: 5000 }); // ✅ Toast fail
+        toast({ title: "Payment Failed", description: errorMessage, variant: "destructive", duration: 5000 }); 
         setLoading(false);
         await handlePaymentFailure(errorMessage, orderData.orderId);
       });
@@ -231,13 +214,12 @@ export const usePayment = () => {
     } catch (err) {
       console.error('Payment process error:', err);
       setError(err.message);
-      toast({ title: "Error", description: err.message, variant: "destructive", duration: 5000 }); // ✅ Toast error
+      toast({ title: "Error", description: err.message, variant: "destructive", duration: 5000 }); 
       setLoading(false);
       throw err;
     }
   }, [toast, createOrder, verifyPayment, handlePaymentFailure, loadRazorpayScript, dispatch]);
 
-  // Reset state
   const resetPaymentState = useCallback(() => {
     setError(null);
     setSuccess(false);

@@ -12,6 +12,7 @@ const PAYMENT_PLANS = Object.freeze({
       'Copy & export functionality'
     ],
     billingPeriod: 'forever',
+    durationInDays: null,
     requiresPayment: false,
     buttonText: 'Get Started',
     popular: false
@@ -30,6 +31,7 @@ const PAYMENT_PLANS = Object.freeze({
       'Unlimited revisions'
     ],
     billingPeriod: 'month',
+    durationInDays: 30,
     requiresPayment: true,
     buttonText: 'Start Free Trial',
     popular: true

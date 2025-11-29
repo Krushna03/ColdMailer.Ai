@@ -2,7 +2,7 @@ import express from "express"
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { deleteEmail, generateEmail, getUserEmailHistory, updateEmail, updateEmailHistory } from "../controller/email.controller.js";
 
-const router = express()
+const router = express.Router()
 
 router.route('/generate-email').post(verifyJWT, generateEmail)
 

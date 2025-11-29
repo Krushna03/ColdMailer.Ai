@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { EmailInput } from './email-input';
 import { EmailOutput } from './email-output';
 import { useToast } from "../hooks/use-toast";
@@ -13,7 +13,6 @@ export function EmailGenerator({ emailGenerated }) {
     const [prompt, setPrompt] = useState("");
     const [generatedEmail, setGeneratedEmail] = useState("");
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [bottomPrompt, setBottomPrompt] = useState("");
     const [showOutput, setShowOutput] = useState(false);
     const [emailId, setEmailId] = useState("")
@@ -28,7 +27,6 @@ export function EmailGenerator({ emailGenerated }) {
       e.preventDefault();
       setShowOutput(true); 
       setLoading(true);
-      setError(null);
       emailGenerated(true);
 
       if (!token) {
@@ -59,7 +57,6 @@ export function EmailGenerator({ emailGenerated }) {
           throw new Error(response.data.error || 'Failed to generate email');
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
         toast({
           title: "Error Occurred !!",
           description: err instanceof Error ? err.message : "Something went wrong",
@@ -74,7 +71,6 @@ export function EmailGenerator({ emailGenerated }) {
     const updateEmail = async () => {
       if (!bottomPrompt) return;
       setLoading(true);
-      setError(null);
 
       try {
         const response = await axios.post(`${url}/api/v1/email/update-email`, {
@@ -90,7 +86,6 @@ export function EmailGenerator({ emailGenerated }) {
           throw new Error(response.data.error || 'Failed to update email');
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
         toast({
           title: "Error",
           description: err instanceof Error ? err.message : "Something went wrong",
@@ -140,7 +135,6 @@ export function EmailGenerator({ emailGenerated }) {
               setGeneratedEmail("");
               emailGenerated(false);
               setPrompt("")
-              setError("")
             }}
           />
       </div>

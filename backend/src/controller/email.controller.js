@@ -3,14 +3,21 @@ import { model } from "../index.js";
 
 const generateEmail = async (req, res) => {
   try {
-    const { prompt, userId } = req.body;
+    const { prompt } = req.body;
+    const userId = req.user?._id;
 
     if (!userId) {
-        return res.status(500).json({
-          success: false,
-          message: "Userid is not provided",
-        },
-      );
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized request",
+      });
+    }
+
+    if (!prompt || !prompt.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Prompt is required",
+      });
     }
 
     const systemPrompt = `You are an expert in crafting high-converting cold emails.
@@ -37,18 +44,18 @@ const generateEmail = async (req, res) => {
 
     const fullEmail = result?.response?.text();
 
-    const email = await Email.create({
-        prompt,
-        generatedEmail: fullEmail,
-        userId
-    });
-
-    if (!email) {
-      return res.status(500).json({
+    if (!fullEmail) {
+      return res.status(502).json({
         success: false,
-        error: 'Failed to generate email',
+        error: 'Failed to generate email content',
       });
     }
+
+    const email = await Email.create({
+      prompt,
+      generatedEmail: fullEmail,
+      userId
+    });
 
     return res.status(200).json({
       success: true,
@@ -69,15 +76,14 @@ const generateEmail = async (req, res) => {
 
 const updateEmail = async (req, res) => {
   try {
-    const { baseEmail, modifications, emailId } = req.body  
+    const { baseEmail, modifications, emailId } = req.body
 
-    if (!emailId) {
-      return res.status(500).json({
+    if (!emailId || !baseEmail || !modifications) {
+      return res.status(400).json({
         success: false,
-        message: "Email Id is not provided",
-      },
-    );
-  }
+        message: "Email ID, base email, and modifications are required",
+      });
+    }
     
     const systemPromptForUpdate = `You are an expert at writing high-converting cold emails. 
     Your task is to update the following email based on the user's modifications while maintaining its professional quality.
@@ -119,11 +125,12 @@ const updateEmail = async (req, res) => {
             generatedEmail: updatedEmail,
           }
         }
-      }    
+      },
+      { new: true }
     )
 
     if (!findPromptAndAddToChat) {
-      return res.status(500).json({
+      return res.status(404).json({
         success: false,
         error: 'Failed to generate email and update email',
       });
@@ -148,19 +155,20 @@ const updateEmail = async (req, res) => {
 
 const getUserEmailHistory = async (req, res) => {
     try {
-      const { userID, limit=10, page=0 } = req.query;
+    const { limit=10, page=0 } = req.query;
+    const userId = req.user?._id;
 
-      if(!userID){
-        return res.status(500).json({
-          success: false,
-          message: "UserID is not provided"
-        })
-      }
+    if(!userId){
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized request"
+      })
+    }
 
       const pageInt = parseInt(page, 10);
       const limitInt = parseInt(limit, 10);
 
-      const getEmails = await Email.find({ userId: userID })
+      const getEmails = await Email.find({ userId })
                                     .sort({ createdAt: -1})
                                     .limit(limitInt)
                                     .skip(pageInt * limitInt);
@@ -193,22 +201,18 @@ const getUserEmailHistory = async (req, res) => {
 const updateEmailHistory = async (req, res) => {
     const { emailId, modification, baseprompt, prevchats } = req.body;
 
-    if (!emailId) {
-      return res.status(500).json({
+    if (!emailId || !modification || !baseprompt) {
+      return res.status(400).json({
         success: false,
-        message: "Email Id is not provided",
-      });
-    }
-    if (!modification) {
-      return res.status(500).json({
-        success: false,
-        message: "Prompt is not provided",
+        message: "Email ID, base prompt, and modification are required",
       });
     }
 
+    const normalizedPrevChats = Array.isArray(prevchats) ? prevchats : [];
+
     let formattedPrevChats  = '';
-    for(let i = 0; i < prevchats.length; i++) {
-      formattedPrevChats += `\n• ${prevchats[i]}`;
+    for(let i = 0; i < normalizedPrevChats.length; i++) {
+      formattedPrevChats += `\n• ${normalizedPrevChats[i]}`;
     }
 
     const systemPrompt = `You are an expert email optimization specialist focused on crafting high-converting cold emails through iterative refinement.
@@ -257,11 +261,12 @@ const updateEmailHistory = async (req, res) => {
             generatedEmail: fullEmail,
           }
         }
-      }    
+      },
+      { new: true }
     )
 
     if (!foundEmailHistory) {
-      return res.status(500).json({
+      return res.status(404).json({
         success: false,
         error: 'Failed to update email history',
       });
@@ -280,18 +285,18 @@ const deleteEmail = async (req, res) => {
     const { emailId } = req.body
 
     if (!emailId) {
-      return res.status(500).json({
+      return res.status(400).json({
         success: false,
-        message: "Email Id is not provided",
+        message: "Email ID is required",
       });
     }
 
     const deletedEmail = await Email.findOneAndDelete({ _id: emailId, userId: req.user._id });
 
     if (!deletedEmail) {
-      return res.status(500).json({
+      return res.status(404).json({
         success: false,
-        error: 'Failed to delete email',
+        error: 'Email not found or already deleted',
       });
     }
 
