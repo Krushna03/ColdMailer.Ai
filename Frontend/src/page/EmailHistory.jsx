@@ -11,6 +11,7 @@ import Sidebar from "../components/Sidebar"
 import { TiArrowBack } from "react-icons/ti"
 import axios from "axios"
 import EmailUpdateLoader from "../loader/loader"
+import { isTokenExpired, useLogout } from "../Helper/tokenValidation"
 
 const url = import.meta.env.VITE_BASE_URL
 
@@ -32,6 +33,8 @@ export default function EmailHistory() {
   const emailId = emailHistory?._id || location.state?.emailHistory?._id || null
   const original = useMemo(() => parseEmail(emailHistory?.generatedEmail || ""), [emailHistory])
   const navigate = useNavigate();
+  const token = JSON.parse(localStorage.getItem('token')) || null;
+  const logoutUser = useLogout();
 
   const [iterations, setIterations] = useState([])
 
@@ -60,6 +63,16 @@ export default function EmailHistory() {
     e.preventDefault();
     if (!newModification.trim()) return;
   
+    if (!token) {
+      logoutUser("No authentication token found.");
+      return;
+    }
+
+    if (isTokenExpired(token)) {
+      logoutUser("Session expired. Please log in again.");
+      return;
+    }
+
     try {
       setIsGenerating(true);
 
@@ -71,7 +84,12 @@ export default function EmailHistory() {
           prevchats: (emailHistory?.chatEmails || []).slice(-5) || [],
           emailId 
         },
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
 
       const generatedEmail = parseEmail(response.data?.updatedEmail || "");
@@ -97,9 +115,18 @@ export default function EmailHistory() {
       }
     } catch (err) {
       console.error("Axios error:", err);
+      if (err.response?.status === 401) {
+        logoutUser("Session expired. Please log in again.");
+      }
+
+      const backendMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        (err instanceof Error ? err.message : "Something went wrong");
+
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Something went wrong",
+        description: backendMessage,
         variant: "destructive",
       });
     } finally {

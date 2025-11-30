@@ -106,7 +106,7 @@ const PaymentComponent = () => {
     if (user && token && !paymentHistory) {
       loadPaymentHistory(false);
     }
-  }, [user, token, paymentHistory, loadPaymentHistory]);
+  }, [user, token, paymentHistory]);
 
   const handleHistoryModal = () => {
     if (paymentHistory) {

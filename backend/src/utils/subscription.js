@@ -1,3 +1,5 @@
+import { DEFAULT_PLAN_ID, PAYMENT_PLANS } from '../config/paymentPlans.js';
+
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 const DEFAULT_BILLING_PERIOD_DAYS = Object.freeze({
@@ -58,10 +60,19 @@ const FALLBACK_DURATION_DAYS = 30;
 
 const enforceSubscriptionFreshness = async (userDoc) => {
   if (!userDoc || !userDoc.isPaidUser) {
+    if (userDoc && (!userDoc.planId || !PAYMENT_PLANS[userDoc.planId])) {
+      userDoc.planId = DEFAULT_PLAN_ID;
+      await userDoc.save();
+    }
     return userDoc;
   }
 
   let requireSave = false;
+
+  if (!userDoc.planId || !PAYMENT_PLANS[userDoc.planId]) {
+    userDoc.planId = DEFAULT_PLAN_ID;
+    requireSave = true;
+  }
 
   if (!userDoc.planActivatedAt && userDoc.paymentInfo?.paymentDate) {
     userDoc.planActivatedAt = userDoc.paymentInfo.paymentDate;
@@ -95,6 +106,7 @@ const enforceSubscriptionFreshness = async (userDoc) => {
 
   userDoc.isPaidUser = false;
   userDoc.planName = 'Free';
+  userDoc.planId = DEFAULT_PLAN_ID;
   userDoc.planActivatedAt = null;
   userDoc.planExpiresAt = null;
 

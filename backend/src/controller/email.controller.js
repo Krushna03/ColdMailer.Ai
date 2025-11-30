@@ -1,5 +1,10 @@
 import { Email } from "../model/Email.model.js";
 import { model } from "../index.js";
+import {
+  buildPlanUsageSummary,
+  getPlanConfigForUser,
+  getMonthlyEmailUsage
+} from "../utils/planLimits.js";
 
 const generateEmail = async (req, res) => {
   try {
@@ -17,6 +22,18 @@ const generateEmail = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Prompt is required",
+      });
+    }
+
+    const planConfig = getPlanConfigForUser(req.user);
+    const now = new Date();
+    const monthlyUsage = await getMonthlyEmailUsage({ userId, now });
+    const monthlyLimit = planConfig?.limits?.monthlyEmailGenerations ?? null;
+
+    if (monthlyLimit && monthlyUsage.used >= monthlyLimit) {
+      return res.status(403).json({
+        success: false,
+        message: `You have reached the ${planConfig.name} plan limit of ${monthlyLimit} emails this month. Please upgrade your plan to continue.`,
       });
     }
 
@@ -57,10 +74,23 @@ const generateEmail = async (req, res) => {
       userId
     });
 
+    const updatedMonthlyUsage = {
+      ...monthlyUsage,
+      used: monthlyUsage.used + 1
+    };
+
+    const usageSummary = await buildPlanUsageSummary({
+      user: req.user,
+      planConfig,
+      now,
+      monthlyUsageSnapshot: updatedMonthlyUsage
+    });
+
     return res.status(200).json({
       success: true,
       fullEmail,
-      emailId: email?._id
+      emailId: email?._id,
+      usage: usageSummary
     });
 
   } catch (error) {
@@ -82,6 +112,33 @@ const updateEmail = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Email ID, base email, and modifications are required",
+      });
+    }
+
+    const emailRecord = await Email.findOne({
+      _id: emailId,
+      userId: req.user._id
+    });
+
+    if (!emailRecord) {
+      return res.status(404).json({
+        success: false,
+        error: 'Email not found',
+      });
+    }
+
+    const planConfig = getPlanConfigForUser(req.user);
+    const maxRegenerations = planConfig?.limits?.maxRegenerationsPerEmail;
+    const currentRegenerations = emailRecord.chatEmails?.length || 0;
+
+    if (
+      typeof maxRegenerations === 'number' &&
+      maxRegenerations >= 0 &&
+      currentRegenerations >= maxRegenerations
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: `Your current plan allows ${maxRegenerations} updates per email. Upgrade to unlock unlimited revisions.`,
       });
     }
     
@@ -116,25 +173,12 @@ const updateEmail = async (req, res) => {
 
     const updatedEmail = result.response.text();
 
-    const findPromptAndAddToChat = await Email.findOneAndUpdate(
-      { _id: emailId, userId: req.user._id},
-      {
-        $push: {
-          chatEmails: {
-            prompt: modifications,
-            generatedEmail: updatedEmail,
-          }
-        }
-      },
-      { new: true }
-    )
+    emailRecord.chatEmails.push({
+      prompt: modifications,
+      generatedEmail: updatedEmail,
+    });
 
-    if (!findPromptAndAddToChat) {
-      return res.status(404).json({
-        success: false,
-        error: 'Failed to generate email and update email',
-      });
-    }
+    await emailRecord.save();
 
     return res.status(200).json({
       success: true,
@@ -208,6 +252,33 @@ const updateEmailHistory = async (req, res) => {
       });
     }
 
+    const emailRecord = await Email.findOne({
+      _id: emailId,
+      userId: req.user._id
+    });
+
+    if (!emailRecord) {
+      return res.status(404).json({
+        success: false,
+        error: 'Email not found',
+      });
+    }
+
+    const planConfig = getPlanConfigForUser(req.user);
+    const maxRegenerations = planConfig?.limits?.maxRegenerationsPerEmail;
+    const currentRegenerations = emailRecord.chatEmails?.length || 0;
+
+    if (
+      typeof maxRegenerations === 'number' &&
+      maxRegenerations >= 0 &&
+      currentRegenerations >= maxRegenerations
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: `Your current plan allows ${maxRegenerations} updates per email. Upgrade to unlock unlimited revisions.`,
+      });
+    }
+
     const normalizedPrevChats = Array.isArray(prevchats) ? prevchats : [];
 
     let formattedPrevChats  = '';
@@ -252,25 +323,12 @@ const updateEmailHistory = async (req, res) => {
 
     const fullEmail = result?.response?.text();
 
-    const foundEmailHistory = await Email.findOneAndUpdate(
-      { _id: emailId, userId: req.user._id},
-      {
-        $push: {
-          chatEmails: {
-            prompt: modification,
-            generatedEmail: fullEmail,
-          }
-        }
-      },
-      { new: true }
-    )
+    emailRecord.chatEmails.push({
+      prompt: modification,
+      generatedEmail: fullEmail,
+    });
 
-    if (!foundEmailHistory) {
-      return res.status(404).json({
-        success: false,
-        error: 'Failed to update email history',
-      });
-    }
+    await emailRecord.save();
 
     return res.status(200).json({
       success: true,
@@ -278,6 +336,31 @@ const updateEmailHistory = async (req, res) => {
       message: "Email history updated successfully"
     });
 }
+
+
+
+const getUsageSummary = async (req, res) => {
+  try {
+    const planConfig = getPlanConfigForUser(req.user);
+    const usageSummary = await buildPlanUsageSummary({
+      user: req.user,
+      planConfig,
+      now: new Date()
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Usage summary retrieved successfully",
+      data: usageSummary
+    });
+  } catch (error) {
+    console.error('Usage summary error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve usage summary',
+    });
+  }
+};
 
 
 
@@ -308,4 +391,4 @@ const deleteEmail = async (req, res) => {
 
 
 
-export { generateEmail, updateEmail, getUserEmailHistory, updateEmailHistory, deleteEmail }
+export { generateEmail, updateEmail, getUserEmailHistory, updateEmailHistory, deleteEmail, getUsageSummary }

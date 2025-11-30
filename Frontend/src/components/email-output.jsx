@@ -13,7 +13,8 @@ export function EmailOutput({
   setBottomPrompt,
   onUpdate,
   loading,
-  onBack
+  onBack,
+  planUsage
 }) {
   
   const [copied, setCopied] = useState(false);
@@ -96,7 +97,7 @@ export function EmailOutput({
             Back to Input
           </Button>
           
-          <div className='hidden sm:block overflow-y-auto custom-scroll max-h-[445px] border border-gray-400 p-2 rounded-xl'>
+          <div className='hidden sm:block overflow-y-auto custom-scroll max-h-[430px] border border-gray-400 p-2 rounded-xl'>
             <p className="bg-[#252628] p-2 text-sm sm:text-lg font-normal text-gray-100 rounded-xl flex items-start gap-2 shadow-xl">
               <span className="bg-[#482b9e] px-3 py-1 rounded-full text-sm sm:text-lg">
                 {userInitial?.toUpperCase()}
@@ -114,7 +115,7 @@ export function EmailOutput({
           <div className="absolute sm:bottom-0 w-full">
             <Textarea
               placeholder="Add any specific requirements or modifications..."
-              className="bg-[#14151b] w-full py-2 px-3 text-white max-h-36 placeholder:text-sm md:text-base border border-gray-400 rounded-xl sm:placeholder:text-base placeholder:font-medium placeholder:text-gray-500 focus:outline-blue-800 resize-none custom-scroll"
+              className="bg-[#14151b] w-full py-2 px-3 text-white min-h-16 placeholder:text-sm md:text-base border border-gray-400 rounded-xl sm:placeholder:text-base placeholder:font-medium placeholder:text-gray-500 focus:outline-blue-800 resize-none custom-scroll"
               value={bottomPrompt}
               onChange={(e) => {
                 setBottomPrompt(e.target.value);
@@ -124,15 +125,22 @@ export function EmailOutput({
             />
 
             <button
-              className={`w-full py-1 text-gray-200 rounded-lg ${!bottomPrompt.trim() ? 'bg-[#2e137a] text-gray-300' : 'bg-[#3b1cab] text-gray-50'} text-sm sm:text-lg font-normal mt-2 mb-6 sm:mb-0`}
+              className={`w-full py-1 text-gray-200 rounded-lg ${!bottomPrompt.trim() ? 'bg-[#2e137a] text-gray-300' : 'bg-[#3b1cab] text-gray-50'} text-sm sm:text-lg font-normal mt-3 mb-6 sm:mb-0`}
               onClick={onUpdate}
               disabled={!bottomPrompt.trim()}
             >
               Update Email
             </button>
+            {planUsage && (
+              <p className="text-center text-xs text-gray-400 mb-6 sm:mb-0 sm:mt-1">
+                {typeof planUsage?.capabilities?.maxRegenerationsPerEmail === 'number' &&
+                planUsage.capabilities.maxRegenerationsPerEmail >= 0
+                  ? `You can apply up to ${planUsage.capabilities.maxRegenerationsPerEmail} updates per email on the ${planUsage.plan?.name || 'current'}.`
+                  : 'Unlimited updates with your current plan.'}
+              </p>
+            )}
           </div>
         </div>
-        
       </div>
   );
 }

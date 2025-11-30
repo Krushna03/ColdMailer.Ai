@@ -37,6 +37,11 @@ const UserSchema = new Schema({
       default: false
     },
 
+    planId: {
+      type: String,
+      default: 'GETSTARTED'
+    },
+
     planName: {
       type: String,
       default: 'Free'
@@ -52,7 +57,6 @@ const UserSchema = new Schema({
       default: null
     },
     
-    // Update it to a  array of objects to stor multiple payments details
     paymentInfo: {
       razorpay_order_id: String,
       razorpay_payment_id: String,

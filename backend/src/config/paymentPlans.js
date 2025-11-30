@@ -1,3 +1,5 @@
+const DEFAULT_PLAN_ID = 'GETSTARTED';
+
 const PAYMENT_PLANS = Object.freeze({
   GETSTARTED: {
     id: 'GETSTARTED',
@@ -15,7 +17,11 @@ const PAYMENT_PLANS = Object.freeze({
     durationInDays: null,
     requiresPayment: false,
     buttonText: 'Get Started',
-    popular: false
+    popular: false,
+    limits: Object.freeze({
+      monthlyEmailGenerations: 50,
+      maxRegenerationsPerEmail: 3
+    })
   },
   STARTFREETRIAL: {
     id: 'STARTFREETRIAL',
@@ -34,7 +40,11 @@ const PAYMENT_PLANS = Object.freeze({
     durationInDays: 30,
     requiresPayment: true,
     buttonText: 'Start Free Trial',
-    popular: true
+    popular: true,
+    limits: Object.freeze({
+      monthlyEmailGenerations: 500,
+      maxRegenerationsPerEmail: null
+    })
   }
 });
 
@@ -54,6 +64,7 @@ const PAYABLE_PLAN_IDS = Object.freeze(
 export {
   PAYMENT_PLANS,
   PAYABLE_PLAN_IDS,
+  DEFAULT_PLAN_ID,
   getPlanByType,
   normalizePlanType
 };

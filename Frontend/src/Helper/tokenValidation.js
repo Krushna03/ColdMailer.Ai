@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { logout } from "../context/authSlice";
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +23,7 @@ export const useLogout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  return (message = "Session expired. Please log in again.") => {
+  return useCallback((message = "Session expired. Please log in again.") => {
     localStorage.removeItem('token');
     dispatch(logout());
     navigate('/sign-in');
@@ -31,5 +32,5 @@ export const useLogout = () => {
       description: message,
       variant: "destructive"
     });
-  };
+  }, [dispatch, navigate, toast]);
 };

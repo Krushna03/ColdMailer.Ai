@@ -1,5 +1,6 @@
 import  jwt  from 'jsonwebtoken'
 import UserModel from '../model/User.models.js'
+import { enforceSubscriptionFreshness } from '../utils/subscription.js'
 
 
 export const verifyJWT = async (req, res, next) => {
@@ -30,7 +31,9 @@ export const verifyJWT = async (req, res, next) => {
         );
       }
 
-      req.user = account;       
+      const freshAccount = await enforceSubscriptionFreshness(account);
+
+      req.user = freshAccount;       
 
       next()
     } 

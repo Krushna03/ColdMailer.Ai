@@ -4,9 +4,11 @@ import { User } from "lucide-react"
 import { useToast } from "../hooks/use-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { logout } from "../context/authSlice"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import axios from "axios"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger} from "../components/ui/dropdown-menu"
+import { PlanUsageNotice } from "./PlanUsageNotice"
+import { isTokenExpired, useLogout } from "../Helper/tokenValidation"
 
 export function Header() {
 
@@ -14,11 +16,65 @@ export function Header() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(false)
+  const [planUsage, setPlanUsage] = useState(null)
+  const [usageLoading, setUsageLoading] = useState(false)
   const user = useSelector(state => state.auth.userData)
-  const token = localStorage.getItem('token') || null;
+  const storedToken = localStorage.getItem('token')
+  let token = null
+  try {
+    token = storedToken ? JSON.parse(storedToken) : null
+  } catch {
+    token = storedToken
+  }
   const url = import.meta.env.VITE_BASE_URL
   const location = useLocation()
   const textToShow = location.pathname === "/payment" ? "Generate Email" : "Manage Plan"
+  const logoutUser = useLogout()
+
+  useEffect(() => {
+    if (!token) {
+      setPlanUsage(null)
+      return
+    }
+
+    if (isTokenExpired(token)) {
+      logoutUser()
+      return
+    }
+
+    let isMounted = true
+
+    const fetchPlanUsage = async () => {
+      setUsageLoading(true)
+      try {
+        const response = await axios.get(`${url}/api/v1/email/usage`, {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+        if (response.data.success && isMounted) {
+          setPlanUsage(response.data.data)
+        }
+      } catch (error) {
+        if (error.response?.status === 401) {
+          logoutUser()
+        } else {
+          console.error("Failed to fetch plan usage", error)
+        }
+      } finally {
+        if (isMounted) {
+          setUsageLoading(false)
+        }
+      }
+    }
+
+    fetchPlanUsage()
+
+    return () => {
+      isMounted = false
+    }
+  }, [token, url, logoutUser])
   
   const handleLogout = async (e) => {
     e.preventDefault()
@@ -74,19 +130,12 @@ export function Header() {
                   </span>
                 </ShimmerButton>
               </NavLink>
-              <NavLink to={"/sign-in"}>
-                <ShimmerButton className="hidden sm:block shadow-2xl" onClick={handleLogout}>
-                  <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none text-white dark:from-white dark:to-slate-900/10 lg:text-base tracking-wider">
-                  {loading ? "Loading...." : "Logout"} 
-                  </span>
-                </ShimmerButton>
-              </NavLink>
 
               <DropdownMenu className="ml-3">
                 <DropdownMenuTrigger asChild>
                   <User className="h-8 w-8 sm:h-10 sm:w-10 mr-2 sm:mr-0 rounded-full bg-[#4a465bd3] text-white p-2 cursor-pointer"/>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-72 bg-[#24232bf3] text-white border-none mr-5 mt-2">
+                <DropdownMenuContent className="w-[298px] bg-[#24232bf3] text-white border-none mr-5 mt-2">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
@@ -104,7 +153,16 @@ export function Header() {
                   </DropdownMenuGroup>
                   
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
+                  <div className="px-2 py-2">
+                    <PlanUsageNotice
+                      usage={planUsage}
+                      loading={usageLoading}
+                      onUpgrade={() => navigate('/payment')}
+                      className="w-full"
+                    />
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer hover:bg-white hover:text-black hover:rounded-md">
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>

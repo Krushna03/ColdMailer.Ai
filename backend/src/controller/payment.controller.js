@@ -216,6 +216,7 @@ const verifyPayment = async (req, res) => {
       {
         $set: {
           isPaidUser: true,
+          planId: plan.id,
           planName: plan.name,
           planActivatedAt,
           planExpiresAt,
@@ -277,6 +278,7 @@ const getPaymentPlans = async (req, res) => {
       description: plan.description,
       features: plan.features,
       billingPeriod: plan.billingPeriod,
+      limits: plan.limits || null,
       requiresPayment: plan.requiresPayment,
       buttonText: plan.buttonText,
       popular: plan.popular

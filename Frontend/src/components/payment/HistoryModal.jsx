@@ -88,7 +88,7 @@ const HistoryModal = ({ open, paymentHistory, loading, onClose }) => {
             <Button
               variant="outline"
               onClick={onClose}
-              className="border-white/20 text-black hover:bg-white/10 transition"
+              className="border-white/20 text-black hover:bg-white/10 hover:text-white transition cursor-pointer"
             >
               {loading ? 'Closing...' : 'Close'}
             </Button>
