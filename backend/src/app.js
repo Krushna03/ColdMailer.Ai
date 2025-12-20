@@ -4,20 +4,29 @@ import cookieParser from 'cookie-parser'
 import { errorHandler } from './middleware/errorHandler.js'
 import helmet from "helmet"
 import rateLimit from "express-rate-limit"
+import { handleWebhook } from './controller/payment.controller.js'
+import { webhookMiddleware } from './middleware/Webhook.middleware.js'
 
 const app = express()
 
 app.use(helmet())
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: "Too many requests, please try again later."
-}));
 
 app.use(cors({
   origin: [ process.env.CLIENT_URL, 'http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+}));
+
+app.post('/api/v1/payment/webhook', 
+  express.raw({ type: 'application/json' }),
+  webhookMiddleware,
+  handleWebhook
+);
+
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests, please try again later."
 }));
 
 app.use(express.json({ limit: '20kb' }))
@@ -29,7 +38,6 @@ app.use(errorHandler);
 app.get("/health", (req, res) => {
   res.json({ status: "ok", uptime: process.uptime() });
 });
-
 
 import ContactRoute from './routes/contact.routes.js' 
 import UserRoute from './routes/user.route.js' 

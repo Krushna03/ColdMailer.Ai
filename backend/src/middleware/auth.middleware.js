@@ -8,13 +8,10 @@ export const verifyJWT = async (req, res, next) => {
       const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
   
       if (!token) {
-        return res.json(
-          {
-            success: false,
-            message: 'Unauthorized request',
-          },
-          { status: 500 }
-        );
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized request',
+        });
       }
   
       const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
@@ -22,13 +19,10 @@ export const verifyJWT = async (req, res, next) => {
       const account = await UserModel.findById(decodedToken?._id).select("-password -refreshToken");
 
       if (!account) {
-        return res.json(
-          {
-            success: false,
-            message: 'Invalid access Token at verifyJWT for account',
-          },
-          { status: 500 }
-        );
+        return res.status(404).json({
+          success: false,
+          message: 'User not found',
+        });
       }
 
       const freshAccount = await enforceSubscriptionFreshness(account);
@@ -38,12 +32,18 @@ export const verifyJWT = async (req, res, next) => {
       next()
     } 
     catch (error) {
-      return res.json(
-        {
+      // JWT verification errors (expired, invalid, etc.)
+      if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+        return res.status(401).json({
           success: false,
-          message: error?.message || "Invalid access token",
-        },
-        { status: 500 }
-      );
+          message: error?.message || "Invalid or expired access token",
+        });
+      }
+      
+      // Other errors (database, etc.)
+      return res.status(500).json({
+        success: false,
+        message: error?.message || "Internal server error",
+      });
   }
 }

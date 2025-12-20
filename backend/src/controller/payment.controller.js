@@ -243,7 +243,8 @@ const verifyPayment = async (req, res) => {
       message: 'Payment verified successfully',
       data: {
         user: {
-          id: updatedUser._id,
+          _id: updatedUser._id,
+          id: updatedUser._id, 
           email: updatedUser.email,
           username: updatedUser.username,
           isPaidUser: updatedUser.isPaidUser,
@@ -380,10 +381,175 @@ const handlePaymentFailure = async (req, res) => {
   }
 };
 
+// Razorpay Webhook Handler
+const handleWebhook = async (req, res) => {
+  try {
+    const webhookSignature = req.headers['x-razorpay-signature'];
+    
+    // Use rawBody for signature verification (original string)
+    const webhookBody = req.rawBody || JSON.stringify(req.body);
+
+    if (!webhookSignature) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing webhook signature',
+      });
+    }
+
+    // Verify webhook signature
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET)
+      .update(webhookBody)
+      .digest('hex');
+
+    if (webhookSignature !== expectedSignature) {
+      console.error('Webhook signature verification failed');
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid webhook signature',
+      });
+    }
+
+    // Body is already parsed by middleware
+    const body = req.body;
+    const event = body.event;
+    const paymentEntity = body.payload?.payment?.entity;
+
+    // Handle payment.captured event
+    if (event === 'payment.captured' && paymentEntity) {
+      const {
+        id: razorpay_payment_id,
+        order_id: razorpay_order_id,
+        amount,
+        status
+      } = paymentEntity;
+
+      if (status !== 'captured') {
+        return res.status(200).json({
+          success: true,
+          message: 'Payment not captured, ignoring webhook',
+        });
+      }
+
+      try {
+        // Fetch order details to get user and plan info
+        const orderDetails = await razorpayInstance.orders.fetch(razorpay_order_id);
+        const userId = orderDetails?.notes?.userId;
+
+        if (!userId) {
+          console.error('Webhook: No userId found in order notes');
+          return res.status(200).json({
+            success: true,
+            message: 'Order processed but no user ID found',
+          });
+        }
+
+        const planType = orderDetails?.notes?.planType;
+        const plan = getPlanByType(planType);
+
+        if (!plan || !plan.requiresPayment) {
+          console.error('Webhook: Invalid plan type', planType);
+          return res.status(200).json({
+            success: true,
+            message: 'Invalid plan type in order',
+          });
+        }
+
+        // Verify amount matches
+        if (amount !== plan.amount) {
+          console.error('Webhook: Amount mismatch', { received: amount, expected: plan.amount });
+          return res.status(200).json({
+            success: true,
+            message: 'Amount mismatch, ignoring webhook',
+          });
+        }
+
+        // Check if payment already processed
+        const user = await UserModel.findById(userId);
+        if (!user) {
+          console.error('Webhook: User not found', userId);
+          return res.status(200).json({
+            success: true,
+            message: 'User not found',
+          });
+        }
+
+        // Only update if payment not already processed
+        if (user.paymentInfo?.razorpay_payment_id === razorpay_payment_id) {
+          return res.status(200).json({
+            success: true,
+            message: 'Payment already processed',
+          });
+        }
+
+        // Update user subscription
+        const planActivatedAt = new Date();
+        const planExpiresAt = calculatePlanExpiry(planActivatedAt, plan);
+
+        await UserModel.findByIdAndUpdate(
+          userId,
+          {
+            $set: {
+              isPaidUser: true,
+              planId: plan.id,
+              planName: plan.name,
+              planActivatedAt,
+              planExpiresAt,
+              paymentInfo: {
+                razorpay_order_id,
+                razorpay_payment_id,
+                razorpay_signature: webhookSignature, // Store webhook signature
+                paymentDate: new Date()
+              }
+            }
+          },
+          { new: true, runValidators: true }
+        );
+
+        console.log('Webhook: Payment processed successfully', {
+          userId,
+          paymentId: razorpay_payment_id,
+          planType: plan.id
+        });
+
+        return res.status(200).json({
+          success: true,
+          message: 'Webhook processed successfully',
+        });
+      } catch (error) {
+        console.error('Webhook processing error:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to process webhook',
+        });
+      }
+    }
+
+    // Handle other events (payment.failed, etc.)
+    if (event === 'payment.failed') {
+      console.log('Webhook: Payment failed', paymentEntity?.id);
+      // You can add additional logic here if needed
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Webhook received',
+    });
+
+  } catch (error) {
+    console.error('Webhook handler error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Webhook processing failed',
+    });
+  }
+};
+
 export {
   createOrder,
   verifyPayment,
   getPaymentPlans,
   getPaymentHistory,
-  handlePaymentFailure
+  handlePaymentFailure,
+  handleWebhook
 };
