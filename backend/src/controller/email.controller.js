@@ -41,7 +41,6 @@ const generateEmail = asyncHandler(async (req, res) => {
 
 /**
  * Update an existing email
- * POST /api/v1/email/update-email
  */
 const updateEmail = asyncHandler(async (req, res) => {
   const { baseEmail, modifications, emailId } = req.body;
