@@ -9,10 +9,12 @@ dotenv.config({
   path: "./.env"
 })
 
-export const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+export const razorpayInstance = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET
+  ? new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    })
+  : null;
 
 
 export const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -21,7 +23,7 @@ const geminiapiKey = process.env.GEMINIAPIKEY;
 const genAI = new GoogleGenerativeAI(geminiapiKey);
 
 export const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
+  model: "gemini-2.5-flash-lite",
   generationConfig: {
     maxOutputTokens: 1000,
     temperature: 0.3,

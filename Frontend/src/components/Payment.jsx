@@ -17,6 +17,7 @@ import HistoryModal from './payment/HistoryModal';
 import { formatDate, formatDaysLabel, getDaysUntil } from './payment/utils';
 import { Toaster } from './ui/toaster';
 import { login } from '@/context/authSlice';
+import { getToken, getUserData } from '../utils';
 
 const DEFAULT_REMINDER_WINDOW_DAYS = 2;
 
@@ -38,12 +39,9 @@ const PaymentComponent = () => {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
-  const token = JSON.parse(localStorage.getItem('token')) || null;
+  const token = getToken();
   const userData = useSelector(state => state.auth.userData);
-  const storedUserData = useMemo(() => {
-    const stored = localStorage.getItem('data');
-    return stored ? JSON.parse(stored) : null;
-  }, []);
+  const storedUserData = useMemo(() => getUserData(), []);
   const user = userData?.userData || userData || storedUserData?.userData || storedUserData || null;
   const syncUserPlanWithHistory = useCallback((historySnapshot) => {
     if (!historySnapshot || !user) return;

@@ -11,6 +11,7 @@ import { useSidebarContext } from "../context/SidebarContext";
 import { MoreVertical } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { isTokenExpired, useLogout } from "../Helper/tokenValidation";
+import { getToken, getUserData, capitalizeFirstLetter } from "../utils";
 
 const url = import.meta.env.VITE_BASE_URL;
 
@@ -24,8 +25,8 @@ export default function Sidebar() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const token = JSON.parse(localStorage.getItem('token')) || null;
-  const userData = JSON.parse(localStorage.getItem("data") || null);
+  const token = getToken();
+  const userData = getUserData();
   const userID = userData?.userData?._id || null;
   const { updateSidebar } = useSidebarContext();
   const logoutUser = useLogout();
@@ -218,7 +219,7 @@ export default function Sidebar() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="inline-block">
-                        {(index + 1) + ". " + email.prompt.charAt(0).toUpperCase() + email.prompt.slice(1)}
+                        {(index + 1) + ". " + capitalizeFirstLetter(email.prompt)}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="top" sideOffset={4} align="start">

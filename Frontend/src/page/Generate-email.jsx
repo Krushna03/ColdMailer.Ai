@@ -10,6 +10,7 @@ import { login, logout } from '../context/authSlice';
 import { useToast } from '../hooks/use-toast';
 import Sidebar from '../components/Sidebar';
 import { isTokenExpired, useLogout } from '../Helper/tokenValidation';
+import { getToken } from '../utils';
 
 export const GenerateEmail = () => {
 
@@ -20,7 +21,7 @@ export const GenerateEmail = () => {
   const logoutUser = useLogout()
   const url = import.meta.env.VITE_BASE_URL
 
-  const token = JSON.parse(localStorage.getItem('token')) || null;
+  const token = getToken();
 
   const validateANDFetchUser = useCallback(async () => {
     if (!token) {

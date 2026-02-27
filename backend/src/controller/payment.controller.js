@@ -18,6 +18,13 @@ const REMINDER_WINDOW_DAYS = 2;
 // Create Order
 const createOrder = async (req, res) => {
   try {
+    if (!razorpayInstance) {
+      return res.status(503).json({
+        success: false,
+        message: 'Payment service is not configured',
+      });
+    }
+
     const { planType } = req.body;
     const userId = req.user?._id;
     const plan = getPlanByType(planType);
@@ -101,6 +108,13 @@ const createOrder = async (req, res) => {
 // Verify Payment
 const verifyPayment = async (req, res) => {
   try {
+    if (!razorpayInstance) {
+      return res.status(503).json({
+        success: false,
+        message: 'Payment service is not configured',
+      });
+    }
+
     const {
       razorpay_order_id,
       razorpay_payment_id,
@@ -384,6 +398,13 @@ const handlePaymentFailure = async (req, res) => {
 // Razorpay Webhook Handler
 const handleWebhook = async (req, res) => {
   try {
+    if (!razorpayInstance) {
+      return res.status(503).json({
+        success: false,
+        message: 'Payment service is not configured',
+      });
+    }
+
     const webhookSignature = req.headers['x-razorpay-signature'];
     
     // Use rawBody for signature verification (original string)

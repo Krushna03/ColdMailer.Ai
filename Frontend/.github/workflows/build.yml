@@ -1,0 +1,22 @@
+# create a github workflow to build and deploy the frontend project to vercel using vite
+
+name: Build Project Frontend
+
+on: 
+  push: 
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run build
+        run: npm run build
+          

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Copy, CopyCheckIcon, Loader2 } from "lucide-react";
+import { Copy, CopyCheckIcon, Loader2, MailOpen } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { TiArrowBack } from "react-icons/ti";
 import { useSelector } from 'react-redux';
 import { formatBulletPoints, processGeneratedEmail } from '../lib/processGeneratedEmail';
+import { useCopyToClipboard, getUserInitial, parseEmail, openGmailCompose } from '../utils';
 
 export function EmailOutput({
   prompt,
@@ -19,21 +20,28 @@ export function EmailOutput({
   
   const [copied, setCopied] = useState(false);
 
-  const user = useSelector(state => state.auth.userData)
-  let userInitial = user?.userData?.username 
-  userInitial = userInitial?.slice(0, 1)
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(email);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const user = useSelector(state => state.auth.userData);
+  const userInitial = getUserInitial(user?.userData?.username);
+  
+  const handleCopyToClipboard = useCopyToClipboard(setCopied);
   
   const { email, content } = processGeneratedEmail(generatedEmail);
 
   const formatAdditionalContent = (content) => {
     return formatBulletPoints(content);
   };
+
+  const { subject, body } = parseEmail(email);
+
+  const handleGmailCompose = () => {
+    openGmailCompose({
+      to: user?.userData?.email || "",
+      subject,
+      body,
+      userEmail: user?.userData?.email,
+    });
+  };
+  
 
   return (
       <div className="flex flex-col sm:flex sm:flex-row gap-7 P-2 mt-6 sm:mt-1">
@@ -43,14 +51,14 @@ export function EmailOutput({
           <div className="sm:hidden mb-3 sm:mb-0 overflow-y-auto custom-scroll max-h-[350px] sm:h-[490px]">
             <p className="bg-[#0d0e12] border border-gray-400 p-2 text-sm sm:text-lg font-normal text-gray-100 py-2 rounded-xl flex items-start gap-3">
               <span className="bg-[#482b9e] px-2 py-1 sm:px-3 sm:py-1 rounded-full text-sm sm:text-lg">
-                {userInitial?.toUpperCase()}
+                {userInitial}
               </span>
               <span className="flex-1">{prompt}</span>
             </p>
           </div>
           
           <div className="flex justify-between items-center sm:justify-start">
-            <Button onClick={copyToClipboard} className="px-2 bg-none text-xs sm:text-base">
+            <Button onClick={() => handleCopyToClipboard(email)} className="px-2 bg-none text-xs sm:text-base">
               {copied ? (
                 <>
                   Copied <CopyCheckIcon className="mt-1 h-2 w-2 sm:w-4 sm:h-4 text-gray-200" />
@@ -60,6 +68,10 @@ export function EmailOutput({
                   Copy <Copy className="mt-1 h-2 w-2 sm:w-4 sm:h-4 p-0" />
                 </>
               )}
+            </Button>
+            
+            <Button onClick={handleGmailCompose} className="px-2 bg-none text-xs sm:text-base">
+              Send over Gmail <MailOpen className="mt-1 h-2 w-2 sm:w-4 sm:h-4 p-0" />
             </Button>
 
             <Button 

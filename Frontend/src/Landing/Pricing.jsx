@@ -1,50 +1,12 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, Zap, Crown } from "lucide-react"
+import { Check } from "lucide-react"
 import { isTokenExpired, useLogout } from "../Helper/tokenValidation"
 import { useNavigate } from "react-router-dom"
 import { usePayment } from "../hooks/usePayment"
 import { useSelector } from "react-redux"
-
-const plans = [
-  {
-    name: "Starter",
-    price: "Free",
-    period: "forever",
-    description: "Perfect for trying AI-powered email generation",
-    icon: <Zap className="h-6 w-6 text-[#6f34ed]" />,
-    features: [
-      "50 emails per month",
-      "Basic email templates",
-      "Standard tone options",
-      "Copy & export functionality",
-    ],
-    buttonText: "Get Started",
-    id: "GETSTARTED",
-    buttonVariant: "outline",
-    popular: false,
-  },
-  {
-    name: "Professional",
-    price: "₹9",
-    period: "per month",
-    description: "Ideal for professionals and small teams",
-    icon: <Crown className="h-6 w-6 text-[#6f34ed]" />,
-    features: [
-      "500 emails per month",
-      "Advanced personalization",
-      "All tone customizations",
-      "Priority email support",
-      // "CRM integrations",
-      // "Analytics dashboard",
-      "Unlimited revisions",
-    ],
-    buttonText: "Start Free Trial",
-    id: "STARTFREETRIAL",
-    buttonVariant: "default",
-    popular: true,
-  },
-]
+import { plans } from "../data/pricingData"
+import { getToken } from "../utils"
 
 export default function PricingSection() {
 
@@ -56,7 +18,7 @@ export default function PricingSection() {
     resetPaymentState,
   } = usePayment();
 
-  const token = JSON.parse(localStorage.getItem('token')) || null;
+  const token = getToken();
   
   const handleNavigation = async (buttonName) => {  
     if (!token) {
@@ -124,7 +86,9 @@ export default function PricingSection() {
             )}
 
             <CardHeader className="text-center pb-8">
-              <div className="flex justify-center mb-4">{plan.icon}</div>
+              <div className="flex justify-center mb-4">
+                <plan.icon className={plan.iconClassName} />
+              </div>
               <CardTitle className="text-2xl font-bold text-white mb-2">{plan.name}</CardTitle>
               <div className="mb-4">
                 <span className="text-4xl font-bold text-white">{plan.price}</span>

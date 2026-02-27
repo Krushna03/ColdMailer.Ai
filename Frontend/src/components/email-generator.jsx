@@ -6,7 +6,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useSidebarContext } from '../context/SidebarContext';
 import { isTokenExpired, useLogout } from '../Helper/tokenValidation';
-import { useNavigate } from 'react-router-dom';
+import { getToken } from '../utils';
 
 const url = import.meta.env.VITE_BASE_URL
 
@@ -21,11 +21,10 @@ export function EmailGenerator({ emailGenerated }) {
     const [usageLoading, setUsageLoading] = useState(false);
     const { toast } = useToast();
     const { updateSidebar, setUpdateSidebar } = useSidebarContext()
-    const token = JSON.parse(localStorage.getItem('token')) || null;
+    const token = getToken();
     const logoutUser = useLogout();
     const user = useSelector(state => state.auth.userData)
     const userId = user?.userData?._id
-    const navigate = useNavigate();
 
     const fetchPlanUsage = useCallback(async () => {
       if (!token) return;
