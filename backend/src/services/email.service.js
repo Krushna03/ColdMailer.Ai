@@ -1,4 +1,5 @@
 import { Email } from "../model/Email.model.js";
+import { ApiError } from "../utils/ApiError.js";
 import {
   buildPlanUsageSummary,
   getPlanConfigForUser,
@@ -19,10 +20,10 @@ const checkMonthlyLimit = async (user, now) => {
   const monthlyLimit = planConfig?.limits?.monthlyEmailGenerations ?? null;
 
   if (monthlyLimit && monthlyUsage.used >= monthlyLimit) {
-    return res.status(403).json({
-      success: false,
-      message: `You have reached the ${planConfig.name} plan limit of ${monthlyLimit} emails this month. Please upgrade your plan to continue.`
-    });
+    throw new ApiError(
+      403,
+      `You have reached the ${planConfig.name} plan limit of ${monthlyLimit} emails this month. Please upgrade your plan to continue.`
+    );
   }
 
   return { planConfig, monthlyUsage };
@@ -39,10 +40,10 @@ const checkRegenerationLimit = (user, emailRecord) => {
     maxRegenerations >= 0 &&
     currentRegenerations >= maxRegenerations
   ) {
-    return res.status(403).json({
-      success: false,
-      message: `Your current plan allows ${maxRegenerations} updates per email. Upgrade to unlock unlimited revisions.`
-    });
+    throw new ApiError(
+      403,
+      `Your current plan allows ${maxRegenerations} updates per email. Upgrade to unlock unlimited revisions.`
+    );
   }
 
   return planConfig;
@@ -58,10 +59,7 @@ export const generateEmailService = async ({ prompt, user }) => {
   const aiResponse = await generateAIContent(fullPrompt);
 
   if (!aiResponse.success) {
-    return res.status(aiResponse.statusCode).json({
-      success: false,
-      message: aiResponse.error
-    });
+    throw new ApiError(aiResponse.statusCode, aiResponse.error);
   }
 
   const fullEmail = aiResponse.data;
@@ -100,10 +98,7 @@ export const updateEmailService = async ({ emailId, baseEmail, modifications, us
   });
 
   if (!emailRecord) {
-    return res.status(404).json({
-      success: false,
-      message: 'Email not found'
-    });
+    throw new ApiError(404, 'Email not found');
   }
 
   checkRegenerationLimit(user, emailRecord);
@@ -112,10 +107,7 @@ export const updateEmailService = async ({ emailId, baseEmail, modifications, us
   const aiResponse = await generateAIContentWithRole(systemPrompt, 'user');
 
   if (!aiResponse.success) {
-    return res.status(aiResponse.statusCode).json({
-      success: false,
-      message: aiResponse.error
-    });
+    throw new ApiError(aiResponse.statusCode, aiResponse.error);
   }
 
   const updatedEmail = aiResponse.data;
@@ -145,10 +137,7 @@ export const updateEmailHistoryService = async ({
   });
 
   if (!emailRecord) {
-    return res.status(404).json({
-      success: false,
-      message: 'Email not found'
-    });
+    throw new ApiError(404, 'Email not found');
   }
 
   checkRegenerationLimit(user, emailRecord);
@@ -168,10 +157,7 @@ export const updateEmailHistoryService = async ({
   const aiResponse = await generateAIContent(fullPrompt);
 
   if (!aiResponse.success) {
-    return res.status(aiResponse.statusCode).json({
-      success: false,
-      message: aiResponse.error
-    });
+    throw new ApiError(aiResponse.statusCode, aiResponse.error);
   }
 
   const fullEmail = aiResponse.data;
@@ -219,10 +205,7 @@ export const deleteEmailService = async ({ emailId, userId }) => {
   });
 
   if (!deletedEmail) {
-    return res.status(404).json({
-      success: false,
-      message: 'Email not found or already deleted'
-    });
+    throw new ApiError(404, 'Email not found or already deleted');
   }
 
   return { success: true };
