@@ -161,7 +161,7 @@ export default function Sidebar() {
 
 
   const handleMailNavigation = (email) => () => {
-    navigate(`/email/${email._id}`, { state: { email } });
+    navigate(`/email/history/${email._id}`, { state: { email } });
   };
 
 

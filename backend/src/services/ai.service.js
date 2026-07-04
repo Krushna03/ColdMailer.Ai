@@ -1,5 +1,32 @@
 import { models } from "../config/gemini.js";
 
+const sanitizeAIError = (message) => {
+  if (!message) return 'An unexpected error occurred during email generation. Please check your network and try again.';
+
+  const lowerMessage = message.toLowerCase();
+  
+  if (lowerMessage.includes('quota') || lowerMessage.includes('rate limit') || lowerMessage.includes('429')) {
+    return 'The AI generation service is temporarily busy (rate limit or quota exceeded). Please wait a moment and try again.';
+  }
+  
+  if (
+    lowerMessage.includes('api_key') || 
+    lowerMessage.includes('api key') || 
+    lowerMessage.includes('authentication') || 
+    lowerMessage.includes('unauthorized') || 
+    lowerMessage.includes('401') || 
+    lowerMessage.includes('403')
+  ) {
+    return 'AI service authentication failed. Please contact support.';
+  }
+
+  if (lowerMessage.includes('not found') || lowerMessage.includes('404') || lowerMessage.includes('deprecated')) {
+    return 'The AI service is experiencing configuration updates. Please try again.';
+  }
+
+  return 'The AI generation service encountered an issue. Please simplify your prompt or try again later.';
+};
+
 // Helper to execute Gemini generation with fallback support.
 const executeWithFallback = async (executeFn) => {
   let lastError = null;
@@ -28,7 +55,12 @@ const executeWithFallback = async (executeFn) => {
       lastError = error;
 
       // Unrecoverable authentication error - abort fallback loop
-      if (error.message?.includes('API_KEY') || error.message?.includes('authentication')) {
+      if (
+        error.message?.includes('API_KEY') || 
+        error.message?.includes('authentication') ||
+        error.message?.includes('401') ||
+        error.message?.includes('403')
+      ) {
         return {
           success: false,
           error: 'AI service authentication failed. Please contact support.',
@@ -42,18 +74,13 @@ const executeWithFallback = async (executeFn) => {
 
   // If we reach here, all models have failed
   if (lastError) {
-    if (lastError.message?.includes('quota') || lastError.message?.includes('rate limit')) {
-      return {
-        success: false,
-        error: 'AI service is temporarily unavailable (rate limited or quota exceeded). Please try again later.',
-        statusCode: 503
-      };
-    }
+    const userFriendlyError = sanitizeAIError(lastError.message);
+    const statusCode = (lastError.message?.includes('quota') || lastError.message?.includes('429') || lastError.message?.includes('rate limit')) ? 503 : 500;
 
     return {
       success: false,
-      error: `The AI generation service encountered an issue: ${lastError.message || 'unknown error'}. Please check your prompt or try again later.`,
-      statusCode: 500
+      error: userFriendlyError,
+      statusCode
     };
   }
 

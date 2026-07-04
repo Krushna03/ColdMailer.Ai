@@ -6,6 +6,7 @@ import Protected from './components/Protected'
 import NotFound from './components/NotFound'
 import LandingPage from './Landing/Landing'
 import EmailHistory from './page/EmailHistory'
+import EmailOutputPage from './page/EmailOutputPage'
 import PaymentComponent from './components/Payment'
 
 
@@ -38,6 +39,14 @@ function App() {
     },
     {
       path: "/email/:id",
+      element: (
+        <Protected>
+            <EmailOutputPage />
+        </Protected>
+      ) 
+    },
+    {
+      path: "/email/history/:id",
       element: (
         <Protected>
             <EmailHistory />

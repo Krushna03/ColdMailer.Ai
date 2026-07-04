@@ -8,7 +8,7 @@ export function Footer() {
       </div> */}
       <div className=" flex flex-col items-center justify-center gap-4">
         <p className="text-sm text-gray-500">
-          © 2025 Cold Mailer. All rights reserved.
+          © {new Date().getFullYear()} ColdMailerAI. All rights reserved.
         </p>
       </div>
     </footer>

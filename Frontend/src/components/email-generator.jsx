@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { EmailInput } from './email-input';
 import { EmailOutput } from './email-output';
 import { useToast } from "../hooks/use-toast";
@@ -22,6 +23,7 @@ export function EmailGenerator({ emailGenerated }) {
     const [usageLoading, setUsageLoading] = useState(false);
     const { toast } = useToast();
     const { updateSidebar, setUpdateSidebar } = useSidebarContext()
+    const navigate = useNavigate();
     const token = getToken();
     const logoutUser = useLogout();
     const user = useSelector(state => state.auth.userData)
@@ -100,7 +102,25 @@ export function EmailGenerator({ emailGenerated }) {
           } else {
             fetchPlanUsage();
           }
-      } else {
+          
+          toast({
+            title: "Success",
+            description: "Email generated successfully!",
+            variant: "success",
+          });
+
+          navigate(`/email/${response.data.emailId}`, {
+            state: {
+              email: {
+                _id: response.data.emailId,
+                prompt: prompt,
+                generatedEmail: response.data.fullEmail,
+                chatEmails: [],
+                createdAt: new Date().toISOString()
+              }
+            }
+          });
+        } else {
           throw new Error(response.data.error || 'Failed to generate email');
         }
       } catch (err) {

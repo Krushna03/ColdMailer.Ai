@@ -122,7 +122,7 @@ export function EmailOutput({
                 {userInitial?.toUpperCase()}
               </span>
               <span className="flex-1 sm:text-[16px]">
-                {!readMorePrompt ? `${prompt.slice(0, 170)}...` : prompt}
+                {!readMorePrompt ? `${prompt.slice(0, 170)}` : prompt}
                 {prompt?.length > 170 && (readMorePrompt ? (
                   <button onClick={() => setReadMorePrompt(false)} className='text-blue-500 text-xs sm:text-base'>
                     Read Less

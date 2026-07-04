@@ -44,7 +44,7 @@ const checkRegenerationLimit = (user, emailRecord) => {
 
 export const generateEmailService = async ({ prompt, user }) => {
   const now = new Date();
-  
+
   const { planConfig, monthlyUsage } = await checkMonthlyLimit(user, now);
 
   const fullPrompt = EMAIL_GENERATION_PROMPT + prompt;
@@ -183,6 +183,19 @@ export const getUserEmailHistoryService = async ({ userId, limit, page }) => {
     emails: emails || [],
     hasMore: emails.length === limit
   };
+};
+
+export const getEmailByIdService = async ({ emailId, userId }) => {
+  const email = await Email.findOne({
+    _id: emailId,
+    userId
+  });
+
+  if (!email) {
+    throw new ApiError(404, 'Email not found');
+  }
+
+  return email;
 };
 
 
