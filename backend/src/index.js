@@ -1,34 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import './loadEnv.js';
 import { app } from './app.js'
-import dotenv from 'dotenv'
 import connectDB from './databse/db.js'
 import { OAuth2Client } from 'google-auth-library';
-import Razorpay from 'razorpay';
-
-dotenv.config({
-  path: "./.env"
-})
-
-export const razorpayInstance = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET
-  ? new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    })
-  : null;
-
 
 export const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-const geminiapiKey = process.env.GEMINIAPIKEY;
-const genAI = new GoogleGenerativeAI(geminiapiKey);
-
-export const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash-lite",
-  generationConfig: {
-    maxOutputTokens: 1000,
-    temperature: 0.3,
-  }
-});
 
 app.get('/', (req, res) => {
   res.send('Hello');

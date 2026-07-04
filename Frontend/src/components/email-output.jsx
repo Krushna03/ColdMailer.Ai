@@ -15,11 +15,12 @@ export function EmailOutput({
   onUpdate,
   loading,
   onBack,
-  planUsage
+  planUsage,
+  error
 }) {
-  
-  const [copied, setCopied] = useState(false);
 
+  const [copied, setCopied] = useState(false);
+  const [readMorePrompt, setReadMorePrompt] = useState(false);
   const user = useSelector(state => state.auth.userData);
   const userInitial = getUserInitial(user?.userData?.username);
   
@@ -40,8 +41,7 @@ export function EmailOutput({
       body,
       userEmail: user?.userData?.email,
     });
-  };
-  
+  };  
 
   return (
       <div className="flex flex-col sm:flex sm:flex-row gap-7 P-2 mt-6 sm:mt-1">
@@ -58,7 +58,7 @@ export function EmailOutput({
           </div>
           
           <div className="flex justify-between items-center sm:justify-start">
-            <Button onClick={() => handleCopyToClipboard(email)} className="px-2 bg-none text-xs sm:text-base">
+            <Button onClick={() => handleCopyToClipboard(email)} className="px-2 bg-none text-xs sm:text-base" disabled={!!error || !email}>
               {copied ? (
                 <>
                   Copied <CopyCheckIcon className="mt-1 h-2 w-2 sm:w-4 sm:h-4 text-gray-200" />
@@ -70,7 +70,7 @@ export function EmailOutput({
               )}
             </Button>
             
-            <Button onClick={handleGmailCompose} className="px-2 bg-none text-xs sm:text-base">
+            <Button onClick={handleGmailCompose} className="px-2 bg-none text-xs sm:text-base" disabled={!!error || !email}>
               Send over Gmail <MailOpen className="mt-1 h-2 w-2 sm:w-4 sm:h-4 p-0" />
             </Button>
 
@@ -92,6 +92,13 @@ export function EmailOutput({
                   <p className="text-blue-900 font-medium">Generating your email...</p>
                 </div>
               </div>
+            ) : error ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-50 p-6 text-center rounded-lg">
+                <div className="max-w-md">
+                  <h3 className="text-[#482b9e] font-bold text-lg mb-1">Email Generation Failed</h3>
+                  <p className="text-[#482b9e] text-sm whitespace-pre-wrap">{error}</p>
+                </div>
+              </div>
             ) : (
               <pre className="text-black whitespace-pre-wrap text-xs sm:text-base">{email}</pre>
             )}
@@ -109,17 +116,32 @@ export function EmailOutput({
             Back to Input
           </Button>
           
-          <div className='hidden sm:block overflow-y-auto custom-scroll max-h-[430px] border border-gray-400 p-2 rounded-xl'>
+          <div className={`hidden sm:flex flex-col ${content ? "h-[435px]" : "h-[435px]"} border border-gray-400 p-2 pb-0 rounded-xl ${readMorePrompt ? "overflow-y-auto custom-scroll" : "overflow-hidden"}`}>
             <p className="bg-[#252628] p-2 text-sm sm:text-lg font-normal text-gray-100 rounded-xl flex items-start gap-2 shadow-xl">
               <span className="bg-[#482b9e] px-3 py-1 rounded-full text-sm sm:text-lg">
                 {userInitial?.toUpperCase()}
               </span>
-              <span className="flex-1">{prompt}</span>
+              <span className="flex-1 sm:text-[16px]">
+                {!readMorePrompt ? `${prompt.slice(0, 170)}...` : prompt}
+                {prompt?.length > 170 && (readMorePrompt ? (
+                  <button onClick={() => setReadMorePrompt(false)} className='text-blue-500 text-xs sm:text-base'>
+                    Read Less
+                  </button>
+                ) : (
+                  <button onClick={() => setReadMorePrompt(true)} className='text-blue-500 text-xs sm:text-base'>
+                    Read More
+                  </button>
+                ))}
+              </span>
             </p>
 
-            <div className={`hidden ${!content ? "hidden" : "sm:block mt-3 overflow-y-auto custom-scroll bg-[#1c1f23] shadow-xl p-2 rounded-xl"}`}>
-              <p className='text-white whitespace-pre-wrap text-xs sm:text-base z-10'>
-                {formatAdditionalContent(content)}
+            <div className={`hidden sm:block mt-3 bg-[#1c1f23] shadow-xl p-2 rounded-xl ${readMorePrompt ? "h-auto" : "flex-1 min-h-0 overflow-y-auto custom-scroll"}`}>
+              <p className='text-white whitespace-pre-wrap text-xs sm:text-[14.5px] tracking-wide leading-[1.7] z-10'>
+                {
+                  error 
+                    ? "Could not generate additional suggestions due to the error." 
+                    : (content?.trim()?.length > 0 ? formatAdditionalContent(content) : "No additional content needed, the email is already generated. Or your request is not clear!")
+                }
               </p>
             </div>
           </div>
@@ -134,12 +156,13 @@ export function EmailOutput({
                 e.target.style.height = "auto";
                 e.target.style.height = `${e.target.scrollHeight}px`;
               }}
+              disabled={!!error}
             />
 
             <button
-              className={`w-full py-1 text-gray-200 rounded-lg ${!bottomPrompt.trim() ? 'bg-[#2e137a] text-gray-300' : 'bg-[#3b1cab] text-gray-50'} text-sm sm:text-lg font-normal mt-3 mb-6 sm:mb-0`}
+              className={`w-full py-1 text-gray-200 rounded-lg ${(!bottomPrompt.trim() || error) ? 'bg-[#2e137a] text-gray-300' : 'bg-[#3b1cab] text-gray-50'} text-sm sm:text-lg font-normal mt-3 mb-6 sm:mb-0`}
               onClick={onUpdate}
-              disabled={!bottomPrompt.trim()}
+              disabled={!bottomPrompt.trim() || !!error}
             >
               Update Email
             </button>

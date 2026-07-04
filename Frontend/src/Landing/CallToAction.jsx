@@ -20,7 +20,7 @@ function CallToAction() {
               alt="Radison logo"
               className="mr-2"
             />
-            <span>ColdMailer.Ai</span>
+            <span>ColdMailerAI</span>
           </button>
         </div>
 

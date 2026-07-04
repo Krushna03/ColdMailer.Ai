@@ -13,8 +13,7 @@ const emailUpdateSchema = z.object({
 
 const emailHistoryUpdateSchema = z.object({
   emailId: z.string().min(1, "Email ID is required"),
-  modification: z.string().min(1, "Modification is required"),
-  baseprompt: z.string().min(1, "Base prompt is required")
+  modification: z.string().min(1, "Modification is required")
 });
 
 const paginationSchema = z.object({
@@ -57,8 +56,8 @@ export const validateEmailUpdate = ({ emailId, baseEmail, modifications }, res) 
   return true;
 };
 
-export const validateEmailHistoryUpdate = ({ emailId, modification, baseprompt }, res) => {
-  const result = emailHistoryUpdateSchema.safeParse({ emailId, modification, baseprompt });
+export const validateEmailHistoryUpdate = ({ emailId, modification }, res) => {
+  const result = emailHistoryUpdateSchema.safeParse({ emailId, modification });
   if (!result.success) {
     res.status(400).json({
       success: false,

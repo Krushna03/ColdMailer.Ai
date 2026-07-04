@@ -8,7 +8,7 @@ export function EmailInput({ prompt, setPrompt, onSubmit }) {
       <div className="text-center mb-6 sm:mb-8">
         <div className="inline-flex items-center gap-2 bg-[#1a1133] shadow-2xl rounded-full px-2 sm:px-5 py-2 mb-2 sm:mb-5">
             <img src="/white-logo.png" alt="logo" className="h-7 w-7 p-1 rounded" />
-            <span className="text-sm sm:text-base text-white">ColdMailer.Ai - AI Powered Email Generator</span>
+            <span className="text-sm sm:text-base text-white">ColdMailerAI - AI Powered Email Generator</span>
         </div>
         <h1 className="text-[26px] md:text-5xl font-bold tracking-wide mb-3 sm:mb-4 text-gray-200">
           Craft Perfect Cold Emails

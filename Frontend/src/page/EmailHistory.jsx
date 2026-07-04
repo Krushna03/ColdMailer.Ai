@@ -14,6 +14,7 @@ import axios from "axios"
 import EmailUpdateLoader from "../loader/loader"
 import { isTokenExpired, useLogout } from "../Helper/tokenValidation"
 import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose } from "../utils"
+import { useSidebarContext } from "../context/SidebarContext"
 
 const url = import.meta.env.VITE_BASE_URL
 
@@ -32,6 +33,7 @@ export default function EmailHistory() {
   const handleClipboardCopy = useCopyToClipboard(setCopiedId);
   const user = useSelector((state) => state.auth.userData);
   const userEmail = user?.userData?.email || "";
+  const { updateSidebar, setUpdateSidebar } = useSidebarContext();
 
   const handleGmailCompose = (subject, body) => {
     openGmailCompose({ to: userEmail, subject, body, userEmail });
@@ -81,8 +83,6 @@ export default function EmailHistory() {
         `${url}/api/v1/email/update-email-history`,
         { 
           modification: newModification,
-          baseprompt: emailHistory?.generatedEmail,
-          prevchats: (emailHistory?.chatEmails || []).slice(-5) || [],
           emailId 
         },
         { 
@@ -107,6 +107,7 @@ export default function EmailHistory() {
         };
         
         setIterations((prev) => [newIteration, ...prev]);
+        setUpdateSidebar(!updateSidebar);
         
         toast({
           title: "Success",
@@ -137,7 +138,6 @@ export default function EmailHistory() {
   };
   
 
-
   return (
     <div className="h-full overflow-y-hidden flex flex-col relative bg-[#0d0e12] z-0">
       <div className="absolute top-20 -left-14 w-1/2 h-48 bg-[#6f34ed] opacity-30 blur-3xl"></div>
@@ -147,8 +147,8 @@ export default function EmailHistory() {
       <Header />
 
       <div className="relative z-10 container mx-auto px-2 sm:px-8 lg:px-14 py-6">
-        <div className="mb-4">
-          <h2 className="text-sm md:text-xl font-bold text-white mb-2">
+        <div className="mb-3 max-w-4xl mx-left">
+          <h2 className="text-sm md:text-lg font-semibold text-white mb-2">
             {capitalizeFirstLetter(emailHistory?.prompt || '')}
           </h2>
         </div>
@@ -305,6 +305,7 @@ export default function EmailHistory() {
                   </div>
                   <button
                     type="submit"
+                    disabled={!newModification.trim()}
                     className={`w-full py-2 text-gray-200 rounded-lg ${!newModification.trim() ? 'bg-[#2e137a] text-gray-300' : 'bg-[#3b1cab] text-gray-50 cursor-pointer'} flex justify-center items-center gap-1 text-sm sm:text-lg font-normal mt-3 mb-6 sm:mb-0`}
                   >
                     {isGenerating ? (

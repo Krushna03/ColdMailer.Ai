@@ -17,6 +17,7 @@ export function EmailGenerator({ emailGenerated }) {
     const [bottomPrompt, setBottomPrompt] = useState("");
     const [showOutput, setShowOutput] = useState(false);
     const [emailId, setEmailId] = useState("")
+    const [error, setError] = useState(null);
     const [planUsage, setPlanUsage] = useState(null);
     const [usageLoading, setUsageLoading] = useState(false);
     const { toast } = useToast();
@@ -65,6 +66,7 @@ export function EmailGenerator({ emailGenerated }) {
       e.preventDefault();
       setShowOutput(true); 
       setLoading(true);
+      setError(null);
       emailGenerated(true);
 
       if (!token) {
@@ -117,6 +119,8 @@ export function EmailGenerator({ emailGenerated }) {
           err.response?.data?.error ||
           (err instanceof Error ? err.message : "Something went wrong");
 
+        setError(backendMessage);
+
         toast({
           title: "Error Occurred !!",
           description: backendMessage,
@@ -131,6 +135,7 @@ export function EmailGenerator({ emailGenerated }) {
     const updateEmail = async () => {
       if (!bottomPrompt) return;
       setLoading(true);
+      setError(null);
 
       if (!token) {
         logoutUser("No authentication token found.");
@@ -176,6 +181,8 @@ export function EmailGenerator({ emailGenerated }) {
           err.response?.data?.error ||
           (err instanceof Error ? err.message : "Something went wrong");
 
+        setError(backendMessage);
+
         toast({
           title: "Error",
           description: backendMessage,
@@ -210,9 +217,11 @@ export function EmailGenerator({ emailGenerated }) {
               setBottomPrompt={setBottomPrompt}
               onUpdate={updateEmail}
               loading={loading}
+              error={error}
               onBack={() => {
                 setShowOutput(false);
                 setGeneratedEmail("");
+                setError(null);
                 emailGenerated(false);
                 setPrompt("")
               }}

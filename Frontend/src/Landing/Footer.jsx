@@ -15,7 +15,7 @@ export default function Footer() {
               <div className="mr-3">
                 <img src="white-logo.png" alt="logo" className="h-9 w-9 sm:h-11 sm:w-11 p-1 rounded"/>
               </div>
-              <span className="text-2xl font-bold">ColdMailer.Ai</span>
+              <span className="text-2xl font-bold">ColdMailerAI</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               Your trusted partner in AI solutions, creating smarter systems for smarter businesses.
@@ -111,7 +111,7 @@ export default function Footer() {
         </div>
 
       <div className="mt-4 text-gray-400 text-center sm:text-left">
-        @Copyright, All rights reserved. ColdMailer.Ai
+        @Copyright, All rights reserved. ColdMailerAI
       </div>
       </div>
 

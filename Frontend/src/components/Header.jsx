@@ -8,7 +8,7 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger} from "../components/ui/dropdown-menu"
 import { PlanUsageNotice } from "./PlanUsageNotice"
-import { isTokenExpired, useLogout } from "../Helper/tokenValidation"
+import { fetchToken, isTokenExpired, useLogout } from "../Helper/tokenValidation"
 
 export function Header() {
 
@@ -19,13 +19,7 @@ export function Header() {
   const [planUsage, setPlanUsage] = useState(null)
   const [usageLoading, setUsageLoading] = useState(false)
   const user = useSelector(state => state.auth.userData)
-  const storedToken = localStorage.getItem('token')
-  let token = null
-  try {
-    token = storedToken ? JSON.parse(storedToken) : null
-  } catch {
-    token = storedToken
-  }
+  const token = fetchToken()
   const url = import.meta.env.VITE_BASE_URL
   const location = useLocation()
   const textToShow = location.pathname === "/payment" ? "Generate Email" : "Manage Plan"
@@ -113,7 +107,7 @@ export function Header() {
           <div className="p-2 md:px-4 rounded-xl transition-shadow flex items-center gap-2">
             <img src="/white-logo.png" alt="logo" className="h-9 w-9 md:h-11 md:w-11 p-1 rounded" />
             <span className="font-medium text-gray-100 text-xl md:text-2xl">
-              𝐂𝐨𝐥𝐝𝐌𝐚𝐢𝐥𝐞𝐫.𝐀𝐢
+              𝐂𝐨𝐥𝐝𝐌𝐚𝐢𝐥𝐞𝐫𝐀𝐈
             </span>
           </div>
         </NavLink>
@@ -163,7 +157,7 @@ export function Header() {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer hover:bg-white hover:text-black hover:rounded-md">
-                    Logout
+                    {loading ? "Logging out...." : "Logout"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

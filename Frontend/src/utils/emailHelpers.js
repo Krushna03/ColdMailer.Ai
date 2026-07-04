@@ -1,13 +1,37 @@
+import { extractEmailAndContent, sanitizeEmailResponse } from "../lib/ExtractEmail";
+
 // Parse email string to extract subject and body
 export const parseEmail = (emailStr = "") => {
   if (!emailStr || typeof emailStr !== 'string') {
     return { subject: '', body: '' };
   }
 
-  const [subjectLine, ...bodyLines] = emailStr.split('\n');
+  const sanitized = sanitizeEmailResponse(emailStr);
+  const { email } = extractEmailAndContent(sanitized);
+
+  const lines = email.split('\n');
+  let subjectLine = '';
+  let bodyLines = [];
+  
+  if (lines.length > 0) {
+    if (/^Subject:\s*/i.test(lines[0])) {
+      subjectLine = lines[0].replace(/^Subject:\s*/i, '').trim();
+      bodyLines = lines.slice(1);
+    } else {
+      const subjectIndex = lines.findIndex(line => /^Subject:\s*/i.test(line));
+      if (subjectIndex !== -1) {
+        subjectLine = lines[subjectIndex].replace(/^Subject:\s*/i, '').trim();
+        bodyLines = [...lines.slice(0, subjectIndex), ...lines.slice(subjectIndex + 1)];
+      } else {
+        subjectLine = '';
+        bodyLines = lines;
+      }
+    }
+  }
+
   return {
-    subject: subjectLine.replace(/^Subject:\s*/i, '').trim(),
-    body: bodyLines.join('\n').split('Additional suggestions')[0].trim(),
+    subject: subjectLine,
+    body: bodyLines.join('\n').trim(),
   };
 };
 

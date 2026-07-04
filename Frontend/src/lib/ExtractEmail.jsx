@@ -1,15 +1,67 @@
+export const findSignatureEndIndex = (text, signatureMatch) => {
+  const startIndex = signatureMatch.index;
+  const matchStr = signatureMatch[0];
+  const postSignatureText = text.substring(startIndex + matchStr.length);
+  
+  const lines = postSignatureText.split('\n');
+  let accumulatedLength = startIndex + matchStr.length;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmedLine = line.trim();
+    
+    // Check if this line starts a bullet point or suggestions header
+    const isRealBullet = /^[•\*]\s+|^-\s+|^\d+[\.\)]\s+/.test(trimmedLine);
+    const isSuggestionsHeader = /^(Additional Suggestions|Additional Content|Suggestions:|Explanation:|Additional notes:)/i.test(trimmedLine);
+    
+    if (isRealBullet || isSuggestionsHeader) {
+      return accumulatedLength;
+    }
+    
+    accumulatedLength += line.length + 1;
+  }
+  
+  return text.length;
+};
+
+const cleanTrailingSeparators = (text) => {
+  if (!text) return text;
+  return text.replace(/[\s\-*_~=]+$/, '').trim();
+};
+
 export const extractEmailAndContent = (fullText) => {
   // Handle empty or invalid input
   if (!fullText || typeof fullText !== 'string') {
     return { 
-      email: "No valid input provided.", 
+      email: "Something went wrong. Please try again.", 
       content: "Please provide text containing an email and additional content."
     };
   }
 
+  const emailMarkers = ["Subject:", "subject:", "EMAIL:", "email:", "Subject line:", "SUBJECT:"];
+
+  // Look for the "---" separator first
+  const separatorMatch = fullText.match(/\n---\s*\n/);
+  if (separatorMatch && separatorMatch.index !== undefined) {
+    const separatorIndex = separatorMatch.index;
+    
+    let emailStartIndex = -1;
+    for (const marker of emailMarkers) {
+      const index = fullText.indexOf(marker);
+      if (index !== -1 && (emailStartIndex === -1 || index < emailStartIndex)) {
+        emailStartIndex = index;
+      }
+    }
+    
+    const emailStart = emailStartIndex === -1 ? 0 : emailStartIndex;
+    const email = fullText.substring(emailStart, separatorIndex);
+    const content = fullText.substring(separatorIndex + separatorMatch[0].length).trim();
+    
+    return { email: cleanTrailingSeparators(email), content };
+  }
+
   // Define markers that separate email content from additional suggestions
   // Using more reliable markers that align with the system prompt
-  const emailMarkers = ["Subject:", "subject:", "EMAIL:", "email:", "Subject line:", "SUBJECT:"];
   const contentMarkers = [
     "Additional Suggestions", 
     "Additional suggestions", 
@@ -60,20 +112,20 @@ export const extractEmailAndContent = (fullText) => {
         // Assume the last paragraph might be additional content
         const lastParagraphIndex = fullText.lastIndexOf(paragraphs[paragraphs.length - 1]);
         return {
-          email: fullText.substring(0, lastParagraphIndex).trim(),
+          email: cleanTrailingSeparators(fullText.substring(0, lastParagraphIndex)),
           content: paragraphs[paragraphs.length - 1].trim()
         };
       } else {
         // If only one paragraph, just return everything as email
         return { 
-          email: fullText.trim(), 
+          email: cleanTrailingSeparators(fullText), 
           content: "" 
         };
       }
     } else {
       // No clear structure, return everything as email
       return { 
-        email: fullText.trim(), 
+        email: cleanTrailingSeparators(fullText), 
         content: "" 
       };
     }
@@ -82,15 +134,15 @@ export const extractEmailAndContent = (fullText) => {
   // If no content marker is found, try to infer where content might begin
   if (contentStartIndex === -1) {
     // Strategy 1: Look for signature markers which might indicate email end
-    const signaturePatterns = /\n(Regards|Sincerely|Best|Thanks|Thank you|Cheers|Yours),?\s*\n/i;
+    const signaturePatterns = /\n(Best regards|Kind regards|Warm regards|Regards|Sincerely|Best|Thanks|Thank you|Cheers|Yours|With regards|Yours sincerely|Sincerely yours),?\s*\n/i;
     const signatureMatch = fullText.substring(emailStartIndex).match(signaturePatterns);
     
     if (signatureMatch && signatureMatch.index !== undefined) {
-      const signatureEndIndex = emailStartIndex + signatureMatch.index + signatureMatch[0].length;
+      const signatureEndIndex = emailStartIndex + findSignatureEndIndex(fullText.substring(emailStartIndex), signatureMatch);
       // Check if there's still content after the signature
       if (signatureEndIndex < fullText.length - 20) { // Require at least 20 chars of content
         return {
-          email: fullText.substring(emailStartIndex, signatureEndIndex).trim(),
+          email: cleanTrailingSeparators(fullText.substring(emailStartIndex, signatureEndIndex)),
           content: fullText.substring(signatureEndIndex).trim()
         };
       }
@@ -99,18 +151,18 @@ export const extractEmailAndContent = (fullText) => {
     // Strategy 2: If no signature found or insufficient content after signature,
     // return everything as email and show a placeholder for content
     return {
-      email: fullText.substring(emailStartIndex).trim(),
+      email: cleanTrailingSeparators(fullText.substring(emailStartIndex)),
       content: "No additional suggestions found."
     };
   }
   
   // Normal case: both markers found
-  const email = fullText.substring(emailStartIndex, contentStartIndex).trim();
+  const email = fullText.substring(emailStartIndex, contentStartIndex);
   
   // Include the content marker in the content section
   const content = fullText.substring(contentStartIndex).trim();
   
-  return { email, content };
+  return { email: cleanTrailingSeparators(email), content };
 };
 
 // Helper function to check if the extraction worked correctly
@@ -164,43 +216,61 @@ export const sanitizeEmailResponse = (response) => {
     }
   });
   
-  // If no explicit "Additional Suggestions" section exists but the email is followed by other content,
-  // add the marker to make parsing easier
+  // If there's already a "---" separator, we don't need to add any suggestions marker
+  if (sanitized.includes("\n---\n") || sanitized.includes("\n--- \n") || sanitized.includes("\n---")) {
+    const formatBulletPoints = (text) => {
+      const parts = text.split(/\n---\s*\n/);
+      if (parts.length >= 2) {
+        const emailPart = parts[0];
+        let contentPart = parts.slice(1).join('\n---\n');
+        
+        // Clean up redundant headers at the start of suggestions
+        contentPart = contentPart.replace(/^(Additional Suggestions|Additional Content|Suggestions:|Explanation:|Additional notes:)\s*\n*/i, '');
+        
+        // Replace asterisk bullet points with proper bullet points
+        contentPart = contentPart.replace(/^\s*\*\s+/gm, '• ');
+        
+        // Fix bold formatting - change *Title* to **Title**
+        contentPart = contentPart.replace(/\*([^*\n]+)\*/g, '**$1**');
+        
+        return emailPart + "\n\n---\n\n" + contentPart;
+      }
+      return text;
+    };
+    
+    sanitized = formatBulletPoints(sanitized);
+    return sanitized;
+  }
+  
+  const signatureRegex = /\n(Best regards|Kind regards|Warm regards|Regards|Sincerely|Best|Thanks|Thank you|Cheers|Yours|With regards|Yours sincerely|Sincerely yours),?\s*\n.+/is;
+  
   if (!/(Additional Suggestions|Additional Content|Suggestions:|Explanation:|Additional notes:)/i.test(sanitized)) {
     // Check if there's a signature followed by more content
-    const signatureMatch = sanitized.match(/\n(Regards|Sincerely|Best|Thanks|Thank you|Cheers|Yours),?\s*\n.+/is);
+    const signatureMatch = sanitized.match(signatureRegex);
     if (signatureMatch && signatureMatch.index !== undefined) {
-      const signatureEndPos = signatureMatch.index + signatureMatch[0].indexOf('\n', signatureMatch[1].length + 1);
+      const signatureEndPos = findSignatureEndIndex(sanitized, signatureMatch);
       if (signatureEndPos < sanitized.length - 30) { // Ensure there's substantial content after
         const beforeContent = sanitized.substring(0, signatureEndPos);
         const afterContent = sanitized.substring(signatureEndPos);
-        sanitized = beforeContent + "\n\nAdditional Suggestions:\n" + afterContent;
+        sanitized = beforeContent + "\n\n---\n\n" + afterContent;
       }
     }
+  } else {
+    // Format bullet points when a header is present
+    const formatBulletPoints = (text) => {
+      const sections = text.split(/(Additional Suggestions|Additional Content|Suggestions:|Explanation:|Additional notes:)/i);
+      
+      if (sections.length >= 3) {
+        const emailPart = sections[0];
+        let contentPart = sections.slice(2).join('');
+        contentPart = contentPart.replace(/^\s*\*\s+/gm, '• ');
+        contentPart = contentPart.replace(/\*([^*\n]+)\*/g, '**$1**');
+        return emailPart.trim() + "\n\n---\n\n" + contentPart.trim();
+      }
+      return text;
+    };
+    sanitized = formatBulletPoints(sanitized);
   }
-  
-  // Convert asterisk bullets to proper bullet points in the additional suggestions section
-  const formatBulletPoints = (text) => {
-    // Split the text to separate email from additional content
-    const sections = text.split(/(Additional Suggestions|Additional Content|Suggestions:|Explanation:|Additional notes:)/i);
-    
-    if (sections.length >= 3) {  // We have a marker and content after it
-      const emailPart = sections[0] + sections[1];  // Keep email + marker unchanged
-      let contentPart = sections.slice(2).join('');  // Get all content after marker
-      
-      // Replace asterisk bullet points with proper bullet points
-      contentPart = contentPart.replace(/^\s*\*\s+/gm, '• ');
-      
-      // Fix bold formatting - change *Title* to **Title**
-      contentPart = contentPart.replace(/\*([^*\n]+)\*/g, '**$1**');
-      
-      return emailPart + contentPart;
-    }
-    
-    return text;  // Return unchanged if no sections found
-  };
-  
-  sanitized = formatBulletPoints(sanitized);
   
   return sanitized;
 };

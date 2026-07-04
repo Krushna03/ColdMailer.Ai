@@ -4,8 +4,18 @@ import { logout } from "../context/authSlice";
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
 
+export const fetchToken = () => {
+  const storedToken = localStorage.getItem('token');
+  let token = null
+  try {
+    token = storedToken ? JSON.parse(storedToken) : null
+  } catch {
+    token = storedToken
+  }
+  return token;
+}
 
-export const isTokenExpired = (token) => {
+export const isTokenExpired = (token = fetchToken()) => {
   if (!token) return true;
   
   try {

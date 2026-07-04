@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { NavLink } from "react-router-dom"
+import { NavLink, Navigate } from "react-router-dom"
 import { Link as ScrollLink, Element } from "react-scroll"
 import Faq from './Faq';
 import Contact from './Contact';
@@ -12,12 +12,20 @@ import axios from 'axios';
 import PricingSection from './Pricing';
 import MarqueeTestimonials from "../components/MarqueeTestimonials"
 import { navigationLinks, features } from "../data/landingData"
+import { fetchToken, isTokenExpired } from '../Helper/tokenValidation';
 
 const LandingPage = () => {
 
   const [userCount, setuserCount] = useState()
   const [showMidHeader, setShowMidHeader] = useState(false)
   const url = import.meta.env.VITE_BASE_URL
+
+  const tokenFetched = fetchToken()
+  const token = isTokenExpired(tokenFetched);
+
+  if (!token) {
+    return <Navigate to="/generate-email" replace />
+  }
 
   useEffect(() => {
     const fetchUserCount = async () => {
@@ -98,7 +106,7 @@ const LandingPage = () => {
         <div className="flex items-center cursor-pointer">
           <img src="/white-logo.png" alt="logo" className="h-9 w-9 md:h-11 md:w-11 p-1 rounded" />
               <span className="font-medium text-gray-100 text-xl md:text-2xl">
-                𝐂𝐨𝐥𝐝𝐌𝐚𝐢𝐥𝐞𝐫.𝐀𝐢
+                𝐂𝐨𝐥𝐝𝐌𝐚𝐢𝐥𝐞𝐫𝐀𝐈
               </span>
           </div>
 
@@ -143,7 +151,7 @@ const LandingPage = () => {
         <main className="relative z-10 flex flex-col items-center justify-center px-6 text-center mt-16 md:mt-24">
           <div className="inline-flex items-center bg-[#1a1133] shadow-2xl rounded-full px-4 py-2 mb-6 gap-1">
             <img src="/white-logo.png" alt="logo" className="h-6 w-6 md:h-7 md:w-7 p-1 rounded" />
-            <span className="text-xs md:text-sm">ColdMailer.Ai - AI Powered Email Generator</span>
+            <span className="text-xs md:text-sm">ColdMailerAI - AI Powered Email Generator</span>
           </div>
 
           <h1 className="text-2xl md:text-6xl lg:text-7xl font-bold max-w-6xl leading-tight mb-6">
@@ -156,10 +164,10 @@ const LandingPage = () => {
 
           <div className="flex gap-4 mb-20 md:mb-24">
             <NavLink
-              to="/sign-in"
+              to={!token ? "/generate-email" : "/sign-in"}
               className="bg-[#3f1cbc] hover:bg-[#2c1679] text-white px-5 md:px-8 py-3 rounded-lg transition-colors font-medium"
             >
-              Get started
+              {!token ? "Create New Email" : "Get started"}
             </NavLink>
             <NavLink
               to="/sign-up"
@@ -209,7 +217,7 @@ const LandingPage = () => {
             <span className="text-sm sm:text-base font-normal text-gray-200">Features</span>
           </div>
 
-          <h2 className="text-2xl md:text-5xl text-center text-white font-bold mb-4">Why ColdMailer.AI ?</h2>
+          <h2 className="text-2xl md:text-5xl text-center text-white font-bold mb-4">Why ColdMailerAI ?</h2>
           <p className="text-lg text-gray-300 px-2 md:px-0 max-w-2xl text-center mx-auto mb-8 md:mb-12">
             Discover the key benefits of our AI-powered cold email platform.
           </p>

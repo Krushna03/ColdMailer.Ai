@@ -29,7 +29,7 @@ const MarqueeTestimonials = () => {
 
         <h2 className="text-2xl md:text-5xl text-center text-white font-bold mb-4">What our users say !!</h2>
         <p className="text-lg text-gray-300 px-2 md:px-0 max-w-2xl text-center mx-auto mb-8 md:mb-12">
-          Hear from users who are transforming their outreach with ColdMailer.AI
+          Hear from users who are transforming their outreach with ColdMailerAI
         </p>
 
         <div className="flex gap-6 justify-center items-start">

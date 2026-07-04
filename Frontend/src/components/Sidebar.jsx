@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GoSidebarCollapse } from "react-icons/go";
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -19,7 +19,6 @@ export default function Sidebar() {
   const [sidebarActive, setSidebarActive] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [emailDeleted, setEmailDeleted] = useState(false);
   const [emailHistory, setEmailHistory] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -28,11 +27,12 @@ export default function Sidebar() {
   const token = getToken();
   const userData = getUserData();
   const userID = userData?.userData?._id || null;
-  const { updateSidebar } = useSidebarContext();
+  const { updateSidebar, setUpdateSidebar } = useSidebarContext();
   const logoutUser = useLogout();
 
   const sidebarRef = useRef(null);
   const sidebarScrollRef = useRef(null);
+  const isFirstRender = useRef(true);
 
   const handleMouseEnter = () => {
     setSidebarActive(true);
@@ -47,8 +47,8 @@ export default function Sidebar() {
     }
   };
 
-  const fetchUserEmailHistory = async (currentPage) => {
-    if (!userID || loading || !hasMore) return;
+  const fetchUserEmailHistory = async (currentPage, force = false) => {
+    if (!userID || loading || (!hasMore && !force)) return;
 
     if (!token) {
       logoutUser("No authentication token found.");
@@ -72,15 +72,12 @@ export default function Sidebar() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      },
-    );
+      });
 
       if (res.status === 200) {
         const newEmails = res.data.emails;
 
-        if (newEmails?.length === 0) {
-          setHasMore(false);
-        }
+        setHasMore(res.data.hasMore ?? false);
 
         setEmailHistory((prev) =>
           currentPage === 0 ? newEmails : [...prev, ...newEmails]
@@ -103,11 +100,24 @@ export default function Sidebar() {
     }
   };
 
+  // Sync updateSidebar changes by resetting pagination state and reloading page 0
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setHasMore(true);
+    if (page === 0) {
+      fetchUserEmailHistory(0, true);
+    } else {
+      setPage(0);
+    }
+  }, [updateSidebar]);
 
+  // Main fetch loop triggered by page or userID updates
   useEffect(() => {
     fetchUserEmailHistory(page);
-  }, [userID, page, emailDeleted, updateSidebar]);
-
+  }, [userID, page]);
 
   const handleEmailDelete = async (emailId) => {
     if (!token) {
@@ -131,10 +141,7 @@ export default function Sidebar() {
       });
 
       if (res.status === 200) {
-        setEmailDeleted(true);
-        setEmailHistory([]);
-        setPage(0);
-        setHasMore(true);
+        setUpdateSidebar((prev) => !prev);
       }
     } catch (error) {
       const message =

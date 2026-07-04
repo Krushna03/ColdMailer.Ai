@@ -70,20 +70,24 @@ const getUserEmailHistory = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
 
   if (!validateUserAuth(req.user, res)) return;
-  const pagination = validatePagination(limit, page, res);
-  if (!pagination) return;
-  const { pageInt, limitInt } = pagination;
 
-  const { emails } = await getUserEmailHistoryService({
+  const pagination = validatePagination(limit, page, res);
+
+  if (!pagination) return;
+
+  const { page: validatedPage, limit: validatedLimit } = pagination;
+
+  const { emails, hasMore } = await getUserEmailHistoryService({
     userId,
-    limit: limitInt,
-    page: pageInt
+    limit: validatedLimit,
+    page: validatedPage
   });
 
   if (!emails || emails.length === 0) {
     return res.status(200).json({
       success: true,
       emails: [],
+      hasMore: false,
       message: "No emails found"
     });
   }
@@ -91,6 +95,7 @@ const getUserEmailHistory = asyncHandler(async (req, res) => {
   return res.status(200).json({
     success: true,
     emails,
+    hasMore,
     message: "Emails fetched successfully"
   });
 });
@@ -100,16 +105,14 @@ const getUserEmailHistory = asyncHandler(async (req, res) => {
  * POST /api/v1/email/update-history
  */
 const updateEmailHistory = asyncHandler(async (req, res) => {
-  const { emailId, modification, baseprompt, prevchats } = req.body;
+  const { emailId, modification } = req.body;
 
   if (!validateUserAuth(req.user, res)) return;
-  if (!validateEmailHistoryUpdate({ emailId, modification, baseprompt }, res)) return;
+  if (!validateEmailHistoryUpdate({ emailId, modification }, res)) return;
 
   const updatedEmail = await updateEmailHistoryService({
     emailId,
     modification,
-    baseprompt,
-    prevchats,
     user: req.user
   });
 

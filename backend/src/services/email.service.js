@@ -1,16 +1,8 @@
 import { Email } from "../model/Email.model.js";
 import { ApiError } from "../utils/ApiError.js";
-import {
-  buildPlanUsageSummary,
-  getPlanConfigForUser,
-  getMonthlyEmailUsage
-} from "../utils/planLimits.js";
+import { buildPlanUsageSummary, getPlanConfigForUser, getMonthlyEmailUsage } from "../utils/planLimits.js";
 import { generateAIContent, generateAIContentWithRole } from "./ai.service.js";
-import {
-  EMAIL_GENERATION_PROMPT,
-  EMAIL_UPDATE_PROMPT,
-  EMAIL_HISTORY_UPDATE_PROMPT
-} from "../constants/email.prompts.js";
+import { EMAIL_GENERATION_PROMPT, EMAIL_UPDATE_PROMPT, EMAIL_HISTORY_UPDATE_PROMPT } from "../constants/email.prompts.js";
 
 
 const checkMonthlyLimit = async (user, now) => {
@@ -126,8 +118,6 @@ export const updateEmailService = async ({ emailId, baseEmail, modifications, us
 export const updateEmailHistoryService = async ({
   emailId,
   modification,
-  baseprompt,
-  prevchats,
   user
 }) => {
 
@@ -142,19 +132,29 @@ export const updateEmailHistoryService = async ({
 
   checkRegenerationLimit(user, emailRecord);
 
-  const normalizedPrevChats = Array.isArray(prevchats) ? prevchats : [];
-  let formattedPrevChats = '';
-  for (let i = 0; i < normalizedPrevChats.length; i++) {
-    formattedPrevChats += `\n• ${normalizedPrevChats[i]}`;
+  // Build full context from the DB record
+  const chatHistory = emailRecord.chatEmails || [];
+
+  // Get the latest email version (last iteration or original)
+  const latestEmail = chatHistory.length > 0
+    ? chatHistory[chatHistory.length - 1].generatedEmail
+    : emailRecord.generatedEmail;
+
+  // Build iteration history from last 5 iterations (modification requests only)
+  const recentIterations = chatHistory.slice(-5);
+  let iterationContext = '';
+  for (let i = 0; i < recentIterations.length; i++) {
+    iterationContext += `\n- Modification ${i + 1}: ${recentIterations[i].prompt}`;
   }
 
   const systemPrompt = EMAIL_HISTORY_UPDATE_PROMPT(
-    baseprompt,
-    modification,
-    formattedPrevChats
+    emailRecord.prompt,
+    emailRecord.generatedEmail,
+    latestEmail,
+    iterationContext,
+    modification
   );
-  const fullPrompt = systemPrompt + baseprompt;
-  const aiResponse = await generateAIContent(fullPrompt);
+  const aiResponse = await generateAIContent(systemPrompt);
 
   if (!aiResponse.success) {
     throw new ApiError(aiResponse.statusCode, aiResponse.error);
