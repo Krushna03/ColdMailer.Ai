@@ -1,24 +1,6 @@
 import UserModel from "../model/User.models.js";
-
-
-const generateAccessAndRefreshTokens = async (userID) => {
-  try {
-    const user = await UserModel.findById(userID)
-
-    const accessToken = await user.generateAccessToken()
-    const refreshToken = await user.generateRefreshToken()
-
-    user.refreshToken = refreshToken
-    await user.save({ validateBeforeSave: false })
-
-    return { accessToken, refreshToken }
-
-  } catch (error) {
-    console.error("Token generation error:", error);
-    throw new Error("Something went wrong while generating tokens.");
-  }
-}
-
+import { generateAccessAndRefreshTokens } from "../utils/token.js";
+import { getCookieOptions } from "../utils/cookie.js";
 
 
 const register = async (req, res) => {
@@ -52,11 +34,7 @@ const register = async (req, res) => {
 
   const { accessToken } = await generateAccessAndRefreshTokens(user?._id)
 
-  const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: 'lax',
-  }
+  const options = getCookieOptions()
 
   return res.status(201)
     .cookie('accessToken', accessToken, options)
@@ -80,7 +58,7 @@ const login = async (req, res) => {
   const { email, password } = req.body
 
   if (!email || !password) {
-    return res.status(500).json(
+    return res.status(400).json(
       {
         success: false,
         message: "username or email is required !",
@@ -91,7 +69,7 @@ const login = async (req, res) => {
   const user = await UserModel.findOne({ email })
 
   if (!user) {
-    return res.status(500).json(
+    return res.status(404).json(
       {
         success: false,
         message: "User does not exist. Please enter correct email !",
@@ -102,7 +80,7 @@ const login = async (req, res) => {
   const isPaswordValidate = await user.isPasswordCorrect(password)
 
   if (!isPaswordValidate) {
-    return res.status(500).json(
+    return res.status(401).json(
       {
         success: false,
         message: "Password does not matched, Please enter correct password !",
@@ -114,11 +92,7 @@ const login = async (req, res) => {
 
   const loggedInUser = await UserModel.findById(user._id).select("-password -refreshToken")
 
-  const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: 'lax',
-  }
+  const options = getCookieOptions()
 
   return res.status(200)
     .cookie('accessToken', accessToken, options)
@@ -127,7 +101,7 @@ const login = async (req, res) => {
         user: loggedInUser,
         accessToken
       },
-      "User logged In successFully"
+      "User logged In successfully"
     )
 }
 
@@ -159,17 +133,13 @@ const logoutUser = async (req, res) => {
     }
   )
 
-  const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: 'lax',
-  }
+  const options = getCookieOptions()
 
   return res.status(200)
     .clearCookie("accessToken", options)
     .json({
       success: false,
-      message: "User Logged used successfully"
+      message: "User logged out successfully"
     })
 }
 

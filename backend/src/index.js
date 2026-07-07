@@ -9,11 +9,8 @@ app.get('/', (req, res) => {
   res.send('Hello');
 });
 
-let isConnected = false
-
 connectDB()
   .then(() => {
-    isConnected = true
     app.listen(process.env.PORT, () => {
       console.log(`Server is running at Port : http://localhost:${process.env.PORT}`);
     });

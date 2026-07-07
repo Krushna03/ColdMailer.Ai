@@ -1,30 +1,8 @@
 import UserModel from '../model/User.models.js';
 import bcrypt from "bcryptjs"
 import { client } from '../index.js';
-
-
-const generateAccessAndRefreshTokens = async (userID) => {
-  try {
-    const user = await UserModel.findById(userID)
-
-    const accessToken = await user.generateAccessToken()
-    const refreshToken = await user.generateRefreshToken()
-
-    user.refreshToken = refreshToken
-    await user.save({ validateBeforeSave: false}) 
-
-    return {accessToken, refreshToken}
-
-  } catch (error) {
-    return res.status(500).json(
-      {
-        success: false,
-        message: 'Error while generating access & refresh token, please try again.',
-      }
-    );
-  }
-}
-
+import { generateAccessAndRefreshTokens } from '../utils/token.js';
+import { getCookieOptions } from '../utils/cookie.js';
 
 
 const verifyGoogleToken = async (req, res) => {
@@ -33,7 +11,7 @@ const verifyGoogleToken = async (req, res) => {
 
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: '296248819606-0bule3v4ta7cqqbvmdcen5a70ammpepv.apps.googleusercontent.com'
+      audience: process.env.GOOGLE_CLIENT_ID
     });
     
     const payload = ticket.getPayload();
@@ -53,11 +31,7 @@ const verifyGoogleToken = async (req, res) => {
     
     const {accessToken} = await generateAccessAndRefreshTokens(user?._id)
 
-    const options = {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-    }
+    const options = getCookieOptions()
 
     return res.status(200)
           .cookie('accessToken', accessToken, options)

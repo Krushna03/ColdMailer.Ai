@@ -59,7 +59,7 @@ export default function LoginPage() {
       } else {
         console.error("Unexpected Error:", error);
         toast({
-          title: "Erro Occurred !!",
+          title: "Error Occurred !!",
           description: "An unexpected error occurred. Please try again later.",
           variant: "destructive",
         });

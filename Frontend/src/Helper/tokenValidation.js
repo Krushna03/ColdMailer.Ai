@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { logout } from "../context/authSlice";
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
+import axios from "axios";
 
 export const fetchToken = () => {
   const storedToken = localStorage.getItem('token');
@@ -33,7 +34,15 @@ export const useLogout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  return useCallback((message = "Session expired. Please log in again.") => {
+  return useCallback(async (message = "Session expired. Please log in again.") => {
+    const url = import.meta.env.VITE_BASE_URL;
+
+    try {
+      await axios.post(`${url}/api/v1/user/logout`, {}, { withCredentials: true });
+    } catch (error) {
+      console.error('Error invalidating session on logout:', error);
+    }
+
     localStorage.removeItem('token');
     dispatch(logout());
     navigate('/sign-in');

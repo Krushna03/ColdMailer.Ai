@@ -26,7 +26,7 @@ export default function RegisterPage() {
 
       if (res.status === 200) { 
         toast({
-          title: "Registeration Successfull !",
+          title: "Registration Successful !",
           description: "User Registered successfully!",
         });
         

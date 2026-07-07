@@ -17,8 +17,8 @@ const sendEmailNotification = async (formData) => {
         
         const mailOptions = {
           from: process.env.EMAIL_USER,
-          to: formData.email && process.env.EMAIL_USER,
-          subject: 'Thanks for Contacting | I will coonect you soon.',
+          to: formData.email,
+          subject: 'Thanks for Contacting | I will connect with you soon.',
           html: contactEmailTemplate(formData)
         }
   

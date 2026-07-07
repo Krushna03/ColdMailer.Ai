@@ -37,10 +37,8 @@ export const GenerateEmail = () => {
     try {
       const response = await axios.get(`${url}/api/v1/user/getCurrentUser`,
         {
-          headers: {Authorization: `Bearer ${token}`}
-        },
-        {
-        withCredentials: true
+          headers: {Authorization: `Bearer ${token}`},
+          withCredentials: true
         }
       )
       
