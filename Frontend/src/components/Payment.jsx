@@ -46,6 +46,14 @@ const PaymentComponent = () => {
   const syncUserPlanWithHistory = useCallback((historySnapshot) => {
     if (!historySnapshot || !user) return;
 
+    const hasPlanChanged =
+      user.isPaidUser !== historySnapshot.isPaidUser ||
+      user.planName !== historySnapshot.currentPlan ||
+      user.planActivatedAt !== historySnapshot.planActivatedAt ||
+      user.planExpiresAt !== historySnapshot.planExpiresAt;
+
+    if (!hasPlanChanged) return;
+
     const updatedUserSnapshot = {
       ...user,
       isPaidUser: historySnapshot.isPaidUser,
@@ -104,7 +112,7 @@ const PaymentComponent = () => {
     if (user && token && !paymentHistory) {
       loadPaymentHistory(false);
     }
-  }, [user, token, paymentHistory]);
+  }, [user, token, paymentHistory, loadPaymentHistory]);
 
   const handleHistoryModal = () => {
     if (paymentHistory) {

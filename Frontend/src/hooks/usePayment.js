@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useToast } from '@/hooks/use-toast'; 
 import { useDispatch } from 'react-redux';
 import { login } from '@/context/authSlice';
+import { getToken } from '../utils';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
   
@@ -11,6 +12,17 @@ const api = axios.create({
   withCredentials: true,
   timeout: 30000,
 });
+
+api.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 api.interceptors.response.use(
   (response) => response,

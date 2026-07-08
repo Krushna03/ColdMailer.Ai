@@ -14,6 +14,7 @@ export function EmailOutput({
   setBottomPrompt,
   onUpdate,
   loading,
+  updating,
   onBack,
   planUsage,
   error
@@ -149,22 +150,28 @@ export function EmailOutput({
           <div className="absolute sm:bottom-0 w-full">
             <Textarea
               placeholder="Add any specific requirements or modifications..."
-              className="bg-[#14151b] w-full py-2 px-3 text-white min-h-16 placeholder:text-sm md:text-base border border-gray-400 rounded-xl sm:placeholder:text-base placeholder:font-medium placeholder:text-gray-500 focus:outline-blue-800 resize-none custom-scroll"
+              className="bg-[#14151b] w-full py-2 px-3 text-white min-h-16 placeholder:text-sm md:text-base border border-gray-400 rounded-xl sm:placeholder:text-base placeholder:font-medium placeholder:text-gray-500 focus:outline-blue-800 resize-none custom-scroll disabled:opacity-60 disabled:cursor-not-allowed"
               value={bottomPrompt}
               onChange={(e) => {
                 setBottomPrompt(e.target.value);
                 e.target.style.height = "auto";
                 e.target.style.height = `${e.target.scrollHeight}px`;
               }}
-              disabled={!!error}
+              disabled={!!error || updating || loading}
             />
 
             <button
-              className={`w-full py-1 text-gray-200 rounded-lg ${(!bottomPrompt.trim() || error) ? 'bg-[#2e137a] text-gray-300' : 'bg-[#3b1cab] text-gray-50'} text-sm sm:text-lg font-normal mt-3 mb-6 sm:mb-0`}
+              className={`w-full py-1 text-gray-200 rounded-lg ${(!bottomPrompt.trim() || error || updating) ? 'bg-[#2e137a] text-gray-300 cursor-not-allowed' : 'bg-[#3b1cab] text-gray-50'} text-sm sm:text-lg font-normal mt-3 mb-6 sm:mb-0 flex items-center justify-center gap-2`}
               onClick={onUpdate}
-              disabled={!bottomPrompt.trim() || !!error}
+              disabled={!bottomPrompt.trim() || !!error || updating || loading}
             >
-              Update Email
+              {updating ? (
+                <>
+                  Updating...
+                </>
+              ) : (
+                "Update Email"
+              )}
             </button>
             {planUsage && (
               <p className="text-center text-xs text-gray-400 mb-6 sm:mb-0 sm:mt-1">

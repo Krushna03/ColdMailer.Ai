@@ -86,6 +86,7 @@ export default function EmailOutputPage() {
 
   const generateNewEmailIteration = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
+    if (isGenerating) return;
     if (!newModification.trim()) return;
 
     if (!token) {
@@ -198,6 +199,7 @@ export default function EmailOutputPage() {
               setBottomPrompt={setNewModification}
               onUpdate={generateNewEmailIteration}
               loading={isGenerating}
+              updating={isGenerating}
               error={error}
               onBack={() => navigate("/generate-email")}
             />

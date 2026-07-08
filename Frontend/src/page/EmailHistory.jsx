@@ -114,6 +114,7 @@ export default function EmailHistory() {
   
   const generateNewEmailIteration = async (e) => {
     e.preventDefault();
+    if (isGenerating) return;
     if (!newModification.trim()) return;
   
     if (!token) {
@@ -379,13 +380,14 @@ export default function EmailHistory() {
                           placeholder="Generate more cold mail..."
                           value={newModification}
                           onChange={(e) => setNewModification(e.target.value)}
-                          className="min-h-[15px] lg:min-h-[130px] resize-none sm:placeholder:text-base border border-gray-400 rounded-xl placeholder:text-sm placeholder:font-medium placeholder:text-gray-500 focus:outline-none focus:ring-0 focus:border-none custom-scroll text-slate-950"
+                          disabled={isGenerating}
+                          className="min-h-[15px] lg:min-h-[130px] resize-none sm:placeholder:text-base border border-gray-400 rounded-xl placeholder:text-sm placeholder:font-medium placeholder:text-gray-500 focus:outline-none focus:ring-0 focus:border-none custom-scroll text-slate-950 disabled:opacity-60 disabled:cursor-not-allowed"
                         />
                       </div>
                       <button
                         type="submit"
-                        disabled={!newModification.trim()}
-                        className={`w-full py-2 text-gray-200 rounded-lg ${!newModification.trim() ? 'bg-[#2e137a] text-gray-300' : 'bg-[#3b1cab] text-gray-50 cursor-pointer'} flex justify-center items-center gap-1 text-sm sm:text-lg font-normal mt-3 mb-6 sm:mb-0`}
+                        disabled={!newModification.trim() || isGenerating}
+                        className={`w-full py-2 text-gray-200 rounded-lg ${(!newModification.trim() || isGenerating) ? 'bg-[#2e137a] text-gray-300 cursor-not-allowed' : 'bg-[#3b1cab] text-gray-50 cursor-pointer'} flex justify-center items-center gap-1 text-sm sm:text-lg font-normal mt-3 mb-6 sm:mb-0`}
                       >
                         {isGenerating ? (
                           <>

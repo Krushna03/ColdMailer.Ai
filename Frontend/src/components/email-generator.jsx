@@ -15,12 +15,12 @@ export function EmailGenerator({ emailGenerated }) {
     const [prompt, setPrompt] = useState("");
     const [generatedEmail, setGeneratedEmail] = useState("");
     const [loading, setLoading] = useState(false);
+    const [updating, setUpdating] = useState(false);
     const [bottomPrompt, setBottomPrompt] = useState("");
     const [showOutput, setShowOutput] = useState(false);
     const [emailId, setEmailId] = useState("")
     const [error, setError] = useState(null);
     const [planUsage, setPlanUsage] = useState(null);
-    const [usageLoading, setUsageLoading] = useState(false);
     const { toast } = useToast();
     const { updateSidebar, setUpdateSidebar } = useSidebarContext()
     const navigate = useNavigate();
@@ -37,7 +37,6 @@ export function EmailGenerator({ emailGenerated }) {
         return;
       }
 
-      setUsageLoading(true);
       try {
         const response = await axios.get(`${url}/api/v1/email/usage`, {
           withCredentials: true,
@@ -55,8 +54,6 @@ export function EmailGenerator({ emailGenerated }) {
         } else {
           console.error('Failed to fetch plan usage', err);
         }
-      } finally {
-        setUsageLoading(false);
       }
     }, [token, logoutUser]);
 
@@ -153,19 +150,23 @@ export function EmailGenerator({ emailGenerated }) {
 
 
     const updateEmail = async () => {
+      if (updating) return;
       if (!bottomPrompt) return;
       setLoading(true);
+      setUpdating(true);
       setError(null);
 
       if (!token) {
         logoutUser("No authentication token found.");
         setLoading(false);
+        setUpdating(false);
         return;
       }
 
       if (isTokenExpired(token)) {
         logoutUser("Session expired. Please log in again.");
         setLoading(false);
+        setUpdating(false);
         return;
       }
 
@@ -211,6 +212,7 @@ export function EmailGenerator({ emailGenerated }) {
       } finally {
         setBottomPrompt("");
         setLoading(false);
+        setUpdating(false);
       }
     };
 
@@ -237,6 +239,7 @@ export function EmailGenerator({ emailGenerated }) {
               setBottomPrompt={setBottomPrompt}
               onUpdate={updateEmail}
               loading={loading}
+              updating={updating}
               error={error}
               onBack={() => {
                 setShowOutput(false);
