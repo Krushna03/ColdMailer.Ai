@@ -1,8 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const storedUserData = JSON.parse(localStorage.getItem("data")) || null;
+
 const initialState = {
-  status: false,
-  userData: JSON.parse(localStorage.getItem("data")) || null,
+  status: Boolean(storedUserData),
+  userData: storedUserData,
 }
 
 
@@ -11,7 +13,7 @@ const authSlice = createSlice({
     initialState,
     reducers: {
       login: (state, action) => {
-        const { role, ...userData } = action.payload;
+        const userData = action.payload;
         state.status = true;
         state.userData = userData;
         localStorage.setItem("data", JSON.stringify(userData))

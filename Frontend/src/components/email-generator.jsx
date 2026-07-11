@@ -27,7 +27,7 @@ export function EmailGenerator({ emailGenerated }) {
     const token = getToken();
     const logoutUser = useLogout();
     const user = useSelector(state => state.auth.userData)
-    const userId = user?.userData?._id
+    const userId = user?._id
 
     const fetchPlanUsage = useCallback(async () => {
       if (!token) return;

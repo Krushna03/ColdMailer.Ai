@@ -23,7 +23,7 @@ export function EmailOutput({
   const [copied, setCopied] = useState(false);
   const [readMorePrompt, setReadMorePrompt] = useState(false);
   const user = useSelector(state => state.auth.userData);
-  const userInitial = getUserInitial(user?.userData?.username);
+  const userInitial = getUserInitial(user?.username);
   
   const handleCopyToClipboard = useCopyToClipboard(setCopied);
   
@@ -37,10 +37,10 @@ export function EmailOutput({
 
   const handleGmailCompose = () => {
     openGmailCompose({
-      to: user?.userData?.email || "",
+      to: user?.email || "",
       subject,
       body,
-      userEmail: user?.userData?.email,
+      userEmail: user?.email,
     });
   };  
 

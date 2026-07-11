@@ -42,7 +42,7 @@ const PaymentComponent = () => {
   const token = getToken();
   const userData = useSelector(state => state.auth.userData);
   const storedUserData = useMemo(() => getUserData(), []);
-  const user = userData?.userData || userData || storedUserData?.userData || storedUserData || null;
+  const user = userData || storedUserData || null;
   const syncUserPlanWithHistory = useCallback((historySnapshot) => {
     if (!historySnapshot || !user) return;
 
@@ -62,7 +62,7 @@ const PaymentComponent = () => {
       planExpiresAt: historySnapshot.planExpiresAt
     };
 
-    dispatch(login({ userData: updatedUserSnapshot }));
+    dispatch(login(updatedUserSnapshot));
   }, [dispatch, user]);
   const logoutUser = useLogout();
   const { toast } = useToast();

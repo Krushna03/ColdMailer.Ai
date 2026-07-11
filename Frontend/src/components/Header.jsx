@@ -135,13 +135,13 @@ export function Header() {
                   <DropdownMenuGroup>
                     <DropdownMenuItem>
                       Name
-                      <DropdownMenuShortcut>{user?.userData?.username}</DropdownMenuShortcut>
+                      <DropdownMenuShortcut>{user?.username}</DropdownMenuShortcut>
                     </DropdownMenuItem>
 
                     <DropdownMenuItem className="gap-2">
                       Email
                       <DropdownMenuShortcut>
-                        {user?.userData?.email}
+                        {user?.email}
                       </DropdownMenuShortcut>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>

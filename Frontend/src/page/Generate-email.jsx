@@ -43,9 +43,7 @@ export const GenerateEmail = () => {
       )
       
     if (response && response.data) {
-        dispatch(login({ 
-            userData: response.data?.data,
-        }))
+        dispatch(login(response.data?.data))
       }
     } catch (error) {
       console.error("Error while validating token:", error);

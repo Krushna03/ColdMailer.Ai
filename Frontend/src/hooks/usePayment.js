@@ -197,7 +197,7 @@ export const usePayment = () => {
 
             const verificationResult = await verifyPayment(verificationData);
             if (verificationResult?.user) {
-              dispatch(login({ userData: verificationResult.user }));
+              dispatch(login(verificationResult.user));
             }
             setLoading(false);
             return verificationResult;

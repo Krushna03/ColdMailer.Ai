@@ -26,7 +26,7 @@ export default function Sidebar() {
 
   const token = getToken();
   const userData = getUserData();
-  const userID = userData?.userData?._id || null;
+  const userID = userData?._id || null;
   const { updateSidebar, setUpdateSidebar } = useSidebarContext();
   const logoutUser = useLogout();
 

@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast"
 import { NavLink, useNavigate } from "react-router-dom"
 import { Toaster } from "../components/ui/toaster"
 import Googlelogin from "./Google-Login"
+import { useDispatch } from "react-redux"
+import { login } from "../context/authSlice"
 
 export default function RegisterPage() {
   
@@ -17,6 +19,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const url = import.meta.env.VITE_BASE_URL
 
   const onSubmit = async (data) => {
@@ -24,7 +27,7 @@ export default function RegisterPage() {
     try {
       const res = await axios.post(`${url}/api/v1/user/register`, data, { withCredentials: true })
 
-      if (res.status === 200) { 
+      if (res.status === 201) { 
         toast({
           title: "Registration Successful !",
           description: "User Registered successfully!",
@@ -43,7 +46,8 @@ export default function RegisterPage() {
         return;
       }
 
-      localStorage.setItem('token', JSON.stringify(res.data?.data.accessToken))
+      dispatch(login(res.data?.data?.user))
+      localStorage.setItem('token', JSON.stringify(res.data?.data?.accessToken))
       reset()
 
     } catch (error) {

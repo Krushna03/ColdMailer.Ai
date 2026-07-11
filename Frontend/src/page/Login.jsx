@@ -9,6 +9,8 @@ import { NavLink, useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "../components/ui/toaster"
 import Googlelogin from "./Google-Login"
+import { useDispatch } from "react-redux"
+import { login } from "../context/authSlice"
 
 export default function LoginPage() {
 
@@ -17,6 +19,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const url = import.meta.env.VITE_BASE_URL
 
   const submit = async (data) => {
@@ -34,15 +37,9 @@ export default function LoginPage() {
           navigate("/generate-email")
         }, 1300)
       }
-      if (res.status === 500) { 
-        toast({
-          title: "Error !!",
-          description: res.data.message,
-        });
-        return;
-      }
 
-      localStorage.setItem('token', JSON.stringify(res.data?.accessToken))
+      dispatch(login(res.data?.data?.user))
+      localStorage.setItem('token', JSON.stringify(res.data?.data?.accessToken))
       reset()
 
     } catch (error) {

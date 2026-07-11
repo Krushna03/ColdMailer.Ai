@@ -37,7 +37,7 @@ export default function EmailHistory() {
   
   const handleClipboardCopy = useCopyToClipboard(setCopiedId)
   const user = useSelector((state) => state.auth.userData)
-  const userEmail = user?.userData?.email || ""
+  const userEmail = user?.email || ""
 
   const handleGmailCompose = (subject, body) => {
     openGmailCompose({ to: userEmail, subject, body, userEmail })
