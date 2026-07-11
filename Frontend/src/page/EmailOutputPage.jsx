@@ -1,18 +1,15 @@
 import { useEffect, useState, useMemo } from "react"
 import { useParams, useNavigate, useLocation } from "react-router-dom"
-import axios from "axios"
 import { useToast } from "@/hooks/use-toast"
 import { Header } from "../components/Header"
 import Sidebar from "../components/Sidebar"
 import { EmailOutput } from "../components/email-output"
 import { Button } from "@/components/ui/button"
 import { Loader2, History } from "lucide-react"
-import { getToken } from "../utils"
+import { getToken, api } from "../utils"
 import { useSidebarContext } from "../context/SidebarContext"
 import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation"
 import { useErrorToast } from "../hooks/useErrorToast"
-
-const url = import.meta.env.VITE_BASE_URL
 
 export default function EmailOutputPage() {
   const { id } = useParams()
@@ -47,12 +44,7 @@ export default function EmailOutputPage() {
       setFetchLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`${url}/api/v1/email/${id}`, {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await api.get(`/api/v1/email/${id}`);
         if (response.data.success) {
           setEmailHistory(response.data.email);
         }
@@ -86,17 +78,11 @@ export default function EmailOutputPage() {
     setError(null);
 
     try {
-      const response = await axios.patch(
-        `${url}/api/v1/email/update-email-history`,
+      const response = await api.patch(
+        `/api/v1/email/update-email-history`,
         { 
           modification: newModification,
           emailId: id 
-        },
-        { 
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         }
       );
 

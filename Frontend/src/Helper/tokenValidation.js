@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { logout } from "../context/authSlice";
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
-import axios from "axios";
+import { api } from "../utils";
 
 export const fetchToken = () => {
   const storedToken = localStorage.getItem('token');
@@ -62,14 +62,8 @@ export const useLogout = () => {
       showToast = true,
     } = typeof options === "string" ? { message: options } : options;
 
-    const url = import.meta.env.VITE_BASE_URL;
-
     try {
-      const token = fetchToken();
-      await axios.post(`${url}/api/v1/user/logout`, {}, {
-        withCredentials: true,
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
+      await api.post(`/api/v1/user/logout`, {});
     } catch (error) {
       console.error('Error invalidating session on logout:', error);
     }

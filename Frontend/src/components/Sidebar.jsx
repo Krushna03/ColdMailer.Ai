@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { GoSidebarCollapse } from "react-icons/go";
 import { useToast } from "@/hooks/use-toast";
@@ -11,9 +10,7 @@ import { useSidebarContext } from "../context/SidebarContext";
 import { MoreVertical } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation";
-import { getToken, getUserData, capitalizeFirstLetter } from "../utils";
-
-const url = import.meta.env.VITE_BASE_URL;
+import { getToken, getUserData, capitalizeFirstLetter, api } from "../utils";
 
 export default function Sidebar() {
   const [sidebarActive, setSidebarActive] = useState(false);
@@ -54,15 +51,11 @@ export default function Sidebar() {
 
     setLoading(true);
     try {
-      const res = await axios.get(`${url}/api/v1/email/get-user-email-history`, {
+      const res = await api.get(`/api/v1/email/get-user-email-history`, {
         params: {
           userID,
           limit: 15,
           page: currentPage,
-        },
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -116,12 +109,8 @@ export default function Sidebar() {
     
     setLoading(true);
     try {
-      const res = await axios.delete(`${url}/api/v1/email/delete-email`, {
+      const res = await api.delete(`/api/v1/email/delete-email`, {
         data: { emailId }, 
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (res.status === 200) {

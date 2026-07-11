@@ -4,18 +4,16 @@ import { Header } from '../components/Header';
 import { EmailGenerator } from '../components/email-generator';
 import { Footer } from '../components/Footer';
 import { useDispatch } from 'react-redux';
-import axios from 'axios';
 import { login } from '../context/authSlice';
 import Sidebar from '../components/Sidebar';
 import { ensureAuthenticated, useLogout } from '../Helper/tokenValidation';
-import { getToken, getErrorMessage } from '../utils';
+import { getToken, getErrorMessage, api } from '../utils';
 
 export const GenerateEmail = () => {
 
   const [generatedEmail, setGeneratedEmails] = useState(false);
   const dispatch = useDispatch()
   const logoutUser = useLogout()
-  const url = import.meta.env.VITE_BASE_URL
 
   const token = getToken();
 
@@ -23,13 +21,8 @@ export const GenerateEmail = () => {
     if (!ensureAuthenticated(token, logoutUser)) return;
 
     try {
-      const response = await axios.get(`${url}/api/v1/user/getCurrentUser`,
-        {
-          headers: {Authorization: `Bearer ${token}`},
-          withCredentials: true
-        }
-      )
-      
+      const response = await api.get(`/api/v1/user/getCurrentUser`)
+
     if (response && response.data) {
         dispatch(login(response.data?.data))
       }
@@ -40,7 +33,7 @@ export const GenerateEmail = () => {
         message: getErrorMessage(error, "Please log in again"),
       });
     }
-  }, [token, logoutUser, url])
+  }, [token, logoutUser])
 
   useEffect(() => {
     if (token) {

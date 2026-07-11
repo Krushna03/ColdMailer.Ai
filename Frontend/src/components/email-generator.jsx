@@ -3,14 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { EmailInput } from './email-input';
 import { EmailOutput } from './email-output';
 import { useToast } from "../hooks/use-toast";
-import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useSidebarContext } from '../context/SidebarContext';
 import { ensureAuthenticated, isTokenExpired, useLogout } from '../Helper/tokenValidation';
 import { useErrorToast } from '../hooks/useErrorToast';
-import { getToken } from '../utils';
-
-const url = import.meta.env.VITE_BASE_URL
+import { getToken, api } from '../utils';
 
 export function EmailGenerator({ emailGenerated }) {
     const [prompt, setPrompt] = useState("");
@@ -40,12 +37,7 @@ export function EmailGenerator({ emailGenerated }) {
       }
 
       try {
-        const response = await axios.get(`${url}/api/v1/email/usage`, {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await api.get(`/api/v1/email/usage`);
 
         if (response.data.success) {
           setPlanUsage(response.data.data);
@@ -76,14 +68,7 @@ export function EmailGenerator({ emailGenerated }) {
       }
 
       try {
-        const response = await axios.post(`${url}/api/v1/email/generate-email`, { prompt, userId }, 
-          { 
-            withCredentials: true,
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-          }
-        );
+        const response = await api.post(`/api/v1/email/generate-email`, { prompt, userId });
 
         if (response.data.success) {
           setGeneratedEmail(response.data.fullEmail);
@@ -147,15 +132,10 @@ export function EmailGenerator({ emailGenerated }) {
       }
 
       try {
-        const response = await axios.post(`${url}/api/v1/email/update-email`, {
+        const response = await api.post(`/api/v1/email/update-email`, {
           baseEmail: generatedEmail,
           modifications: bottomPrompt,
           emailId
-        }, {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         });
         if (response.data.success) {
           setGeneratedEmail(response.data.updatedEmail);

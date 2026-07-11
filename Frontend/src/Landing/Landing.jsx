@@ -8,31 +8,24 @@ import CallToAction from './CallToAction';
 import {MovingDots} from "../components/moving-dots"
 import { RiMailSendFill, RiMoneyDollarCircleLine } from "react-icons/ri";
 import { User } from 'lucide-react';
-import axios from 'axios';
 import PricingSection from './Pricing';
 import MarqueeTestimonials from "../components/MarqueeTestimonials"
 import { navigationLinks, features } from "../data/landingData"
 import { fetchToken, isTokenExpired } from '../Helper/tokenValidation';
+import { api } from '../utils';
 
 const LandingPage = () => {
 
   const [userCount, setuserCount] = useState()
   const [showMidHeader, setShowMidHeader] = useState(false)
-  const url = import.meta.env.VITE_BASE_URL
 
   const tokenFetched = fetchToken()
   const token = isTokenExpired(tokenFetched);
 
-  if (!token) {
-    return <Navigate to="/generate-email" replace />
-  }
-
   useEffect(() => {
     const fetchUserCount = async () => {
       try {
-        const response = await axios.get(`${url}/api/v1/user/get-user-count`, {
-          withCredentials: true
-        })
+        const response = await api.get(`/api/v1/user/get-user-count`)
         
         if (response.status === 200) {
           setuserCount(response.data?.data?.totalUsers)
@@ -42,7 +35,7 @@ const LandingPage = () => {
       }
     }
     fetchUserCount()
-  }, [url])
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,6 +50,10 @@ const LandingPage = () => {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  if (!token) {
+    return <Navigate to="/generate-email" replace />
+  }
 
   return (
     <>

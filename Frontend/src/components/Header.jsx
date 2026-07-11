@@ -3,10 +3,10 @@ import { ShimmerButton } from "./ui/spinner-button"
 import { User } from "lucide-react"
 import { useSelector } from "react-redux"
 import { useEffect, useState } from "react"
-import axios from "axios"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger} from "../components/ui/dropdown-menu"
 import { PlanUsageNotice } from "./PlanUsageNotice"
 import { fetchToken, isTokenExpired, useLogout } from "../Helper/tokenValidation"
+import { api } from "../utils"
 
 export function Header() {
 
@@ -16,7 +16,6 @@ export function Header() {
   const [usageLoading, setUsageLoading] = useState(false)
   const user = useSelector(state => state.auth.userData)
   const token = fetchToken()
-  const url = import.meta.env.VITE_BASE_URL
   const location = useLocation()
   const textToShow = location.pathname === "/payment" ? "Generate Email" : "Manage Plan"
   const logoutUser = useLogout()
@@ -37,12 +36,7 @@ export function Header() {
     const fetchPlanUsage = async () => {
       setUsageLoading(true)
       try {
-        const response = await axios.get(`${url}/api/v1/email/usage`, {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
+        const response = await api.get(`/api/v1/email/usage`)
         if (response.data.success && isMounted) {
           setPlanUsage(response.data.data)
         }
@@ -64,7 +58,7 @@ export function Header() {
     return () => {
       isMounted = false
     }
-  }, [token, url, logoutUser])
+  }, [token, logoutUser])
   
   const handleLogout = async (e) => {
     e.preventDefault()

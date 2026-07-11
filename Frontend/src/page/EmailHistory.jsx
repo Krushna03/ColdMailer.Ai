@@ -10,14 +10,11 @@ import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { useSelector } from "react-redux"
 import Sidebar from "../components/Sidebar"
 import { TiArrowBack } from "react-icons/ti"
-import axios from "axios"
 import EmailUpdateLoader from "../loader/loader"
 import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation"
 import { useErrorToast } from "../hooks/useErrorToast"
-import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose } from "../utils"
+import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose, api } from "../utils"
 import { useSidebarContext } from "../context/SidebarContext"
-
-const url = import.meta.env.VITE_BASE_URL
 
 export default function EmailHistory() {
   const { id } = useParams()
@@ -58,12 +55,7 @@ export default function EmailHistory() {
 
       setFetchLoading(true);
       try {
-        const response = await axios.get(`${url}/api/v1/email/${id}`, {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await api.get(`/api/v1/email/${id}`);
         if (response.data.success) {
           setEmailDetails(response.data.email);
         }
@@ -113,17 +105,11 @@ export default function EmailHistory() {
     try {
       setIsGenerating(true);
 
-      const response = await axios.patch(
-        `${url}/api/v1/email/update-email-history`,
+      const response = await api.patch(
+        `/api/v1/email/update-email-history`,
         { 
           modification: newModification,
           emailId: id 
-        },
-        { 
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         }
       );
 

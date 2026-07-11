@@ -1,9 +1,8 @@
-import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { useErrorToast } from "@/hooks/useErrorToast"
 import { GoogleLogin } from '@react-oauth/google';
-const url = import.meta.env.VITE_BASE_URL
+import { api } from "@/utils"
 
 const Googlelogin = () => {
 
@@ -13,9 +12,8 @@ const Googlelogin = () => {
 
   const handleLoginSuccess = async (credentialResponse) => {
     try {
-      const res = await axios.get(
-        `${url}/api/v1/user/google/callback?token=${credentialResponse.credential}`, 
-        { withCredentials: true }
+      const res = await api.get(
+        `/api/v1/user/google/callback?token=${credentialResponse.credential}`
       );
   
       if (res.data.success) {

@@ -1,8 +1,8 @@
 import { useState } from "react"
-import axios from "axios"
 import { useToast } from "@/hooks/use-toast"
 import { useErrorToast } from "@/hooks/useErrorToast"
 import { Toaster } from "../components/ui/toaster"
+import { api } from "@/utils"
 
 
 export default function Contact() {
@@ -10,7 +10,6 @@ export default function Contact() {
   const { toast } = useToast()
   const showErrorToast = useErrorToast()
   const [loading, setLoading] = useState(false)
-  const url = import.meta.env.VITE_BASE_URL
 
   const [formData, setFormData] = useState({
     name: "",
@@ -30,7 +29,7 @@ export default function Contact() {
     setLoading(true)
 
     try {
-      const res = await axios.post(`${url}/api/v1/contact/new-contact`, formData, { withCredentials : true });
+      const res = await api.post(`/api/v1/contact/new-contact`, formData);
   
       if (res.status === 200) {
         toast({

@@ -3,7 +3,6 @@ import { Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "../components/ui/input"
 import { MovingDots } from "@/components/moving-dots"
-import axios from "axios"
 import { useForm } from "react-hook-form"
 import { useToast } from "@/hooks/use-toast"
 import { NavLink, useNavigate } from "react-router-dom"
@@ -12,6 +11,7 @@ import Googlelogin from "./Google-Login"
 import { useDispatch } from "react-redux"
 import { login } from "../context/authSlice"
 import { useErrorToast } from "@/hooks/useErrorToast"
+import { api } from "@/utils"
 
 export default function RegisterPage() {
   
@@ -22,12 +22,11 @@ export default function RegisterPage() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const url = import.meta.env.VITE_BASE_URL
 
   const onSubmit = async (data) => {
     setLoading(true)
     try {
-      const res = await axios.post(`${url}/api/v1/user/register`, data, { withCredentials: true })
+      const res = await api.post(`/api/v1/user/register`, data)
 
       if (res.status === 201) { 
         toast({
@@ -38,14 +37,6 @@ export default function RegisterPage() {
         setTimeout(() => {
           navigate("/generate-email")
         }, 1300)
-      }
-
-      if (res.status === 500) { 
-        toast({
-          title: "Error !!",
-          description: res.data.message,
-        });
-        return;
       }
 
       dispatch(login(res.data?.data?.user))
