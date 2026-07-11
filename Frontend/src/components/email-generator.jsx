@@ -6,7 +6,8 @@ import { useToast } from "../hooks/use-toast";
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useSidebarContext } from '../context/SidebarContext';
-import { isTokenExpired, useLogout } from '../Helper/tokenValidation';
+import { ensureAuthenticated, isTokenExpired, useLogout } from '../Helper/tokenValidation';
+import { useErrorToast } from '../hooks/useErrorToast';
 import { getToken } from '../utils';
 
 const url = import.meta.env.VITE_BASE_URL
@@ -26,6 +27,7 @@ export function EmailGenerator({ emailGenerated }) {
     const navigate = useNavigate();
     const token = getToken();
     const logoutUser = useLogout();
+    const showErrorToast = useErrorToast();
     const user = useSelector(state => state.auth.userData)
     const userId = user?._id
 
@@ -68,14 +70,7 @@ export function EmailGenerator({ emailGenerated }) {
       setError(null);
       emailGenerated(true);
 
-      if (!token) {
-        logoutUser("No authentication token found.");
-        setLoading(false);
-        return;
-      }
-  
-      if (isTokenExpired(token)) {
-        logoutUser("Session expired. Please log in again.");
+      if (!ensureAuthenticated(token, logoutUser)) {
         setLoading(false);
         return;
       }
@@ -131,18 +126,7 @@ export function EmailGenerator({ emailGenerated }) {
           fetchPlanUsage();
         }
 
-        const backendMessage =
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          (err instanceof Error ? err.message : "Something went wrong");
-
-        setError(backendMessage);
-
-        toast({
-          title: "Error Occurred !!",
-          description: backendMessage,
-          variant: "destructive",
-        });
+        setError(showErrorToast(err));
       } finally {
         setLoading(false);
       }
@@ -156,15 +140,7 @@ export function EmailGenerator({ emailGenerated }) {
       setUpdating(true);
       setError(null);
 
-      if (!token) {
-        logoutUser("No authentication token found.");
-        setLoading(false);
-        setUpdating(false);
-        return;
-      }
-
-      if (isTokenExpired(token)) {
-        logoutUser("Session expired. Please log in again.");
+      if (!ensureAuthenticated(token, logoutUser)) {
         setLoading(false);
         setUpdating(false);
         return;
@@ -197,18 +173,7 @@ export function EmailGenerator({ emailGenerated }) {
           fetchPlanUsage();
         }
 
-        const backendMessage =
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          (err instanceof Error ? err.message : "Something went wrong");
-
-        setError(backendMessage);
-
-        toast({
-          title: "Error",
-          description: backendMessage,
-          variant: "destructive",
-        });
+        setError(showErrorToast(err, { title: "Error" }));
       } finally {
         setBottomPrompt("");
         setLoading(false);

@@ -1,12 +1,14 @@
 import { useState } from "react"
 import axios from "axios"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorToast } from "@/hooks/useErrorToast"
 import { Toaster } from "../components/ui/toaster"
 
 
 export default function Contact() {
 
   const { toast } = useToast()
+  const showErrorToast = useErrorToast()
   const [loading, setLoading] = useState(false)
   const url = import.meta.env.VITE_BASE_URL
 
@@ -50,28 +52,7 @@ export default function Contact() {
 
     } catch (error) {
       console.log("Error in contact", error);
-      if (error.response && error.response.data) {
-        const backendErrorMessage = error.response.data.message || "An error occurred.";
-        console.error("Backend Error:", backendErrorMessage);
-        toast({
-          title: "Error",
-          description: backendErrorMessage,
-          status: "error",
-          variant: "destructive",
-          duration: 5000,
-          isClosable: true,
-        });
-      } else {
-        console.error("Unexpected Error:", error);
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred. Please try again later.",
-          variant: "destructive",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      }
+      showErrorToast(error, { title: "Error", fallback: "An unexpected error occurred. Please try again later." });
     }
     finally {
       setLoading(false)

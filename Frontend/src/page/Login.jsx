@@ -11,10 +11,12 @@ import { Toaster } from "../components/ui/toaster"
 import Googlelogin from "./Google-Login"
 import { useDispatch } from "react-redux"
 import { login } from "../context/authSlice"
+import { useErrorToast } from "@/hooks/useErrorToast"
 
 export default function LoginPage() {
 
   const { toast } = useToast()
+  const showErrorToast = useErrorToast()
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -44,23 +46,7 @@ export default function LoginPage() {
 
     } catch (error) {
       console.log("Error in login", error);
-      if (error.response && error.response.data) {
-        const backendErrorMessage = error.response.data.message || "An error occurred.";
-        console.error("Backend Error:", backendErrorMessage);
-        toast({
-          title: "Error Occurred !!",
-          description: backendErrorMessage,
-          variant: "destructive",
-          duration: 5000,
-        });
-      } else {
-        console.error("Unexpected Error:", error);
-        toast({
-          title: "Error Occurred !!",
-          description: "An unexpected error occurred. Please try again later.",
-          variant: "destructive",
-        });
-      }
+      showErrorToast(error, { fallback: "An unexpected error occurred. Please try again later." });
       reset()
     } finally {
       setLoading(false)

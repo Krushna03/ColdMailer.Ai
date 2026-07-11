@@ -1,9 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { ShimmerButton } from "./ui/spinner-button"
 import { User } from "lucide-react"
-import { useToast } from "../hooks/use-toast"
-import { useDispatch, useSelector } from "react-redux"
-import { logout } from "../context/authSlice"
+import { useSelector } from "react-redux"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger} from "../components/ui/dropdown-menu"
@@ -12,9 +10,7 @@ import { fetchToken, isTokenExpired, useLogout } from "../Helper/tokenValidation
 
 export function Header() {
 
-  const { toast } = useToast()
   const navigate = useNavigate()
-  const dispatch = useDispatch()
   const [loading, setLoading] = useState(false)
   const [planUsage, setPlanUsage] = useState(null)
   const [usageLoading, setUsageLoading] = useState(false)
@@ -73,31 +69,13 @@ export function Header() {
   const handleLogout = async (e) => {
     e.preventDefault()
     setLoading(true)
-    try {
-      const response = await axios.post(`${url}/api/v1/user/logout`, {}, {
-        withCredentials: true
-      })
-      if (response.status === 200) {
-        toast({
-          title: "Logout Done !!",
-          description: "You logout successfully.!!",
-        });
-
-        dispatch(logout())
-        localStorage.removeItem("token")
-        navigate('/')
-      }
-    } catch (error) {
-      console.error(`Error in logout`, error);
-      toast({
-        title: "Logout failed",
-        description: `Something went wrong while logout ${error.message}`,
-        variant: "destructive",
-      });
-    }
-    finally {
-      setLoading(false)
-    }
+    await logoutUser({
+      title: "Logout Done !!",
+      message: "You logout successfully.!!",
+      variant: "default",
+      redirectTo: "/",
+    })
+    setLoading(false)
   }
   
   return (

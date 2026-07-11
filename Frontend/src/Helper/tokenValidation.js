@@ -29,27 +29,57 @@ export const isTokenExpired = (token = fetchToken()) => {
   }
 };
 
+export const ensureAuthenticated = (
+  token,
+  logoutUser,
+  {
+    missingMessage = "No authentication token found.",
+    expiredMessage = "Session expired. Please log in again.",
+  } = {}
+) => {
+  if (!token) {
+    logoutUser(missingMessage);
+    return false;
+  }
+  if (isTokenExpired(token)) {
+    logoutUser(expiredMessage);
+    return false;
+  }
+  return true;
+};
+
 export const useLogout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  return useCallback(async (message = "Session expired. Please log in again.") => {
+  return useCallback(async (options = {}) => {
+    const {
+      message = "Session expired. Please log in again.",
+      title = "Authentication Required",
+      variant = "destructive",
+      redirectTo = "/sign-in",
+      showToast = true,
+    } = typeof options === "string" ? { message: options } : options;
+
     const url = import.meta.env.VITE_BASE_URL;
 
     try {
-      await axios.post(`${url}/api/v1/user/logout`, {}, { withCredentials: true });
+      const token = fetchToken();
+      await axios.post(`${url}/api/v1/user/logout`, {}, {
+        withCredentials: true,
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
     } catch (error) {
       console.error('Error invalidating session on logout:', error);
     }
 
     localStorage.removeItem('token');
     dispatch(logout());
-    navigate('/sign-in');
-    toast({
-      title: "Authentication Required",
-      description: message,
-      variant: "destructive"
-    });
+    navigate(redirectTo);
+
+    if (showToast) {
+      toast({ title, description: message, variant });
+    }
   }, [dispatch, navigate, toast]);
 };

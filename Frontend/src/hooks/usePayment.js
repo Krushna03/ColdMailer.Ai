@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useToast } from '@/hooks/use-toast'; 
 import { useDispatch } from 'react-redux';
 import { login } from '@/context/authSlice';
-import { getToken } from '../utils';
+import { getToken, getErrorMessage } from '../utils';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
   
@@ -80,7 +80,7 @@ export const usePayment = () => {
       const response = await api.get('/api/v1/payment/plans');
       return response.data.data;
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to fetch payment plans';
+      const errorMessage = getErrorMessage(err, 'Failed to fetch payment plans');
       setError(errorMessage);
       toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
       throw new Error(errorMessage);
@@ -96,7 +96,7 @@ export const usePayment = () => {
       const response = await api.post('/api/v1/payment/create-order', { planType });
       return response.data.data;
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to create order';
+      const errorMessage = getErrorMessage(err, 'Failed to create order');
       setError(errorMessage);
       toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
       throw new Error(errorMessage);
@@ -112,7 +112,7 @@ export const usePayment = () => {
       toast({ title: "Payment Successful", description: "Your payment has been verified successfully." }); 
       return response.data.data;
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Payment verification failed';
+      const errorMessage = getErrorMessage(err, 'Payment verification failed');
       setError(errorMessage);
       toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
       throw new Error(errorMessage);
@@ -136,7 +136,7 @@ export const usePayment = () => {
       const response = await api.get('/api/v1/payment/history');
       return response.data.data;
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to fetch payment history';
+      const errorMessage = getErrorMessage(err, 'Failed to fetch payment history');
       setError(errorMessage);
       toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
       throw new Error(errorMessage);
@@ -225,8 +225,9 @@ export const usePayment = () => {
       
     } catch (err) {
       console.error('Payment process error:', err);
-      setError(err.message);
-      toast({ title: "Error", description: err.message, variant: "destructive", duration: 5000 }); 
+      const errorMessage = getErrorMessage(err);
+      setError(errorMessage);
+      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
       setLoading(false);
       throw err;
     }

@@ -10,7 +10,7 @@ import { MdDelete } from "react-icons/md";
 import { useSidebarContext } from "../context/SidebarContext";
 import { MoreVertical } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { isTokenExpired, useLogout } from "../Helper/tokenValidation";
+import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation";
 import { getToken, getUserData, capitalizeFirstLetter } from "../utils";
 
 const url = import.meta.env.VITE_BASE_URL;
@@ -50,15 +50,7 @@ export default function Sidebar() {
   const fetchUserEmailHistory = async (currentPage, force = false) => {
     if (!userID || loading || (!hasMore && !force)) return;
 
-    if (!token) {
-      logoutUser("No authentication token found.");
-      return;
-    }
-
-    if (isTokenExpired(token)) {
-      logoutUser("Session expired. Please log in again.");
-      return;
-    }
+    if (!ensureAuthenticated(token, logoutUser)) return;
 
     setLoading(true);
     try {
@@ -120,15 +112,7 @@ export default function Sidebar() {
   }, [userID, page]);
 
   const handleEmailDelete = async (emailId) => {
-    if (!token) {
-      logoutUser("No authentication token found.");
-      return;
-    }
-
-    if (isTokenExpired(token)) {
-      logoutUser("Session expired. Please log in again.");
-      return;
-    }
+    if (!ensureAuthenticated(token, logoutUser)) return;
     
     setLoading(true);
     try {

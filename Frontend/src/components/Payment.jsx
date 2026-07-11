@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { usePayment } from '../hooks/usePayment';
-import { isTokenExpired, useLogout } from '../Helper/tokenValidation';
+import { ensureAuthenticated, useLogout } from '../Helper/tokenValidation';
 import { MovingDots } from './moving-dots';
 import { Header } from './Header';
 import HeroSection from './payment/HeroSection';
@@ -83,15 +83,7 @@ const PaymentComponent = () => {
   }, [getPaymentPlans]);
 
   const loadPaymentHistory = useCallback(async (shouldOpenModal = false) => {
-    if (!token) {
-      logoutUser('No authentication token found.');
-      return;
-    }
-
-    if (isTokenExpired(token)) {
-      logoutUser('Session expired. Please log in again.');
-      return;
-    }
+    if (!ensureAuthenticated(token, logoutUser)) return;
 
     setHistoryLoading(true);
     try {
@@ -123,15 +115,7 @@ const PaymentComponent = () => {
   };
 
   const handlePayment = useCallback(async (planId) => {
-    if (!token) {
-      logoutUser('No authentication token found.');
-      return;
-    }
-
-    if (isTokenExpired(token)) {
-      logoutUser('Session expired. Please log in again.');
-      return;
-    }
+    if (!ensureAuthenticated(token, logoutUser)) return;
 
     const selectedPlan = plans.find((plan) => plan.id === planId);
 

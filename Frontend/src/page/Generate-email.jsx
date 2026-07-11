@@ -4,35 +4,23 @@ import { Header } from '../components/Header';
 import { EmailGenerator } from '../components/email-generator';
 import { Footer } from '../components/Footer';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { login, logout } from '../context/authSlice';
-import { useToast } from '../hooks/use-toast';
+import { login } from '../context/authSlice';
 import Sidebar from '../components/Sidebar';
-import { isTokenExpired, useLogout } from '../Helper/tokenValidation';
-import { getToken } from '../utils';
+import { ensureAuthenticated, useLogout } from '../Helper/tokenValidation';
+import { getToken, getErrorMessage } from '../utils';
 
 export const GenerateEmail = () => {
 
   const [generatedEmail, setGeneratedEmails] = useState(false);
   const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const { toast } = useToast()
   const logoutUser = useLogout()
   const url = import.meta.env.VITE_BASE_URL
 
   const token = getToken();
 
   const validateANDFetchUser = useCallback(async () => {
-    if (!token) {
-      logoutUser("No authentication token found.");
-      return;
-    }
-
-    if (isTokenExpired(token)) {
-      logoutUser("Session expired. Please log in again.");
-      return;
-    }
+    if (!ensureAuthenticated(token, logoutUser)) return;
 
     try {
       const response = await axios.get(`${url}/api/v1/user/getCurrentUser`,
@@ -47,14 +35,10 @@ export const GenerateEmail = () => {
       }
     } catch (error) {
       console.error("Error while validating token:", error);
-      dispatch(logout());
-      
-      toast({
-          title: "Authentication Error",
-          description: error.response?.data?.message || "Please log in again",
-          variant: "destructive"
+      logoutUser({
+        title: "Authentication Error",
+        message: getErrorMessage(error, "Please log in again"),
       });
-      navigate('/sign-in')
     }
   }, [token, logoutUser, url])
 

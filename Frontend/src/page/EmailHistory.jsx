@@ -12,7 +12,8 @@ import Sidebar from "../components/Sidebar"
 import { TiArrowBack } from "react-icons/ti"
 import axios from "axios"
 import EmailUpdateLoader from "../loader/loader"
-import { isTokenExpired, useLogout } from "../Helper/tokenValidation"
+import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation"
+import { useErrorToast } from "../hooks/useErrorToast"
 import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose } from "../utils"
 import { useSidebarContext } from "../context/SidebarContext"
 
@@ -25,6 +26,7 @@ export default function EmailHistory() {
   const { toast } = useToast()
   const token = getToken()
   const logoutUser = useLogout()
+  const showErrorToast = useErrorToast()
   const { updateSidebar, setUpdateSidebar } = useSidebarContext()
   
   const emailHistoryFromState = location.state?.email
@@ -52,14 +54,7 @@ export default function EmailHistory() {
 
     const fetchEmailDetails = async () => {
       if (!id) return;
-      if (!token) {
-        logoutUser("No authentication token found.");
-        return;
-      }
-      if (isTokenExpired(token)) {
-        logoutUser("Session expired. Please log in again.");
-        return;
-      }
+      if (!ensureAuthenticated(token, logoutUser)) return;
 
       setFetchLoading(true);
       try {
@@ -74,11 +69,7 @@ export default function EmailHistory() {
         }
       } catch (err) {
         console.error("Failed to fetch email details:", err);
-        toast({
-          title: "Error",
-          description: err.response?.data?.message || "Failed to load email details.",
-          variant: "destructive"
-        });
+        showErrorToast(err, { title: "Error", fallback: "Failed to load email details." });
       } finally {
         setFetchLoading(false);
       }
@@ -117,15 +108,7 @@ export default function EmailHistory() {
     if (isGenerating) return;
     if (!newModification.trim()) return;
   
-    if (!token) {
-      logoutUser("No authentication token found.");
-      return;
-    }
-
-    if (isTokenExpired(token)) {
-      logoutUser("Session expired. Please log in again.");
-      return;
-    }
+    if (!ensureAuthenticated(token, logoutUser)) return;
 
     try {
       setIsGenerating(true);
@@ -188,16 +171,7 @@ export default function EmailHistory() {
         logoutUser("Session expired. Please log in again.");
       }
 
-      const backendMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        (err instanceof Error ? err.message : "Something went wrong");
-
-      toast({
-        title: "Error",
-        description: backendMessage,
-        variant: "destructive",
-      });
+      showErrorToast(err, { title: "Error" });
     } finally {
       setIsGenerating(false);
       setNewModification("");

@@ -1,12 +1,14 @@
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
+import { useErrorToast } from "@/hooks/useErrorToast"
 import { GoogleLogin } from '@react-oauth/google';
 const url = import.meta.env.VITE_BASE_URL
 
 const Googlelogin = () => {
 
   const { toast } = useToast()
+  const showErrorToast = useErrorToast()
   const navigate = useNavigate()
 
   const handleLoginSuccess = async (credentialResponse) => {
@@ -30,11 +32,7 @@ const Googlelogin = () => {
       }
     } catch (error) {
       console.error("Google Login Error:", error);
-      toast({
-        title: "Google Login Failed",
-        description: error.response?.data?.message || "Failed to login with Google",     
-        variant: "destructive",
-      });
+      showErrorToast(error, { title: "Google Login Failed", fallback: "Failed to login with Google" });
     } 
   };
 

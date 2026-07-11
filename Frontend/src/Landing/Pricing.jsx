@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check } from "lucide-react"
-import { isTokenExpired, useLogout } from "../Helper/tokenValidation"
+import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation"
 import { useNavigate } from "react-router-dom"
 import { usePayment } from "../hooks/usePayment"
 import { useSelector } from "react-redux"
@@ -21,14 +21,10 @@ export default function PricingSection() {
   const token = getToken();
   
   const handleNavigation = async (buttonName) => {  
-    if (!token) {
-      logoutUser("Please Login First");
-      return;
-    }
-    if (isTokenExpired(token)) {
-      logoutUser("Session expired. Please Login Again.");
-      return;
-    }
+    if (!ensureAuthenticated(token, logoutUser, {
+      missingMessage: "Please Login First",
+      expiredMessage: "Session expired. Please Login Again.",
+    })) return;
     
     if (token) {
       if (buttonName === "GETSTARTED") {

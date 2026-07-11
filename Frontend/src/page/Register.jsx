@@ -11,10 +11,12 @@ import { Toaster } from "../components/ui/toaster"
 import Googlelogin from "./Google-Login"
 import { useDispatch } from "react-redux"
 import { login } from "../context/authSlice"
+import { useErrorToast } from "@/hooks/useErrorToast"
 
 export default function RegisterPage() {
   
   const { toast } = useToast()
+  const showErrorToast = useErrorToast()
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
@@ -52,28 +54,7 @@ export default function RegisterPage() {
 
     } catch (error) {
       console.log("Error in signup", error);
-      if (error.response && error.response.data) {
-        const backendErrorMessage = error.response.data.message || "An error occurred.";
-        console.error("Backend Error:", backendErrorMessage);
-        toast({
-          title: "Error Occurred !!",
-          description: backendErrorMessage,
-          status: "error",
-          variant: "destructive",
-          duration: 5000,
-          isClosable: true,
-        });
-      } else {
-        console.error("Unexpected Error:", error);
-        toast({
-          title: "Error Occurred !!",
-          description: "An unexpected error occurred. Please try again later.",
-          variant: "destructive",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      }
+      showErrorToast(error, { fallback: "An unexpected error occurred. Please try again later." });
       reset()
     }
     finally {

@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Loader2, History } from "lucide-react"
 import { getToken } from "../utils"
 import { useSidebarContext } from "../context/SidebarContext"
-import { isTokenExpired, useLogout } from "../Helper/tokenValidation"
+import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation"
+import { useErrorToast } from "../hooks/useErrorToast"
 
 const url = import.meta.env.VITE_BASE_URL
 
@@ -20,6 +21,7 @@ export default function EmailOutputPage() {
   const { toast } = useToast()
   const token = getToken()
   const logoutUser = useLogout()
+  const showErrorToast = useErrorToast()
   const { updateSidebar, setUpdateSidebar } = useSidebarContext()
 
   const emailHistoryFromState = location.state?.email
@@ -40,14 +42,7 @@ export default function EmailOutputPage() {
 
     const fetchEmailDetails = async () => {
       if (!id) return;
-      if (!token) {
-        logoutUser("No authentication token found.");
-        return;
-      }
-      if (isTokenExpired(token)) {
-        logoutUser("Session expired. Please log in again.");
-        return;
-      }
+      if (!ensureAuthenticated(token, logoutUser)) return;
 
       setFetchLoading(true);
       setError(null);
@@ -64,11 +59,7 @@ export default function EmailOutputPage() {
       } catch (err) {
         console.error("Failed to fetch email details:", err);
         setError("Failed to load email details. Please try again.");
-        toast({
-          title: "Error",
-          description: err.response?.data?.message || "Failed to load email details.",
-          variant: "destructive"
-        });
+        showErrorToast(err, { title: "Error", fallback: "Failed to load email details." });
       } finally {
         setFetchLoading(false);
       }
@@ -89,15 +80,7 @@ export default function EmailOutputPage() {
     if (isGenerating) return;
     if (!newModification.trim()) return;
 
-    if (!token) {
-      logoutUser("No authentication token found.");
-      return;
-    }
-
-    if (isTokenExpired(token)) {
-      logoutUser("Session expired. Please log in again.");
-      return;
-    }
+    if (!ensureAuthenticated(token, logoutUser)) return;
 
     setIsGenerating(true);
     setError(null);
@@ -148,18 +131,7 @@ export default function EmailOutputPage() {
         return;
       }
 
-      const backendMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        (err instanceof Error ? err.message : "Something went wrong");
-
-      setError(backendMessage);
-
-      toast({
-        title: "Error",
-        description: backendMessage,
-        variant: "destructive",
-      });
+      setError(showErrorToast(err, { title: "Error" }));
     } finally {
       setIsGenerating(false);
     }
