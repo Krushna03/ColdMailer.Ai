@@ -60,7 +60,9 @@ const LandingPage = () => {
       {/* Navbar & hero  */}
       <Element name='home' id='home' className="min-h-screen bg-black text-white relative overflow-hidden">
         
-        <MovingDots />
+        <div className='hidden sm:block'>
+          <MovingDots />
+        </div>
 
         <div className={`fixed inset-x-0 top-4 z-50 flex justify-center transition-all duration-300 ${showMidHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-3 pointer-events-none'}`}>
           <div className="hidden lg:flex items-center gap-6 rounded-2xl bg-gradient-to-r from-[#1b1727] to-[#1f1a2e] px-4 py-2 shadow-2xl border border-white/10 backdrop-blur-2xl">

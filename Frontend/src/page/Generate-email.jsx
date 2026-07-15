@@ -46,18 +46,33 @@ export const GenerateEmail = () => {
       <Sidebar />
     
       {/* Main Content */}
-      <div className="h-screen overflow-y-hidden flex flex-col relative bg-[#0d0e12] z-0">
+      <div className="h-[100dvh] overflow-hidden flex flex-col relative bg-[#0d0e12] z-0">
         {/* Background glow */}
-        <div className="absolute top-20 -left-14 w-1/2 h-48 bg-[#6f34ed] opacity-30 blur-3xl"></div>
-        <div className="absolute bottom-20 right-0 w-1/2 h-40 bg-[#6f34ed] opacity-30 blur-3xl"></div>
-    
-        <MovingDots />
+        <div className="hidden sm:block absolute top-20 -left-14 w-1/2 h-48 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+        <div className="hidden sm:block absolute bottom-20 right-0 w-1/2 h-40 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+
+        {/* Mobile-only glow near the bottom input */}
+        <div className="sm:hidden absolute bottom-0 -left-10 w-2/3 h-44 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+        <div className="sm:hidden absolute bottom-0 -right-10 w-2/3 h-44 bg-[#8b5cf6] opacity-30 blur-3xl"></div>
+        
+        <div className="sm:hidden absolute top-0 -left-20 w-2/3 h-20 bg-[#6f34ed] opacity-25 blur-3xl"></div>
+        
+
+        <div className='hidden sm:block'>
+          <MovingDots />
+        </div>
+
         <Header />
+        
         <main className="z-20 h-full custom-scroll flex-1 flex sm:flex-col items-center justify-center px-2">
           <EmailGenerator emailGenerated={setGeneratedEmails} />
         </main>
     
-        {!generatedEmail && <Footer />}
+        {!generatedEmail &&
+          <div className='hidden sm:block'>
+            <Footer />
+          </div>
+         }
       </div>
     </>
   

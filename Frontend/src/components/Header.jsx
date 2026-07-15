@@ -78,7 +78,7 @@ export function Header() {
         <NavLink to="/" className="flex items-center gap-1 md:mr-6 group">
           <div className="p-2 md:px-4 rounded-xl transition-shadow flex items-center gap-2">
             <img src="/white-logo.png" alt="logo" className="h-9 w-9 md:h-11 md:w-11 p-1 rounded" />
-            <span className="font-medium text-gray-100 text-xl md:text-2xl">
+            <span className="font-medium text-gray-100 text-[22px] md:text-2xl">
               𝐂𝐨𝐥𝐝𝐌𝐚𝐢𝐥𝐞𝐫𝐀𝐈
             </span>
           </div>

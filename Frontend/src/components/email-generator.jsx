@@ -166,7 +166,7 @@ export function EmailGenerator({ emailGenerated }) {
     <div className="w-full">
       <div className="w-full max-w-[1400px] mx-auto relative z-10 flex-1 px-4 py-6 sm:pb-10">
         {!showOutput && (
-          <div className="w-full flex items-center justify-center min-h-[calc(100vh-260px)]">
+          <div className="w-full flex items-center justify-center sm:min-h-[calc(100vh-260px)]">
             <EmailInput
               prompt={prompt}
               setPrompt={setPrompt}
