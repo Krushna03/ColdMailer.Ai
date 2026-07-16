@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef } from "react";
+
 // Copy text to clipboard with optional callback
 export const copyToClipboard = async (text, onSuccess, onError) => {
   try {
@@ -12,13 +14,25 @@ export const copyToClipboard = async (text, onSuccess, onError) => {
 };
 
 
-// Copy to clipboard with state management hook pattern
+// Copy to clipboard with state management hook pattern.
 export const useCopyToClipboard = (setCopied, timeout = 2000) => {
-  return async (text, id = null) => {
-    const success = await copyToClipboard(text);
-    if (success) {
-      setCopied(id !== null ? id : true);
-      setTimeout(() => setCopied(null), timeout);
-    }
-  };
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  return useCallback(
+    async (text, id = null) => {
+      const success = await copyToClipboard(text);
+      if (success) {
+        setCopied(id !== null ? id : true);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => setCopied(null), timeout);
+      }
+    },
+    [setCopied, timeout]
+  );
 };

@@ -2,19 +2,18 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { ShimmerButton } from "./ui/spinner-button"
 import { Menu, User } from "lucide-react"
 import { useSelector } from "react-redux"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger} from "../components/ui/dropdown-menu"
 import { PlanUsageNotice } from "./PlanUsageNotice"
-import { fetchToken, isTokenExpired, useLogout } from "../Helper/tokenValidation"
+import { fetchToken, useLogout } from "../Helper/tokenValidation"
 import { useSidebarContext } from "../context/SidebarContext"
-import { api } from "../utils"
+import { usePlanUsage } from "../hooks/usePlanUsage"
 
 export function Header() {
 
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
-  const [planUsage, setPlanUsage] = useState(null)
-  const [usageLoading, setUsageLoading] = useState(false)
+  const { planUsage, usageLoading } = usePlanUsage()
   const user = useSelector(state => state.auth.userData)
   const token = fetchToken()
   const location = useLocation()
@@ -26,46 +25,6 @@ export function Header() {
     location.pathname.startsWith("/generate-email") ||
     location.pathname.startsWith("/email/")
 
-  useEffect(() => {
-    if (!token) {
-      setPlanUsage(null)
-      return
-    }
-
-    if (isTokenExpired(token)) {
-      logoutUser()
-      return
-    }
-
-    let isMounted = true
-
-    const fetchPlanUsage = async () => {
-      setUsageLoading(true)
-      try {
-        const response = await api.get(`/api/v1/email/usage`)
-        if (response.data.success && isMounted) {
-          setPlanUsage(response.data.data)
-        }
-      } catch (error) {
-        if (error.response?.status === 401) {
-          logoutUser()
-        } else {
-          console.error("Failed to fetch plan usage", error)
-        }
-      } finally {
-        if (isMounted) {
-          setUsageLoading(false)
-        }
-      }
-    }
-
-    fetchPlanUsage()
-
-    return () => {
-      isMounted = false
-    }
-  }, [token, logoutUser])
-  
   const handleLogout = async (e) => {
     e.preventDefault()
     setLoading(true)

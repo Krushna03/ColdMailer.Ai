@@ -1,6 +1,6 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowUp, Copy, CopyCheckIcon, MailOpen, Loader2 } from "lucide-react"
+import { ArrowUp, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Header } from "../components/Header"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
@@ -11,6 +11,8 @@ import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation"
 import { useErrorToast } from "../hooks/useErrorToast"
 import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose, getUserInitial, api } from "../utils"
 import { useSidebarContext } from "../context/SidebarContext"
+import { useKeyboardOffset } from "../hooks/useKeyboardOffset"
+import { EmailHistoryCard } from "../components/EmailHistoryCard"
 
 export default function EmailHistory() {
   const { id } = useParams()
@@ -29,7 +31,7 @@ export default function EmailHistory() {
   const [newModification, setNewModification] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [copiedId, setCopiedId] = useState(null)
-  const [keyboardOffset, setKeyboardOffset] = useState(0)
+  const keyboardOffset = useKeyboardOffset()
   const mobileTextareaRef = useRef(null)
 
   const handleClipboardCopy = useCopyToClipboard(setCopiedId)
@@ -43,31 +45,13 @@ export default function EmailHistory() {
     el.style.height = `${Math.min(el.scrollHeight, 110)}px`
   }, [newModification])
 
-  // Keep the sticky mobile input above the on-screen keyboard
-  useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv) return
-
-    const handleViewport = () => {
-      const overlap = window.innerHeight - (vv.height + vv.offsetTop)
-      setKeyboardOffset(overlap > 0 ? overlap : 0)
-    }
-
-    handleViewport()
-    vv.addEventListener("resize", handleViewport)
-    vv.addEventListener("scroll", handleViewport)
-    return () => {
-      vv.removeEventListener("resize", handleViewport)
-      vv.removeEventListener("scroll", handleViewport)
-    }
-  }, [])
   const user = useSelector((state) => state.auth.userData)
   const userEmail = user?.email || ""
   const userInitial = getUserInitial(user?.username)
 
-  const handleGmailCompose = (subject, body) => {
+  const handleGmailCompose = useCallback((subject, body) => {
     openGmailCompose({ to: userEmail, subject, body, userEmail })
-  }
+  }, [userEmail])
 
   // Fetch email details if not present in location state (e.g. on page refresh)
   useEffect(() => {
@@ -191,54 +175,6 @@ export default function EmailHistory() {
     }
   };
   
-  const renderEmailCard = ({ id, badge, badgeClass, date, subject, body, modifications }) => (
-    <div key={id} className="rounded-2xl overflow-hidden border border-gray-700 bg-surface-850 shadow-lg">
-      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-gray-800 bg-surface-800">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${badgeClass}`}>{badge}</span>
-          <span className="text-xs text-gray-400 truncate">{new Date(date).toLocaleDateString()}</span>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            onClick={() => handleGmailCompose(subject, body)}
-            aria-label="Send to Gmail"
-            className="h-7 w-7 flex items-center justify-center text-gray-300 bg-surface-900 border border-gray-700 rounded-full active:scale-95 transition-transform hover:text-white"
-          >
-            <MailOpen className="h-3 w-3" />
-          </button>
-          <button
-            onClick={() => handleClipboardCopy(`Subject: ${subject}\n\n${body}`, id)}
-            aria-label="Copy email"
-            className="h-7 w-7 flex items-center justify-center text-gray-300 bg-surface-900 border border-gray-700 rounded-full active:scale-95 transition-transform hover:text-white"
-          >
-            {copiedId === id ? <CopyCheckIcon className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
-          </button>
-        </div>
-      </div>
-
-      {modifications && (
-        <div className="px-4 pt-3">
-          <div className="bg-info border-l-4 border-blue-500 rounded-lg p-2.5">
-            <p className="text-xs text-blue-200">
-              <span className="font-semibold">Modifications:</span> {modifications}
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="py-4 px-2 sm:px-4 space-y-3">
-        <div>
-          <h4 className="text-xs font-semibold text-gray-400 mb-1.5">Subject</h4>
-          <p className="text-[14px] text-gray-100 bg-surface-900 border border-gray-800 rounded-lg p-2.5">{subject}</p>
-        </div>
-        <div>
-          <h4 className="text-xs font-semibold text-gray-400 mb-1.5">Body</h4>
-          <div className="text-[14px] text-gray-100 bg-surface-900 border border-gray-800 rounded-lg p-3 whitespace-pre-wrap leading-relaxed">{body}</div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="h-full min-h-screen overflow-y-hidden flex flex-col relative bg-surface-900 z-0">
       <div className="absolute top-20 -left-14 w-1/2 h-48 bg-brand opacity-30 blur-3xl pointer-events-none transform-gpu will-change-transform"></div>
@@ -285,25 +221,32 @@ export default function EmailHistory() {
               <div className="flex flex-col lg:w-[65%] lg:mr-6 z-0">
                 {/* Email versions as dark cards (matches the generated email UI) */}
                 <div className="space-y-4 lg:space-y-6 overflow-y-auto max-h-[calc(100vh-160px)] lg:max-h-[calc(100vh-10rem)] pb-14 sm:pb-4 custom-scroll">
-                  {iterations?.map((iteration) =>
-                    renderEmailCard({
-                      id: iteration.id,
-                      badge: "Latest",
-                      badgeClass: "bg-green-500/15 text-green-300",
-                      date: iteration.createdAt,
-                      subject: iteration.subject,
-                      body: iteration.body,
-                      modifications: iteration.modifications,
-                    })
-                  )}
-                  {renderEmailCard({
-                    id: "original",
-                    badge: "Original",
-                    badgeClass: "bg-purple-500/15 text-purple-300",
-                    date: emailDetails?.createdAt,
-                    subject: original.subject,
-                    body: original.body,
-                  })}
+                  {iterations?.map((iteration) => (
+                    <EmailHistoryCard
+                      key={iteration.id}
+                      id={iteration.id}
+                      badge="Latest"
+                      badgeClass="bg-green-500/15 text-green-300"
+                      date={iteration.createdAt}
+                      subject={iteration.subject}
+                      body={iteration.body}
+                      modifications={iteration.modifications}
+                      copiedId={copiedId}
+                      onCopy={handleClipboardCopy}
+                      onGmailCompose={handleGmailCompose}
+                    />
+                  ))}
+                  <EmailHistoryCard
+                    id="original"
+                    badge="Original"
+                    badgeClass="bg-purple-500/15 text-purple-300"
+                    date={emailDetails?.createdAt}
+                    subject={original.subject}
+                    body={original.body}
+                    copiedId={copiedId}
+                    onCopy={handleClipboardCopy}
+                    onGmailCompose={handleGmailCompose}
+                  />
                 </div>
               </div>
 

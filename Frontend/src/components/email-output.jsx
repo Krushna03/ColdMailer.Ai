@@ -1,10 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUp, Copy, CopyCheckIcon, Loader2, MailOpen } from "lucide-react";
 import { Button } from "./ui/button";
 import { TiArrowBack } from "react-icons/ti";
 import { useSelector } from 'react-redux';
 import { formatBulletPoints, processGeneratedEmail } from '../lib/processGeneratedEmail';
 import { useCopyToClipboard, getUserInitial, parseEmail, openGmailCompose } from '../utils';
+import { useKeyboardOffset } from '../hooks/useKeyboardOffset';
 
 const MAX_TEXTAREA_HEIGHT = 100;
 
@@ -28,7 +29,7 @@ export function EmailOutput({
 
   const [copied, setCopied] = useState(false);
   const [readMorePrompt, setReadMorePrompt] = useState(false);
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const keyboardOffset = useKeyboardOffset();
   const mobileTextareaRef = useRef(null);
   const desktopTextareaRef = useRef(null);
   const user = useSelector(state => state.auth.userData);
@@ -36,7 +37,10 @@ export function EmailOutput({
 
   const handleCopyToClipboard = useCopyToClipboard(setCopied);
 
-  const { email, content } = processGeneratedEmail(generatedEmail);
+  const { email, content } = useMemo(
+    () => processGeneratedEmail(generatedEmail),
+    [generatedEmail]
+  );
 
   const [suggestions, setSuggestions] = useState("");
 
@@ -51,7 +55,7 @@ export function EmailOutput({
     return formatBulletPoints(content);
   };
 
-  const { subject, body } = parseEmail(email);
+  const { subject, body } = useMemo(() => parseEmail(email), [email]);
 
   const handleGmailCompose = () => {
     openGmailCompose({
@@ -78,25 +82,6 @@ export function EmailOutput({
       el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
     });
   }, [bottomPrompt]);
-
-  // Keep the fixed mobile input bar above the on-screen keyboard
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const handleViewport = () => {
-      const overlap = window.innerHeight - (vv.height + vv.offsetTop);
-      setKeyboardOffset(overlap > 0 ? overlap : 0);
-    };
-
-    handleViewport();
-    vv.addEventListener("resize", handleViewport);
-    vv.addEventListener("scroll", handleViewport);
-    return () => {
-      vv.removeEventListener("resize", handleViewport);
-      vv.removeEventListener("scroll", handleViewport);
-    };
-  }, []);
 
   const renderEmailBody = ({ dark = false } = {}) => {
     if (loading) {

@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EmailInput } from './email-input';
 import { EmailOutput } from './email-output';
 import { useToast } from "../hooks/use-toast";
 import { useSelector } from 'react-redux';
 import { useSidebarContext } from '../context/SidebarContext';
-import { ensureAuthenticated, isTokenExpired, useLogout } from '../Helper/tokenValidation';
+import { ensureAuthenticated, useLogout } from '../Helper/tokenValidation';
 import { useErrorToast } from '../hooks/useErrorToast';
+import { usePlanUsage } from '../hooks/usePlanUsage';
 import { getToken, api } from '../utils';
 
 export function EmailGenerator({ emailGenerated }) {
@@ -18,7 +19,7 @@ export function EmailGenerator({ emailGenerated }) {
     const [showOutput, setShowOutput] = useState(false);
     const [emailId, setEmailId] = useState("")
     const [error, setError] = useState(null);
-    const [planUsage, setPlanUsage] = useState(null);
+    const { planUsage, setPlanUsage, fetchPlanUsage } = usePlanUsage();
     const { toast } = useToast();
     const { updateSidebar, setUpdateSidebar } = useSidebarContext()
     const navigate = useNavigate();
@@ -27,33 +28,6 @@ export function EmailGenerator({ emailGenerated }) {
     const showErrorToast = useErrorToast();
     const user = useSelector(state => state.auth.userData)
     const userId = user?._id
-
-    const fetchPlanUsage = useCallback(async () => {
-      if (!token) return;
-
-      if (isTokenExpired(token)) {
-        logoutUser("Session expired. Please log in again.");
-        return;
-      }
-
-      try {
-        const response = await api.get(`/api/v1/email/usage`);
-
-        if (response.data.success) {
-          setPlanUsage(response.data.data);
-        }
-      } catch (err) {
-        if (err.response?.status === 401) {
-          logoutUser("Session expired. Please log in again.");
-        } else {
-          console.error('Failed to fetch plan usage', err);
-        }
-      }
-    }, [token, logoutUser]);
-
-    useEffect(() => {
-      fetchPlanUsage();
-    }, []);
 
     const generateEmail = async (e) => {
       e.preventDefault();

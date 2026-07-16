@@ -1,19 +1,14 @@
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ArrowUp, Sparkles } from "lucide-react";
+import { useLayoutEffect, useRef } from "react";
+import { ArrowUp } from "lucide-react";
+import { useKeyboardOffset } from "../hooks/useKeyboardOffset";
+import { PROMPT_SUGGESTIONS } from "../data/promptSuggestions";
 
 const MAX_TEXTAREA_HEIGHT = 200;
 
-const PROMPT_SUGGESTIONS = [
-  "Cold email to a SaaS founder pitching our analytics tool",
-  "Follow-up after a job interview for a frontend role",
-  "Reach out to a marketing manager about a collaboration",
-  "Introduce our design agency to a potential client",
-];
-
 export function EmailInput({ prompt, setPrompt, onSubmit }) {
 
-  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const keyboardOffset = useKeyboardOffset();
   const textareaRef = useRef(null);
 
   useLayoutEffect(() => {
@@ -22,24 +17,6 @@ export function EmailInput({ prompt, setPrompt, onSubmit }) {
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
   }, [prompt]);
-
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const handleViewport = () => {
-      const overlap = window.innerHeight - (vv.height + vv.offsetTop);
-      setKeyboardOffset(overlap > 0 ? overlap : 0);
-    };
-
-    handleViewport();
-    vv.addEventListener("resize", handleViewport);
-    vv.addEventListener("scroll", handleViewport);
-    return () => {
-      vv.removeEventListener("resize", handleViewport);
-      vv.removeEventListener("scroll", handleViewport);
-    };
-  }, []);
 
   return (
     <div className="w-full max-w-[750px] mx-auto px-0 flex flex-col">

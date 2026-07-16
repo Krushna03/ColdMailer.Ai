@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { memo, useEffect, useRef } from "react"
 
-export function MovingDots() {
+function MovingDotsComponent() {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -57,13 +57,15 @@ export function MovingDots() {
       }
     }
 
+    let animationFrameId
+
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       for (let i = 0; i < particles.length; i++) {
         particles[i].update()
         particles[i].draw()
       }
-      requestAnimationFrame(animate)
+      animationFrameId = requestAnimationFrame(animate)
     }
 
     init()
@@ -77,9 +79,12 @@ export function MovingDots() {
     window.addEventListener("resize", handleResize)
 
     return () => {
+      cancelAnimationFrame(animationFrameId)
       window.removeEventListener("resize", handleResize)
     }
   }, [])
 
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none" />
 }
+
+export const MovingDots = memo(MovingDotsComponent)
