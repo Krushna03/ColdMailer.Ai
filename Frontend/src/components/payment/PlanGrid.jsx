@@ -55,11 +55,11 @@ const PlanGrid = ({ plans, plansLoading, user, onSelectPlan }) => {
             <div
               key={plan.id}
               className={`relative rounded-3xl border bg-white/5 p-6 backdrop-blur-xl transition duration-200 hover:-translate-y-1 hover:border-white/30 ${
-                plan.popular ? 'border-[#6f34ed]/60 ring-1 ring-[#6f34ed]/50' : 'border-white/10'
+                plan.popular ? 'border-brand/60 ring-1 ring-brand/50' : 'border-white/10'
               }`}
             >
               {plan.popular && (
-                <span className="absolute -top-3 left-6 rounded-full bg-[#6f34ed] px-3 py-1 text-xs font-medium">
+                <span className="absolute -top-3 left-6 rounded-full bg-brand px-3 py-1 text-xs font-medium">
                   Most popular
                 </span>
               )}
@@ -88,7 +88,7 @@ const PlanGrid = ({ plans, plansLoading, user, onSelectPlan }) => {
                 <ul className="space-y-2 text-sm text-slate-200">
                   {plan.features?.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <span className="mt-1 h-2 w-2 rounded-full bg-[#6f34ed]" />
+                      <span className="mt-1 h-2 w-2 rounded-full bg-brand" />
                       {feature}
                     </li>
                   ))}
@@ -100,7 +100,7 @@ const PlanGrid = ({ plans, plansLoading, user, onSelectPlan }) => {
                 className={`mt-6 w-full ${
                   isDisabled
                     ? 'cursor-not-allowed bg-slate-600/60 text-slate-200'
-                    : 'bg-[#6f34ed] text-white hover:bg-[#7c3ffc]'
+                    : 'bg-brand text-white hover:bg-brand-400'
                 }`}
               >
                 {!plan.requiresPayment

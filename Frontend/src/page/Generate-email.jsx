@@ -46,18 +46,19 @@ export const GenerateEmail = () => {
       <Sidebar />
     
       {/* Main Content */}
-      <div className="h-[100dvh] overflow-hidden flex flex-col relative bg-[#0d0e12] z-0">
-        {/* Background glow */}
-        <div className="hidden sm:block absolute top-20 -left-14 w-1/2 h-48 bg-[#6f34ed] opacity-30 blur-3xl"></div>
-        <div className="hidden sm:block absolute bottom-20 right-0 w-1/2 h-40 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+      <div className="h-[100dvh] overflow-hidden flex flex-col relative bg-surface-900 z-0">
+        {/* Background glow — balanced, centered around the hero + input */}
+        {/* <div className="hidden sm:block absolute -top-10 left-1/2 -translate-x-1/2 w-[55%] h-56 bg-brand opacity-25 blur-3xl rounded-full"></div> */}
+        {/* <div className="hidden sm:block absolute top-1/3 -left-24 w-1/3 h-64 bg-brand-deep opacity-20 blur-3xl rounded-full"></div> */}
+        {/* <div className="hidden sm:block absolute top-1/3 -right-24 w-1/3 h-64 bg-brand-deep opacity-20 blur-3xl rounded-full"></div> */}
+        <div className="hidden sm:block absolute bottom-0 left-1/2 -translate-x-1/2 w-[65%] h-44 bg-brand opacity-20 blur-3xl rounded-full"></div>
 
         {/* Mobile-only glow near the bottom input */}
-        <div className="sm:hidden absolute bottom-0 -left-10 w-2/3 h-44 bg-[#6f34ed] opacity-30 blur-3xl"></div>
-        <div className="sm:hidden absolute bottom-0 -right-10 w-2/3 h-44 bg-[#8b5cf6] opacity-30 blur-3xl"></div>
+        <div className="sm:hidden absolute bottom-0 -left-10 w-2/3 h-44 bg-brand opacity-30 blur-3xl"></div>
+        <div className="sm:hidden absolute bottom-0 -right-10 w-2/3 h-44 bg-brand-200 opacity-30 blur-3xl"></div>
         
-        <div className="sm:hidden absolute top-0 -left-20 w-2/3 h-20 bg-[#6f34ed] opacity-25 blur-3xl"></div>
+        <div className="sm:hidden absolute top-0 -left-20 w-2/3 h-20 bg-brand opacity-25 blur-3xl"></div>
         
-
         <div className='hidden sm:block'>
           <MovingDots />
         </div>

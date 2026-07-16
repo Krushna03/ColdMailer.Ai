@@ -65,7 +65,7 @@ const LandingPage = () => {
         </div>
 
         <div className={`fixed inset-x-0 top-4 z-50 flex justify-center transition-all duration-300 ${showMidHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-3 pointer-events-none'}`}>
-          <div className="hidden lg:flex items-center gap-6 rounded-2xl bg-gradient-to-r from-[#1b1727] to-[#1f1a2e] px-4 py-2 shadow-2xl border border-white/10 backdrop-blur-2xl">
+          <div className="hidden lg:flex items-center gap-6 rounded-2xl bg-gradient-to-r from-surface-700 to-surface-700 px-4 py-2 shadow-2xl border border-white/10 backdrop-blur-2xl">
             <div className="flex items-center gap-2 cursor-pointer">
               <img src="/white-logo.png" alt="logo" className="h-8 w-8 p-1 rounded cursor-pointer" />
             </div>
@@ -80,8 +80,8 @@ const LandingPage = () => {
                     duration={550}
                     offset={item.offset}
                     spy={true}
-                    className="cursor-pointer text-sm text-gray-200 hover:text-[#a18cef] transition-colors"
-                    activeStyle={{ color: "#a18cef", fontWeight: "bold" }}
+                    className="cursor-pointer text-sm text-gray-200 hover:text-brand-300 transition-colors"
+                    activeStyle={{ color: "var(--brand-300)", fontWeight: "bold" }}
                   >
                     {item.label}
                   </ScrollLink>
@@ -90,15 +90,15 @@ const LandingPage = () => {
             </div>
             <NavLink
               to="/generate-email"
-              className="bg-[#5d30d1] hover:bg-[#482ab5] text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-all cursor-pointer"
+              className="bg-brand hover:bg-brand-600 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-all cursor-pointer"
             >
               Generate Email
             </NavLink>
           </div>
         </div>
 
-        <div className="absolute top-10 -left-14 w-1/2 h-72 bg-[#6f34ed] opacity-30 blur-3xl"></div>
-        <div className="absolute bottom-10 -right-0 w-1/2 h-64 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+        <div className="absolute top-10 -left-14 w-1/2 h-72 bg-brand opacity-30 blur-3xl"></div>
+        <div className="absolute bottom-10 -right-0 w-1/2 h-64 bg-brand opacity-30 blur-3xl"></div>
 
         {/* Navigation */}
         <header className="relative z-10 flex items-center justify-between px-4 py-6 md:py-5 md:px-16 lg:gap-20">
@@ -119,8 +119,8 @@ const LandingPage = () => {
                   duration={600}
                   offset={item.offset}
                   spy={true}
-                  className="cursor-pointer hover:text-[#a18cef] transition-colors"
-                  activeClass="text-[#a18cef] font-semibold"
+                  className="cursor-pointer hover:text-brand-300 transition-colors"
+                  activeClass="text-brand-300 font-semibold"
                 >
                   {item.label}
                 </ScrollLink>
@@ -134,12 +134,12 @@ const LandingPage = () => {
                 <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
               <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
               </span>
-              {userCount ? userCount : "200+" }
+              {userCount ? userCount : "300+" }
               <User className='h-4 w-4 text-white' />
             </div>
             <NavLink
               to="/generate-email"
-              className="bg-[#5d30d1] hover:bg-[#482ab5] text-white px-2 md:px-4 py-2 md:py-2 rounded-lg transition-colors flex items-center gap-1 md:gap-2 text-xs md:text-base"
+              className="bg-brand hover:bg-brand-600 text-white px-2 md:px-4 py-2 md:py-2 rounded-lg transition-colors flex items-center gap-1 md:gap-2 text-xs md:text-base"
             >
             <RiMailSendFill className='h-4 w-4' /> Generate Email
             </NavLink>
@@ -147,30 +147,30 @@ const LandingPage = () => {
         </header>
 
         {/* Hero Section */}
-        <main className="relative z-10 flex flex-col items-center justify-center px-6 text-center mt-16 md:mt-24">
-          <div className="inline-flex items-center bg-[#1a1133] shadow-2xl rounded-full px-4 py-2 mb-6 gap-1">
+        <main className="relative z-10 flex flex-col items-center justify-center px-6 text-center mt-20 md:mt-28">
+          <div className="inline-flex items-center bg-brand-900 shadow-2xl rounded-full px-4 md:px-7 py-2 mb-5 sm:mb-4 gap-2">
             <img src="/white-logo.png" alt="logo" className="h-6 w-6 md:h-7 md:w-7 p-1 rounded" />
-            <span className="text-xs md:text-sm">ColdMailerAI - AI Powered Email Generator</span>
+            <span className="text-sm md:text-base">ColdMailerAI - AI Powered Email Generator</span>
           </div>
 
-          <h1 className="text-2xl md:text-6xl lg:text-7xl font-bold max-w-6xl leading-tight mb-6">
-            Transforming outreach with AI powered cold emails
+          <h1 className="text-2xl md:text-6xl lg:text-7xl font-bold max-w-6xl leading-tight sm:leading-relaxed mb-6">
+            Transforming Outreach with AI Powered Cold Emails
           </h1>
 
           <p className="text-base md:text-xl text-gray-300 max-w-[580px] mb-12">
             Enhance outreach with AI-driven, scalable cold email generation, designed to boost engagement and conversions.        
           </p>
 
-          <div className="flex gap-4 mb-20 md:mb-24">
+          <div className="flex gap-4 sm:gap-5 mb-20 md:mb-24">
             <NavLink
               to={!token ? "/generate-email" : "/sign-in"}
-              className="bg-[#3f1cbc] hover:bg-[#2c1679] text-white px-5 md:px-8 py-3 rounded-lg transition-colors font-medium"
+              className="bg-brand-700 hover:bg-brand-800 text-white px-8 md:px-10 py-3 rounded-lg transition-colors font-medium"
             >
-              {!token ? "Create New Email" : "Get started"}
+              {!token ? "Create New Email" : "Get Started"}
             </NavLink>
             <NavLink
               to="/sign-up"
-              className="flex items-center gap-1 border border-gray-600 hover:border-gray-400 text-white px-5 md:px-8 py-3 rounded-lg transition-colors"
+              className="flex items-center gap-1 border border-gray-600 hover:border-gray-400 text-white px-8 md:px-10 py-3 rounded-lg transition-colors"
             >
               It's Free <RiMoneyDollarCircleLine className='h-5 w-5'/>
             </NavLink>
@@ -212,7 +212,7 @@ const LandingPage = () => {
       {/* Feature */}
       <Element name='features' id='features' className='min-h-screen bg-black relative overflow-hidden'>
         <section className="w-full max-w-7xl mx-auto py-10">
-          <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
+          <div className="max-w-24 flex justify-center bg-surface-800 mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-sm sm:text-base font-normal text-gray-200">Features</span>
           </div>
 
@@ -224,9 +224,9 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 p-5 md:p-0">
             {
               features.map((feature, index) => (
-                <div key={index} className="bg-gradient-to-br from-[#1d1c1f] p-6 rounded-[28px]">
+                <div key={index} className="bg-gradient-to-br from-surface-700 p-6 rounded-[28px]">
                   <div className="w-7 h-7 md:w-10 md:h-10 bg-[#28252ee7] rounded-lg flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-[#6435db]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={feature.iconPath} />
                     </svg>
                   </div>
@@ -250,7 +250,7 @@ const LandingPage = () => {
       {/* Faqs */}
       <Element name='faqs' id='faqs' className='z-10 min-h-screen bg-black relative overflow-hidden'>
         <section className="w-full max-w-5xl mx-auto py-10 px-2 md:px-0">
-          <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
+          <div className="max-w-24 flex justify-center bg-surface-800 mx-auto rounded-full px-4 py-2 mb-8">
             <span className="text-sm sm:text-base font-normal text-gray-200">FAQs</span>
           </div>
 
@@ -265,7 +265,7 @@ const LandingPage = () => {
       {/* Contact */}
       <Element name='contact' id='contact' className='z-10 min-h-screen bg-black relative overflow-hidden'>
         <section className="w-full max-w-7xl mx-auto py-10">
-          <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-2 md:mb-8">
+          <div className="max-w-24 flex justify-center bg-surface-800 mx-auto rounded-full px-4 py-2 mb-2 md:mb-8">
             <span className="text-sm sm:text-base font-normal text-gray-200">Contacts</span>
           </div>
           <Contact />

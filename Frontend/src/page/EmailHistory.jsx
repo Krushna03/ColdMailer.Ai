@@ -1,19 +1,15 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Copy, CopyCheckIcon, MailOpen, Loader2 } from "lucide-react"
+import { ArrowUp, Copy, CopyCheckIcon, MailOpen, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Header } from "../components/Header"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { useSelector } from "react-redux"
 import Sidebar from "../components/Sidebar"
 import { TiArrowBack } from "react-icons/ti"
-import EmailUpdateLoader from "../loader/loader"
 import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation"
 import { useErrorToast } from "../hooks/useErrorToast"
-import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose, api } from "../utils"
+import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose, getUserInitial, api } from "../utils"
 import { useSidebarContext } from "../context/SidebarContext"
 
 export default function EmailHistory() {
@@ -33,10 +29,41 @@ export default function EmailHistory() {
   const [newModification, setNewModification] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [copiedId, setCopiedId] = useState(null)
-  
+  const [keyboardOffset, setKeyboardOffset] = useState(0)
+  const mobileTextareaRef = useRef(null)
+
   const handleClipboardCopy = useCopyToClipboard(setCopiedId)
+  const isGenerateDisabled = !newModification.trim() || isGenerating
+
+  // Auto-resize the sticky mobile textarea
+  useLayoutEffect(() => {
+    const el = mobileTextareaRef.current
+    if (!el) return
+    el.style.height = "auto"
+    el.style.height = `${Math.min(el.scrollHeight, 110)}px`
+  }, [newModification])
+
+  // Keep the sticky mobile input above the on-screen keyboard
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+
+    const handleViewport = () => {
+      const overlap = window.innerHeight - (vv.height + vv.offsetTop)
+      setKeyboardOffset(overlap > 0 ? overlap : 0)
+    }
+
+    handleViewport()
+    vv.addEventListener("resize", handleViewport)
+    vv.addEventListener("scroll", handleViewport)
+    return () => {
+      vv.removeEventListener("resize", handleViewport)
+      vv.removeEventListener("scroll", handleViewport)
+    }
+  }, [])
   const user = useSelector((state) => state.auth.userData)
   const userEmail = user?.email || ""
+  const userInitial = getUserInitial(user?.username)
 
   const handleGmailCompose = (subject, body) => {
     openGmailCompose({ to: userEmail, subject, body, userEmail })
@@ -164,207 +191,182 @@ export default function EmailHistory() {
     }
   };
   
+  const renderEmailCard = ({ id, badge, badgeClass, date, subject, body, modifications }) => (
+    <div key={id} className="rounded-2xl overflow-hidden border border-gray-700 bg-surface-850 shadow-lg">
+      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-gray-800 bg-surface-800">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${badgeClass}`}>{badge}</span>
+          <span className="text-xs text-gray-400 truncate">{new Date(date).toLocaleDateString()}</span>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => handleGmailCompose(subject, body)}
+            aria-label="Send to Gmail"
+            className="h-7 w-7 flex items-center justify-center text-gray-300 bg-surface-900 border border-gray-700 rounded-full active:scale-95 transition-transform hover:text-white"
+          >
+            <MailOpen className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => handleClipboardCopy(`Subject: ${subject}\n\n${body}`, id)}
+            aria-label="Copy email"
+            className="h-7 w-7 flex items-center justify-center text-gray-300 bg-surface-900 border border-gray-700 rounded-full active:scale-95 transition-transform hover:text-white"
+          >
+            {copiedId === id ? <CopyCheckIcon className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
+          </button>
+        </div>
+      </div>
+
+      {modifications && (
+        <div className="px-4 pt-3">
+          <div className="bg-info border-l-4 border-blue-500 rounded-lg p-2.5">
+            <p className="text-xs text-blue-200">
+              <span className="font-semibold">Modifications:</span> {modifications}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="py-4 px-2 sm:px-4 space-y-3">
+        <div>
+          <h4 className="text-xs font-semibold text-gray-400 mb-1.5">Subject</h4>
+          <p className="text-[14px] text-gray-100 bg-surface-900 border border-gray-800 rounded-lg p-2.5">{subject}</p>
+        </div>
+        <div>
+          <h4 className="text-xs font-semibold text-gray-400 mb-1.5">Body</h4>
+          <div className="text-[14px] text-gray-100 bg-surface-900 border border-gray-800 rounded-lg p-3 whitespace-pre-wrap leading-relaxed">{body}</div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="h-full min-h-screen overflow-y-hidden flex flex-col relative bg-[#0d0e12] z-0">
-      <div className="absolute top-20 -left-14 w-1/2 h-48 bg-[#6f34ed] opacity-30 blur-3xl"></div>
-      <div className="absolute bottom-20 right-0 w-1/2 h-40 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+    <div className="h-full min-h-screen overflow-y-hidden flex flex-col relative bg-surface-900 z-0">
+      <div className="absolute top-20 -left-14 w-1/2 h-48 bg-brand opacity-30 blur-3xl pointer-events-none transform-gpu will-change-transform"></div>
+      <div className="absolute bottom-20 right-0 w-1/2 h-40 bg-brand opacity-30 blur-3xl pointer-events-none transform-gpu will-change-transform"></div>
 
       <Sidebar />
       <Header />
 
-      <div className="relative z-10 container mx-auto px-2 sm:px-8 lg:px-14 py-6 flex-1 overflow-y-auto custom-scroll">
+      <div className="relative z-10 container mx-auto px-3 sm:px-8 lg:px-14 py-6 flex-1 overflow-y-auto custom-scroll transform-gpu [contain:paint]">
         {fetchLoading ? (
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-260px)]">
-            <Loader2 className="h-12 w-12 animate-spin text-[#6f34ed] mb-4" />
+            <Loader2 className="h-12 w-12 animate-spin text-brand mb-4" />
             <p className="text-gray-200 text-lg font-medium">Loading history...</p>
           </div>
         ) : !emailDetails ? (
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-260px)]">
             <p className="text-red-400 text-lg font-medium">History not found or access denied.</p>
-            <Button onClick={() => navigate("/generate-email")} className="mt-4 bg-[#6f34ed] hover:bg-[#7c3ffc]">
+            <Button onClick={() => navigate("/generate-email")} className="mt-4 bg-brand hover:bg-brand-400">
               Go to Generator
             </Button>
           </div>
         ) : (
           <>
-            <div className="mb-3 max-w-4xl mx-left">
-              <h2 className="text-sm md:text-lg font-semibold text-white mb-2">
+            {/* Mobile: prompt as a chat bubble with the user's avatar */}
+            <div className="lg:hidden flex items-start gap-2.5 mb-4">
+              <span className="shrink-0 h-8 w-8 flex items-center justify-center bg-brand-deep rounded-full text-sm font-semibold text-white">
+                {userInitial?.toUpperCase()}
+              </span>
+              <div className="flex-1 bg-surface-800 border border-gray-700 rounded-2xl rounded-tl-sm px-3.5 py-2.5">
+                <p className="text-[15px] leading-relaxed text-gray-200 break-words">
+                  {capitalizeFirstLetter(emailDetails?.prompt || '')}
+                </p>
+              </div>
+            </div>
+
+            {/* Desktop: heading */}
+            <div className="hidden lg:block mb-3 max-w-4xl">
+              <h2 className="text-lg font-semibold text-white mb-2">
                 {capitalizeFirstLetter(emailDetails?.prompt || '')}
               </h2>
             </div>
 
             <div className="w-full lg:flex">
-              <div className="flex flex-col lg:w-[64%] lg:mr-10 gap-8 z-0">
-                <div className="lg:col-span-2 space-y-6 overflow-y-auto max-h-[calc(100vh-280px)] md:max-h-[calc(100vh-300px)] lg:max-h-[calc(100vh-10rem)] pb-10 custom-scroll">
-                  {/* Render iterations first (latest at top) */}
-                  {iterations?.map((iteration) => (
-                    <Card key={iteration?.id} className="bg-white/95 backdrop-blur-sm border-0 shadow-xl">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Badge variant="secondary" className="bg-green-100 text-green-700">
-                              Latest
-                            </Badge>
-                            <span className="text-sm text-slate-500">
-                              {new Date(iteration?.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleGmailCompose(iteration.subject, iteration.body)}
-                              className="gap-2 text-xs sm:text-sm"
-                            >
-                              Send to Gmail <MailOpen className="mt-1 h-2 w-2 sm:w-4 sm:h-4 p-0" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleClipboardCopy(
-                                  `Subject: ${iteration.subject}\n\n${iteration.body}`,
-                                  iteration.id
-                                )
-                              }
-                              className="gap-2 text-xs sm:text-sm"
-                            >
-                              {copiedId === iteration.id ? (
-                                <>
-                                  Copied <CopyCheckIcon className="mt-1 h-2 w-2 sm:w-4 sm:h-4 text-black" />
-                                </>
-                              ) : (
-                                <>
-                                  Copy <Copy className="mt-1 h-2 w-2 sm:w-4 sm:h-4 p-0" />
-                                </>
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                        {iteration.modifications && (
-                          <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                            <p className="text-sm text-blue-700">
-                              <strong>Modifications:</strong> {iteration.modifications}
-                            </p>
-                          </div>
-                        )}
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <h4 className="text-sm sm:text-base font-semibold text-slate-700 mb-2 ml-1">Subject:</h4>
-                          <p className="text-xs sm:text-base text-slate-950 font-medium bg-slate-50 p-3 rounded-lg">{iteration.subject}</p>
-                        </div>
-                        <div>
-                          <h4 className="text-sm sm:text-base font-semibold text-slate-700 mb-2 ml-1">Body:</h4>
-                          <div className="text-slate-950 font-medium bg-slate-50 p-4 rounded-lg whitespace-pre-wrap text-xs sm:text-sm">
-                            {iteration.body}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-
-                  {/* Original email at the bottom */}
-                  <Card key={emailDetails?._id} className="bg-white/95 backdrop-blur-sm border-0 shadow-xl">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Badge variant="secondary" className="bg-purple-100 text-purple-700">Original</Badge>
-                          <span className="text-xs sm:text-sm text-slate-500">
-                            {new Date(emailDetails?.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleGmailCompose(original.subject, original.body)}
-                            className="gap-2 text-xs sm:text-sm"
-                          >
-                            Send to Gmail <MailOpen className="mt-1 h-2 w-2 sm:w-4 sm:h-4 p-0" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              handleClipboardCopy(
-                                `Subject: ${original.subject}\n\n${original.body}`,
-                                'original'
-                              )
-                            }
-                            className="gap-2 text-xs sm:text-sm"
-                          >
-                            {copiedId === 'original' ? (
-                              <>
-                                Copied <CopyCheckIcon className="mt-1 h-2 w-2 sm:w-4 sm:h-4 text-black" />
-                              </>
-                            ) : (
-                              <>
-                                Copy <Copy className="mt-1 h-1 w-1 sm:w-4 sm:h-4 p-0" />
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <h4 className="text-sm sm:text-base font-semibold text-slate-700 mb-2 ml-1">Subject:</h4>
-                        <p className="text-xs sm:text-base text-slate-950 font-medium bg-slate-50 p-3 rounded-lg">{original.subject}</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm sm:text-base font-semibold text-slate-700 mb-2 ml-1">Body:</h4>
-                        <div className="text-slate-950 font-medium bg-slate-50 p-4 rounded-lg whitespace-pre-wrap text-xs sm:text-sm">
-                          {original.body}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+              <div className="flex flex-col lg:w-[65%] lg:mr-6 z-0">
+                {/* Email versions as dark cards (matches the generated email UI) */}
+                <div className="space-y-4 lg:space-y-6 overflow-y-auto max-h-[calc(100vh-160px)] lg:max-h-[calc(100vh-10rem)] pb-14 sm:pb-4 custom-scroll">
+                  {iterations?.map((iteration) =>
+                    renderEmailCard({
+                      id: iteration.id,
+                      badge: "Latest",
+                      badgeClass: "bg-green-500/15 text-green-300",
+                      date: iteration.createdAt,
+                      subject: iteration.subject,
+                      body: iteration.body,
+                      modifications: iteration.modifications,
+                    })
+                  )}
+                  {renderEmailCard({
+                    id: "original",
+                    badge: "Original",
+                    badgeClass: "bg-purple-500/15 text-purple-300",
+                    date: emailDetails?.createdAt,
+                    subject: original.subject,
+                    body: original.body,
+                  })}
                 </div>
               </div>
 
-              <div className="lg:w-[34%] sticky bottom-2 border-t-8 sm:border-none border-gray-900">
+              {/* Desktop input panel */}
+              <div className="hidden lg:block lg:w-[35%] sticky bottom-2">
                 <Button 
                   onClick={() => navigate(`/generate-email`)}
-                  variant="outline" 
-                  className="hidden lg:inline-flex bg-[#2f2f37bc] hover:bg-[#3a3a44] text-gray-300 hover:text-gray-200 px-3 h-8 text-sm mb-4 gap-1"
+                  className="inline-flex bg-none text-gray-300 hover:text-gray-200 px-3 h-8 text-sm mb-4 gap-1 hover:bg-none border border-gray-600 rounded-full"
                 >
                   <TiArrowBack className='h-5 w-5' />
                   Back to Input
                 </Button>
 
-                <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl">
-                  <CardContent className="space-y-4">
-                    <form onSubmit={generateNewEmailIteration}>
-                      <div className="pt-2 sm:pt-4">
-                        <Textarea
-                          placeholder="Generate more cold mail..."
-                          value={newModification}
-                          onChange={(e) => setNewModification(e.target.value)}
-                          disabled={isGenerating}
-                          className="min-h-[15px] lg:min-h-[130px] resize-none sm:placeholder:text-base border border-gray-400 rounded-xl placeholder:text-sm placeholder:font-medium placeholder:text-gray-500 focus:outline-none focus:ring-0 focus:border-none custom-scroll text-slate-950 disabled:opacity-60 disabled:cursor-not-allowed"
-                        />
-                      </div>
+                <form onSubmit={generateNewEmailIteration}>
+                  <div className="flex flex-col bg-surface-850 border border-gray-700 rounded-2xl p-2.5 shadow-lg focus-within:border-gray-500 transition-colors">
+                    <textarea
+                      placeholder="Generate more cold mail..."
+                      value={newModification}
+                      onChange={(e) => setNewModification(e.target.value)}
+                      disabled={isGenerating}
+                      className="w-full min-h-[110px] resize-none bg-transparent text-gray-200 text-sm px-2 pt-1.5 placeholder:text-gray-500 focus:outline-none custom-scroll disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                    <div className="flex justify-end">
                       <button
                         type="submit"
-                        disabled={!newModification.trim() || isGenerating}
-                        className={`w-full py-2 text-gray-200 rounded-lg ${(!newModification.trim() || isGenerating) ? 'bg-[#2e137a] text-gray-300 cursor-not-allowed' : 'bg-[#3b1cab] text-gray-50 cursor-pointer'} flex justify-center items-center gap-1 text-sm sm:text-lg font-normal mt-3 mb-6 sm:mb-0`}
+                        disabled={isGenerateDisabled}
+                        aria-label="Generate email"
+                        className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-full transition-colors active:scale-95 ${isGenerateDisabled ? 'bg-brand-800 text-gray-400 cursor-not-allowed' : 'bg-brand-700 hover:bg-brand-600 text-white cursor-pointer'}`}
                       >
-                        {isGenerating ? (
-                          <>
-                            Generating...
-                            <EmailUpdateLoader />
-                          </>
-                        ) : (
-                          <>
-                            Generate Email
-                          </>
-                        )}
+                        {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
                       </button>
-                    </form>
-                  </CardContent>
-                </Card>
+                    </div>
+                  </div>
+                </form>
               </div>
             </div>
+
+            {/* Sticky mobile/tablet input (ChatGPT-style pill) */}
+            <form
+              onSubmit={generateNewEmailIteration}
+              style={{ bottom: keyboardOffset, paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+              className="lg:hidden fixed inset-x-0 z-30 px-3 pt-3 bg-gradient-to-t from-surface-900 via-surface-900 to-transparent transition-[bottom] duration-10"
+            >
+              <div className="flex items-end gap-2 bg-surface-800 border border-gray-700 rounded-[26px] px-2 py-2 focus-within:border-gray-500 transition-colors">
+                <textarea
+                  ref={mobileTextareaRef}
+                  rows={1}
+                  placeholder="Generate more cold mail..."
+                  className="flex-1 resize-none bg-transparent text-gray-200 text-base placeholder:text-gray-500 px-2 py-2 max-h-36 overflow-y-auto focus:outline-none custom-scroll disabled:opacity-60"
+                  value={newModification}
+                  onChange={(e) => setNewModification(e.target.value)}
+                  disabled={isGenerating}
+                />
+                <button
+                  type="submit"
+                  disabled={isGenerateDisabled}
+                  aria-label="Generate email"
+                  className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 ${isGenerateDisabled ? 'bg-brand-800 text-gray-400' : 'bg-brand-700 text-white'}`}
+                >
+                  {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
+                </button>
+              </div>
+            </form>
           </>
         )}
       </div>

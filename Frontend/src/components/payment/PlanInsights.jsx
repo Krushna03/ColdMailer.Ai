@@ -15,7 +15,7 @@ const PlanInsights = ({
         <h2 className="text-xl font-semibold">Plan insights</h2>
         <p className="text-sm text-slate-400 mt-1">Real-time overview of your membership.</p>
       </div>
-      <Badge className="bg-[#6f34ed]/20 text-[#c5a7ff] border border-[#6f34ed]/40">
+      <Badge className="bg-brand/20 text-brand-50 border border-brand/40">
         {user?.isPaidUser ? 'Pro access' : 'Free tier'}
       </Badge>
     </div>

@@ -52,7 +52,7 @@ export default function PricingSection() {
     <div className="w-full max-w-7xl mx-auto container px-5 md:px-6 py-20">
       {/* Header */}
       <div className="text-center mb-16">
-        <div className="max-w-24 flex justify-center bg-[#16151c] mx-auto rounded-full px-4 py-2 mb-8">
+        <div className="max-w-24 flex justify-center bg-surface-800 mx-auto rounded-full px-4 py-2 mb-8">
           <span className="text-sm sm:text-base font-normal text-gray-200">Pricing</span>
         </div>  
 
@@ -70,12 +70,12 @@ export default function PricingSection() {
           <Card
             key={index}
             className={`relative bg-slate-900/50 border-slate-800 backdrop-blur-sm ${
-              plan.popular ? "ring-2 ring-[#6f34ed] scale-105" : ""
+              plan.popular ? "ring-2 ring-brand scale-105" : ""
             }`}
           >
             {plan.popular && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-[#6f34ed] text-white px-4 py-1 rounded-full text-sm font-medium">
+                <span className="bg-brand text-white px-4 py-1 rounded-full text-sm font-medium">
                   Most Popular
                 </span>
               </div>
@@ -98,7 +98,7 @@ export default function PricingSection() {
               <ul className="space-y-3">
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-center text-slate-300">
-                    <Check className="h-4 w-4 text-[#6f34ed] mr-3 flex-shrink-0" />
+                    <Check className="h-4 w-4 text-brand mr-3 flex-shrink-0" />
                     <span className="text-sm">{feature}</span>
                   </li>
                 ))}
@@ -107,7 +107,7 @@ export default function PricingSection() {
               <Button
                 className={`w-full ${
                   plan.buttonVariant === "default"
-                    ? "bg-[#6f34ed] hover:from-purple-600 hover:to-purple-700 text-white"
+                    ? "bg-brand hover:from-purple-600 hover:to-purple-700 text-white"
                     : "bg-gray-800 border-slate-700 text-slate-300 hover:bg-slate-900 hover:text-white"
                 }`}
                 variant={plan.buttonVariant}

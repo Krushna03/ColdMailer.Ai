@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="bg-black text-white pt-16 pb-5 sm:pb-8 relative overflow-hidden">
 
-      <div className="absolute top-1/3 -rotate-12 w-full h-20 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+      <div className="absolute top-1/3 -rotate-12 w-full h-20 bg-brand opacity-30 blur-3xl"></div>
 
       <div className="container mx-auto px-4 md:px-2 max-w-7xl">
         <div className="flex flex-col md:flex-row justify-between">
@@ -29,16 +29,16 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-zinc-300 rounded-md flex items-center justify-center hover:bg-zinc-400 transition-colors"
               >
-                <Linkedin size={18} className="text-[#4f23af] " />
+                <Linkedin size={18} className="text-brand-600 " />
                 <span className="sr-only">LinkedIn</span>
               </a>
               <a
-                href="https://github.com/Krushna03"
+                href="https://github.com/Krushna03/ColdMailer.Ai"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-zinc-300 rounded-md flex items-center justify-center hover:bg-zinc-400 transition-colors"
               >
-                <Github size={18} className="text-[#4f23af]" />
+                <Github size={18} className="text-brand-600" />
                 <span className="sr-only">Github</span>
               </a>
               <a
@@ -47,7 +47,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-zinc-300 rounded-md flex items-center justify-center hover:bg-zinc-400 transition-colors"
               >
-                <Twitter size={18} className="text-[#4f23af]" />
+                <Twitter size={18} className="text-brand-600" />
                 <span className="sr-only">Twitter</span>
               </a>
             </div>

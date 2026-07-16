@@ -7,7 +7,7 @@ export const plans = [
     period: "forever",
     description: "Perfect for trying AI-powered email generation",
     icon: Zap,
-    iconClassName: "h-6 w-6 text-[#6f34ed]",
+    iconClassName: "h-6 w-6 text-brand",
     features: [
       "50 emails per month",
       "Basic email templates",
@@ -25,7 +25,7 @@ export const plans = [
     period: "per month",
     description: "Ideal for professionals and small teams",
     icon: Crown,
-    iconClassName: "h-6 w-6 text-[#6f34ed]",
+    iconClassName: "h-6 w-6 text-brand",
     features: [
       "500 emails per month",
       "Advanced personalization",

@@ -58,6 +58,38 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+  			brand: {
+  				DEFAULT: '#6f34ed',
+  				50: '#c5a7ff',
+  				100: '#a78bfa',
+  				200: '#8b5cf6',
+  				300: '#a18cef',
+  				400: '#7c3ffc',
+  				500: '#6f34ed',
+  				600: '#4f23af',
+  				700: '#3b1cab',
+  				800: '#2e137a',
+  				900: '#1a1133',
+  				deep: '#482b9e'
+  			},
+  			surface: {
+  				DEFAULT: '#0d0e12',
+  				foreground: '#f0f0f6',
+  				500: '#3a3a44',
+  				600: '#252628',
+  				700: '#1c1f23',
+  				800: '#16161c',
+  				850: '#111218',
+  				900: '#0d0e12',
+  				950: '#05060a'
+  			},
+  			danger: {
+  				DEFAULT: '#de473c',
+  				dark: '#1a1016'
+  			},
+  			info: {
+  				DEFAULT: '#141b2d'
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

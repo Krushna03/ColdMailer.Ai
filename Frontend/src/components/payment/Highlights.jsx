@@ -9,7 +9,7 @@ const Highlights = ({ cards }) => (
         >
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-300">{title}</p>
-            <IconComponent className="h-4 w-4 text-[#9c6bff]" />
+            <IconComponent className="h-4 w-4 text-brand-200" />
           </div>
           <p className="mt-3 text-2xl font-semibold">{value}</p>
           <p className="text-sm text-slate-400 mt-2">{subtext}</p>

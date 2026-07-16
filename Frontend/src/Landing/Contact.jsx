@@ -61,7 +61,7 @@ export default function Contact() {
   return (
     <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 p-8 relative">
 
-      <div className="absolute top-1/3 -rotate-12 w-full h-24 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+      <div className="absolute top-1/3 -rotate-12 w-full h-24 bg-brand opacity-30 blur-3xl"></div>
 
       {/* Left side - Text content */}
       <div className="lg:w-1/2 space-y-6 sm:space-y-8">
@@ -91,7 +91,7 @@ export default function Contact() {
               placeholder="Jane Smith"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#3f1cbc]"
+              className="w-full px-4 py-3 rounded-lg bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-brand-700"
             />
           </div>
 
@@ -106,7 +106,7 @@ export default function Contact() {
               placeholder="jane@smith@gmail.com"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#3f1cbc]"
+              className="w-full px-4 py-3 rounded-lg bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-brand-700"
             />
           </div>
 
@@ -121,7 +121,7 @@ export default function Contact() {
               placeholder="Hi, I am reaching out for..."
               value={formData.message}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#3f1cbc] resize-none"
+              className="w-full px-4 py-3 rounded-lg bg-zinc-900 border border-zinc-800 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-brand-700 resize-none"
             />
           </div>
 
@@ -131,7 +131,7 @@ export default function Contact() {
               !formData.name.trim() ||
               !formData.email.trim() ||
               !formData.message.trim()}
-            className="w-full py-2 md:py-3 md:px-4 bg-[#3f1cbc] hover:bg-[#2c1679] text-white font-medium rounded-md transition-colors"
+            className="w-full py-2 md:py-3 md:px-4 bg-brand-700 hover:bg-brand-800 text-white font-medium rounded-md transition-colors"
           >
             {loading ? "Sending..." : "Submit"}
           </button>

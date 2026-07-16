@@ -1,11 +1,12 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { ShimmerButton } from "./ui/spinner-button"
-import { User } from "lucide-react"
+import { Menu, User } from "lucide-react"
 import { useSelector } from "react-redux"
 import { useEffect, useState } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger} from "../components/ui/dropdown-menu"
 import { PlanUsageNotice } from "./PlanUsageNotice"
 import { fetchToken, isTokenExpired, useLogout } from "../Helper/tokenValidation"
+import { useSidebarContext } from "../context/SidebarContext"
 import { api } from "../utils"
 
 export function Header() {
@@ -19,6 +20,11 @@ export function Header() {
   const location = useLocation()
   const textToShow = location.pathname === "/payment" ? "Generate Email" : "Manage Plan"
   const logoutUser = useLogout()
+  const { setIsSidebarOpen } = useSidebarContext()
+
+  const hasSidebar =
+    location.pathname.startsWith("/generate-email") ||
+    location.pathname.startsWith("/email/")
 
   useEffect(() => {
     if (!token) {
@@ -83,13 +89,13 @@ export function Header() {
             </span>
           </div>
         </NavLink>
-        <div className="ml-auto flex items-center gap-4 mt-1">
+        <div className="ml-auto flex items-center gap-1 sm:gap-4 mt-1">
           {
             token ? (
               <>
               <NavLink to={location.pathname === "/payment" ? "/generate-email" : "/payment"}>
-                <ShimmerButton background="#6f34ed" className="hidden sm:block shadow-2xl hover:scale-[1.01]">
-                  <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none text-white lg:text-base tracking-wider">
+                <ShimmerButton background="var(--brand)" className="hidden sm:block shadow-2xl hover:scale-[1.01]">
+                  <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none text-white text-sm tracking-wider">
                     {
                       textToShow
                     }
@@ -99,7 +105,7 @@ export function Header() {
 
               <DropdownMenu className="ml-3">
                 <DropdownMenuTrigger asChild>
-                  <User className="h-8 w-8 sm:h-10 sm:w-10 mr-2 sm:mr-0 rounded-full bg-[#4a465bd3] text-white p-2 cursor-pointer"/>
+                  <User className="h-8 w-8 sm:h-9 sm:w-9 mr-2 sm:mr-0 rounded-full bg-[#4a465bd3] text-white p-2 cursor-pointer"/>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-[298px] bg-[#24232bf3] text-white border-none mr-5 mt-2">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
@@ -133,6 +139,16 @@ export function Header() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {hasSidebar && (
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  aria-label="Open email history"
+                  className="md:hidden h-9 w-9 flex items-center justify-center rounded-lg text-gray-200 hover:bg-white/10 active:scale-95 transition"
+                >
+                  <Menu className="h-6 w-6" />
+                </button>
+              )}
               </>
             ) : null
           }

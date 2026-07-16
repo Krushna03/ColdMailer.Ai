@@ -23,7 +23,7 @@ const MarqueeTestimonials = () => {
       `}</style>
 
       <section className="w-full max-w-7xl mx-auto py-10 px-4">
-        <div className="max-w-32 flex justify-center bg-[#16151c] mx-auto rounded-full px-6 py-2 mb-8">
+        <div className="max-w-32 flex justify-center bg-surface-800 mx-auto rounded-full px-6 py-2 mb-8">
           <span className="text-sm sm:text-base font-normal text-gray-200">Testimonials</span>
         </div>
 
@@ -40,7 +40,7 @@ const MarqueeTestimonials = () => {
               onMouseEnter={() => setHoveredColumn(colIndex)}
               onMouseLeave={() => setHoveredColumn(null)}
             >
-              <div className="absolute top-0 left-0 w-full h-20 z-10 bg-gradient-to-b from-[#16151c] to-transparent pointer-events-none" />
+              <div className="absolute top-0 left-0 w-full h-20 z-10 bg-gradient-to-b from-surface-800 to-transparent pointer-events-none" />
 
               <div
                 className={`marquee-inner ${
@@ -55,7 +55,7 @@ const MarqueeTestimonials = () => {
                 ))}
               </div>
 
-              <div className="absolute bottom-0 left-0 w-full h-20 z-10 bg-gradient-to-t from-[#16151c] to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-full h-20 z-10 bg-gradient-to-t from-surface-800 to-transparent pointer-events-none" />
             </div>
           ))}
         </div>

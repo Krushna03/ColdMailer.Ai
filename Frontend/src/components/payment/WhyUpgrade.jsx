@@ -8,15 +8,15 @@ const WhyUpgrade = () => (
     </p>
     <ul className="mt-6 space-y-4 text-sm text-slate-300">
       <li className="flex items-start gap-3">
-        <ShieldCheck className="h-4 w-4 text-[#6f34ed] mt-1" />
+        <ShieldCheck className="h-4 w-4 text-brand mt-1" />
         AI models tuned for multi-channel outreach.
       </li>
       <li className="flex items-start gap-3">
-        <Sparkles className="h-4 w-4 text-[#6f34ed] mt-1" />
+        <Sparkles className="h-4 w-4 text-brand mt-1" />
         Keep tone, context and CRM fields perfectly synced.
       </li>
       <li className="flex items-start gap-3">
-        <Clock className="h-4 w-4 text-[#6f34ed] mt-1" />
+        <Clock className="h-4 w-4 text-brand mt-1" />
         Priority response from success engineers.
       </li>
     </ul>

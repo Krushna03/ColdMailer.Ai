@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
 import { MdDelete } from "react-icons/md";
 import { useSidebarContext } from "../context/SidebarContext";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation";
 import { getToken, getUserData, capitalizeFirstLetter, api } from "../utils";
@@ -24,7 +24,7 @@ export default function Sidebar() {
   const token = getToken();
   const userData = getUserData();
   const userID = userData?._id || null;
-  const { updateSidebar, setUpdateSidebar } = useSidebarContext();
+  const { updateSidebar, setUpdateSidebar, isSidebarOpen, setIsSidebarOpen } = useSidebarContext();
   const logoutUser = useLogout();
 
   const sidebarRef = useRef(null);
@@ -33,6 +33,11 @@ export default function Sidebar() {
 
   const handleMouseEnter = () => {
     setSidebarActive(true);
+  };
+
+  const closeSidebar = () => {
+    setSidebarActive(false);
+    setIsSidebarOpen(false);
   };
 
   const handleMouseLeave = (e) => {
@@ -134,6 +139,7 @@ export default function Sidebar() {
 
 
   const handleMailNavigation = (email) => () => {
+    closeSidebar();
     navigate(`/email/history/${email._id}`, { state: { email } });
   };
 
@@ -162,7 +168,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Sidebar Toggle Button */}
+      {/* Sidebar Toggle Button (desktop hover strip) */}
       <div
         className="fixed left-0 w-8 h-full z-50 md:flex items-end justify-center hidden"
         onMouseOver={handleMouseEnter}
@@ -170,16 +176,33 @@ export default function Sidebar() {
         <GoSidebarCollapse className="h-5 w-5 mb-4 text-gray-400" />
       </div>
 
+      {/* Mobile backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-[55] md:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
       <div
         ref={sidebarRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`fixed top-0 left-0 h-full w-72 bg-[#16161c] text-white z-50 transform transition-transform duration-300 ${
-          sidebarActive ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 left-0 h-full w-72 max-w-[85vw] bg-surface-800 text-white z-[60] md:z-50 transform transition-transform duration-300 ${
+          sidebarActive || isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="p-4 font-semibold text-center text-lg border-b border-gray-700 flex gap-2 justify-start">
-          <img src="/white-logo.png" alt="logo" className="ml-5 h-8 w-8 p-1 rounded" /> Your Email History
+        <div className="p-4 font-semibold text-lg border-b border-gray-700 flex gap-2 items-center justify-between">
+          <span className="flex items-center gap-2">
+            <img src="/white-logo.png" alt="logo" className="h-8 w-8 p-1 rounded" /> Your Email History
+          </span>
+          <button
+            onClick={closeSidebar}
+            aria-label="Close history"
+            className="md:hidden h-8 w-8 flex items-center justify-center rounded-full text-gray-300 hover:bg-white/10"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div> 
 
         <ul
@@ -190,7 +213,7 @@ export default function Sidebar() {
             emailHistory.map((email, index) => (
               <li
                 key={email._id}
-                className="group sidebar-font cursor-pointer text-sm text-[#f0f0f6] hover:bg-[#2f2f37bc] rounded-lg px-2 py-1 flex items-center justify-between"
+                className="group sidebar-font cursor-pointer text-sm text-surface-foreground hover:bg-[#2f2f37bc] rounded-lg px-2 py-1 flex items-center justify-between"
               >
                 <span
                   onClick={handleMailNavigation(email)}
@@ -224,7 +247,7 @@ export default function Sidebar() {
                         onClick={() => handleEmailDelete(email._id)}
                         className="flex gap-1 cursor-pointer text-red-200"
                       >
-                        <MdDelete color="#de473c" /> Delete
+                        <MdDelete color="var(--danger)" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
@@ -247,8 +270,8 @@ export default function Sidebar() {
 
         <div className="p-3 border-t border-white/10 space-y-3">
           <Button
-            className="w-full rounded-xl bg-[#6f34ed] text-white hover:bg-[#7c3ffc]"
-            onClick={() => navigate('/payment')}
+            className="w-full rounded-xl bg-brand text-white hover:bg-brand-400"
+            onClick={() => { closeSidebar(); navigate('/payment'); }}
           >
             Manage Plan
           </Button>

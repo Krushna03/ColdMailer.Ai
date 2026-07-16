@@ -74,6 +74,33 @@
     --sidebar-ring: 217.2 91.2% 59.8%}
 }
 
+:root {
+  --brand: #6f34ed;
+  --brand-50: #c5a7ff;
+  --brand-100: #a78bfa;
+  --brand-200: #8b5cf6;
+  --brand-300: #a18cef;
+  --brand-400: #7c3ffc;
+  --brand-500: #6f34ed;
+  --brand-600: #4f23af;
+  --brand-700: #3b1cab;
+  --brand-800: #2e137a;
+  --brand-900: #1a1133;
+  --brand-deep: #482b9e;
+  --surface: #0d0e12;
+  --surface-foreground: #f0f0f6;
+  --surface-500: #3a3a44;
+  --surface-600: #252628;
+  --surface-700: #1c1f23;
+  --surface-800: #16161c;
+  --surface-850: #111218;
+  --surface-900: #0d0e12;
+  --surface-950: #05060a;
+  --danger: #de473c;
+  --danger-dark: #1a1016;
+  --info: #141b2d;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -107,7 +134,7 @@ html, body, #root {
   width: 10px;
 }
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background-color: #6f34ed;
+  background-color: var(--brand);
   border-radius: 10px;
 }
 .sidebar-scroll::-webkit-scrollbar-track {

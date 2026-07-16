@@ -8,7 +8,7 @@ function CallToAction() {
   return (
     <section className="w-full pb-16 bg-black text-white relative overflow-hidden">
 
-      <div className="absolute left-[42%] top-5 w-64 h-64 bg-[#6f34ed] opacity-25 blur-3xl rounded-full z-0"></div>
+      <div className="absolute left-[42%] top-5 w-64 h-64 bg-brand opacity-25 blur-3xl rounded-full z-0"></div>
 
       <div className="container mx-auto px-4 flex flex-col items-center text-center max-w-3xl z-10 relative">
         <div className="mb-6">
@@ -33,7 +33,7 @@ function CallToAction() {
         <div className="flex flex-col items-center">
           <NavLink
             to="/generate-email"
-            className="bg-[#3f1cbc] hover:bg-[#2c1679] text-white font-medium py-2 px-5 md:py-3 md:px-8 rounded-full text-lg transition-colors duration-200 mb-3 cursor-pointer"
+            className="bg-brand-700 hover:bg-brand-800 text-white font-medium py-2 px-5 md:py-3 md:px-8 rounded-full text-lg transition-colors duration-200 mb-3 cursor-pointer"
           >
             Try it for Free
           </NavLink>

@@ -251,11 +251,11 @@ const PaymentComponent = () => {
     <>
     <Toaster />
     
-    <div className="relative min-h-screen overflow-hidden bg-[#05060a] text-white">
+    <div className="relative min-h-screen overflow-hidden bg-surface-950 text-white">
       <MovingDots />
       <Header />
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-[#6f34ed]/30 blur-[160px]" />
+        <div className="absolute top-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-brand/30 blur-[160px]" />
         <div className="absolute -bottom-10 -left-10 h-[20rem] w-[20rem] rounded-full bg-blue-500/20 blur-[130px]" />
       </div>
 

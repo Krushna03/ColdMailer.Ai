@@ -14,7 +14,7 @@ const HistoryModal = ({ open, paymentHistory, loading, onClose }) => {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-3xl rounded-3xl border border-white/20 bg-[#0b0e18] p-6 text-white animate-in fade-in zoom-in-50 duration-200"
+        className="relative w-full max-w-3xl rounded-3xl border border-white/20 bg-surface-900 p-6 text-white animate-in fade-in zoom-in-50 duration-200"
       >
         <button
           className="absolute right-4 top-4 text-slate-400 hover:text-white"
@@ -65,7 +65,7 @@ const HistoryModal = ({ open, paymentHistory, loading, onClose }) => {
           {paymentHistory.paymentInfo ? (
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-2 text-sm text-slate-200">
               <div className="flex items-center gap-2 text-slate-300 text-xs uppercase tracking-[0.3em]">
-                <ShieldCheck className="h-4 w-4 text-[#6f34ed]" />
+                <ShieldCheck className="h-4 w-4 text-brand" />
                 Last payment
               </div>
               <p>

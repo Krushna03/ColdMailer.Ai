@@ -52,7 +52,7 @@ export function PlanUsageNotice({
                 <button
                   type="button"
                   onClick={onUpgrade}
-                  className="inline-flex items-center justify-center rounded-full bg-[#6f34ed] px-3 py-1 text-sm font-medium cursor-pointer mb-1 -mt-1"
+                  className="inline-flex items-center justify-center rounded-full bg-brand px-3 py-1 text-sm font-medium cursor-pointer mb-1 -mt-1"
                 >
                   Upgrade plan
                 </button>
@@ -75,7 +75,7 @@ export function PlanUsageNotice({
         {limit != null && (
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
             <div
-              className={`h-full ${nearingLimit ? 'bg-yellow-400' : 'bg-[#6f34ed]'}`}
+              className={`h-full ${nearingLimit ? 'bg-yellow-400' : 'bg-brand'}`}
               style={{ width: `${percent}%` }}
             />
           </div>

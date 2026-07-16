@@ -124,17 +124,17 @@ export default function EmailOutputPage() {
   };
 
   return (
-    <div className="h-screen overflow-y-hidden flex flex-col relative bg-[#0d0e12] z-0">
-      <div className="absolute top-20 -left-14 w-1/2 h-48 bg-[#6f34ed] opacity-30 blur-3xl"></div>
-      <div className="absolute bottom-20 right-0 w-1/2 h-40 bg-[#6f34ed] opacity-30 blur-3xl"></div>
+    <div className="h-screen overflow-y-hidden flex flex-col relative bg-surface-900 z-0">
+      <div className="absolute top-20 -left-14 w-1/2 h-48 bg-brand opacity-30 blur-3xl pointer-events-none transform-gpu will-change-transform"></div>
+      <div className="absolute bottom-20 right-0 w-1/2 h-40 bg-brand opacity-30 blur-3xl pointer-events-none transform-gpu will-change-transform"></div>
 
       <Sidebar />
       <Header />
 
-      <main className="relative z-20 h-full custom-scroll flex-1 px-4 py-6 md:px-8 lg:px-14 overflow-y-auto">
+      <main className="relative z-20 h-full custom-scroll flex-1 px-4 py-6 md:px-8 lg:px-14 overflow-y-auto transform-gpu [contain:paint]">
         {fetchLoading ? (
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-260px)]">
-            <Loader2 className="h-12 w-12 animate-spin text-[#6f34ed] mb-4" />
+            <Loader2 className="h-12 w-12 animate-spin text-brand mb-4" />
             <p className="text-gray-200 text-lg font-medium">Loading email details...</p>
           </div>
         ) : !emailHistory ? (
@@ -144,7 +144,7 @@ export default function EmailOutputPage() {
             ) : (
               <p className="text-gray-300 text-lg font-medium">No email history loaded.</p>
             )}
-            <Button onClick={() => navigate("/generate-email")} className="mt-4 bg-[#6f34ed] hover:bg-[#7c3ffc]">
+            <Button onClick={() => navigate("/generate-email")} className="mt-4 bg-brand hover:bg-brand-400">
               Go to Generator
             </Button>
           </div>

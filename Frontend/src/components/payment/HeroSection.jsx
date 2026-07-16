@@ -27,7 +27,7 @@ const HeroSection = ({
         <Button
           onClick={() => paidPlanId && onUpgrade(paidPlanId)}
           disabled={plansLoading || paymentLoading || !paidPlanId}
-          className="bg-[#6f34ed] hover:bg-[#7f3dff] text-white px-6"
+          className="bg-brand hover:bg-brand-400 text-white px-6"
         >
           {(plansLoading || paymentLoading) ? (
             <>
