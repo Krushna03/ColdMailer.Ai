@@ -1,5 +1,5 @@
 import React from 'react';
-import './Sidebarloader.css'; 
+import './SidebarLoader.css'; 
 
 const SidebarLoader = () => {
   return (

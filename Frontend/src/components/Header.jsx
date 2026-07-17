@@ -5,7 +5,7 @@ import { useSelector } from "react-redux"
 import { useState } from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger} from "../components/ui/dropdown-menu"
 import { PlanUsageNotice } from "./PlanUsageNotice"
-import { fetchToken, useLogout } from "../Helper/tokenValidation"
+import { fetchToken, useLogout } from "../helpers/tokenValidation"
 import { useSidebarContext } from "../context/SidebarContext"
 import { usePlanUsage } from "../hooks/usePlanUsage"
 

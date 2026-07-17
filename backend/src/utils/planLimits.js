@@ -1,5 +1,5 @@
 import { PAYMENT_PLANS, DEFAULT_PLAN_ID } from '../config/paymentPlans.js';
-import { Email } from '../model/Email.model.js';
+import { Email } from '../models/Email.model.js';
 
 const getPlanConfigById = (planId = DEFAULT_PLAN_ID) => {
   if (!planId) {

@@ -1,8 +1,8 @@
 import express from "express"
-import { currentUser, getUserCount, login, logoutUser, register } from "../controller/user.controller.js"
-import { verifyJWT } from "../middleware/auth.middleware.js"
-import { verifyGoogleToken } from "../controller/google.auth.controller.js"
-import { validateRegister, validateLogin } from "../utils/Zod-Validations/User.validations.js"
+import { currentUser, getUserCount, login, logoutUser, register } from "../controllers/user.controller.js"
+import { verifyJWT } from "../middlewares/auth.middleware.js"
+import { verifyGoogleToken } from "../controllers/google.auth.controller.js"
+import { validateRegister, validateLogin } from "../validators/user.validators.js"
 
 const router = express.Router()
 

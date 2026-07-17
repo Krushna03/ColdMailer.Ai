@@ -1,5 +1,5 @@
 import  jwt  from 'jsonwebtoken'
-import UserModel from '../model/User.models.js'
+import UserModel from '../models/User.model.js'
 import { enforceSubscriptionFreshness } from '../utils/subscription.js'
 
 

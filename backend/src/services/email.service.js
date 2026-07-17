@@ -1,4 +1,4 @@
-import { Email } from "../model/Email.model.js";
+import { Email } from "../models/Email.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { buildPlanUsageSummary, getPlanConfigForUser, getMonthlyEmailUsage } from "../utils/planLimits.js";
 import { generateAIContent, generateAIContentWithRole } from "./ai.service.js";

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, getToken } from "../utils";
-import { isTokenExpired, useLogout } from "../Helper/tokenValidation";
+import { isTokenExpired, useLogout } from "../helpers/tokenValidation";
 
 export function usePlanUsage() {
   const [planUsage, setPlanUsage] = useState(null);

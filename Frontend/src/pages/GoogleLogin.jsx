@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { useErrorToast } from "@/hooks/useErrorToast"
 import { GoogleLogin } from '@react-oauth/google';
+import { useDispatch } from "react-redux"
+import { login } from "../context/authSlice"
 import { api } from "@/utils"
 
 const Googlelogin = () => {
@@ -9,6 +11,7 @@ const Googlelogin = () => {
   const { toast } = useToast()
   const showErrorToast = useErrorToast()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const handleLoginSuccess = async (credentialResponse) => {
     try {
@@ -17,6 +20,7 @@ const Googlelogin = () => {
       );
   
       if (res.data.success) {
+        dispatch(login(res.data?.data?.user));
         localStorage.setItem('token', JSON.stringify(res.data.token));
         
         toast({

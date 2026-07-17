@@ -1,4 +1,4 @@
-import { extractEmailAndContent, sanitizeEmailResponse } from "../lib/ExtractEmail";
+import { extractEmailAndContent, sanitizeEmailResponse } from "../lib/extractEmail";
 
 // Parse email string to extract subject and body
 export const parseEmail = (emailStr = "") => {

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EmailInput } from './email-input';
-import { EmailOutput } from './email-output';
+import { EmailInput } from './EmailInput';
+import { EmailOutput } from './EmailOutput';
 import { useToast } from "../hooks/use-toast";
 import { useSelector } from 'react-redux';
 import { useSidebarContext } from '../context/SidebarContext';
-import { ensureAuthenticated, useLogout } from '../Helper/tokenValidation';
+import { ensureAuthenticated, useLogout } from '../helpers/tokenValidation';
 import { useErrorToast } from '../hooks/useErrorToast';
 import { usePlanUsage } from '../hooks/usePlanUsage';
 import { getToken, api } from '../utils';

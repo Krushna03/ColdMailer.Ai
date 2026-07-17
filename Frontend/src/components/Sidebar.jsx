@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { GoSidebarCollapse } from "react-icons/go";
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import SidebarLoader from "../loader/SidebarLoader";
+import SidebarLoader from "../loaders/SidebarLoader";
 import { useNavigate } from "react-router-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
 import { MdDelete } from "react-icons/md";
 import { useSidebarContext } from "../context/SidebarContext";
 import { MoreVertical, X } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { ensureAuthenticated, useLogout } from "../Helper/tokenValidation";
+import { ensureAuthenticated, useLogout } from "../helpers/tokenValidation";
 import { getToken, getUserData, capitalizeFirstLetter, api } from "../utils";
 
 export default function Sidebar() {

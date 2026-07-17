@@ -1,12 +1,12 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import GenerateEmail from './page/Generate-email'
-import LoginPage from './page/Login'
-import RegisterPage from './page/Register'
+import GenerateEmail from './pages/GenerateEmail'
+import LoginPage from './pages/Login'
+import RegisterPage from './pages/Register'
 import Protected from './components/Protected'
 import NotFound from './components/NotFound'
-import LandingPage from './Landing/Landing'
-import EmailHistory from './page/EmailHistory'
-import EmailOutputPage from './page/EmailOutputPage'
+import LandingPage from './landing/Landing'
+import EmailHistory from './pages/EmailHistory'
+import EmailOutputPage from './pages/EmailOutputPage'
 import PaymentComponent from './components/Payment'
 
 

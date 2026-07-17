@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { razorpayInstance } from '../config/razorpay-client.js';
-import UserModel from '../model/User.models.js';
+import UserModel from '../models/User.model.js';
 import {
   PAYMENT_PLANS,
   getPlanByType,

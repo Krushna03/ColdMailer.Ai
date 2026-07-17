@@ -1,4 +1,4 @@
-import { Contact } from "../model/Contact.model.js";
+import { Contact } from "../models/Contact.model.js";
 import nodemailer from "nodemailer";
 import { contactEmailTemplate } from "../utils/email.js";
 

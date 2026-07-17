@@ -1,11 +1,11 @@
 import express from 'express'
 import cors from "cors"
 import cookieParser from 'cookie-parser'
-import { errorHandler } from './middleware/errorHandler.js'
+import { errorHandler } from './middlewares/error.middleware.js'
 import helmet from "helmet"
 import rateLimit from "express-rate-limit"
-import { handleWebhook } from './controller/payment.controller.js'
-import { webhookMiddleware } from './middleware/Webhook.middleware.js'
+import { handleWebhook } from './controllers/payment.controller.js'
+import { webhookMiddleware } from './middlewares/webhook.middleware.js'
 
 const app = express()
 
@@ -58,7 +58,7 @@ app.get("/health", (req, res) => {
 });
 
 import ContactRoute from './routes/contact.routes.js'
-import UserRoute from './routes/user.route.js'
+import UserRoute from './routes/user.routes.js'
 import EmailRoute from './routes/email.routes.js'
 import PaymentRoute from './routes/payment.routes.js'
 

@@ -1,6 +1,6 @@
 import './loadEnv.js';
 import { app } from './app.js'
-import connectDB from './databse/db.js'
+import connectDB from './database/db.js'
 import { OAuth2Client } from 'google-auth-library';
 
 export const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);

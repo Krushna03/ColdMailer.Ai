@@ -1,4 +1,4 @@
-import { extractEmailAndContent, validateExtraction, sanitizeEmailResponse } from './ExtractEmail';
+import { extractEmailAndContent, validateExtraction, sanitizeEmailResponse } from './extractEmail';
 
 // Inside your component:
 export const processGeneratedEmail = (rawResponse) => {

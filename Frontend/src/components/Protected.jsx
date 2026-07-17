@@ -1,18 +1,15 @@
 import React from 'react'
 import { useLocation, Navigate } from 'react-router-dom';
+import { fetchToken, isTokenExpired } from '../helpers/tokenValidation';
 
 const Protected = ({ children }) => {
 
   const location = useLocation()
 
-  const getCurrentUser = () => {
-    const user = localStorage.getItem('token')
-    return user
-  };
+  const token = fetchToken();
 
-  const user = getCurrentUser();
-
-  if (!user) {
+  if (!token || isTokenExpired(token)) {
+    localStorage.removeItem('token');
     return (
         <Navigate to="/sign-in" state={{ from: location }} replace />
       ) 

@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { MovingDots } from '../components/moving-dots';
+import { MovingDots } from '../components/MovingDots';
 import { Header } from '../components/Header';
-import { EmailGenerator } from '../components/email-generator';
+import { EmailGenerator } from '../components/EmailGenerator';
 import { Footer } from '../components/Footer';
 import { useDispatch } from 'react-redux';
 import { login } from '../context/authSlice';
 import Sidebar from '../components/Sidebar';
-import { ensureAuthenticated, useLogout } from '../Helper/tokenValidation';
+import { ensureAuthenticated, useLogout } from '../helpers/tokenValidation';
 import { getToken, getErrorMessage, api } from '../utils';
 
 export const GenerateEmail = () => {

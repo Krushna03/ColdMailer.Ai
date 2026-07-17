@@ -1,6 +1,6 @@
 import express from "express"
-import { verifyJWT } from "../middleware/auth.middleware.js";
-import { deleteEmail, generateEmail, getUsageSummary, getUserEmailHistory, updateEmail, updateEmailHistory } from "../controller/email.controller.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { deleteEmail, generateEmail, getUsageSummary, getUserEmailHistory, updateEmail, updateEmailHistory } from "../controllers/email.controller.js";
 
 const router = express.Router()
 

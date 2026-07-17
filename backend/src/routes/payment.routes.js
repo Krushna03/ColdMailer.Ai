@@ -5,9 +5,9 @@ import {
   getPaymentHistory,
   handlePaymentFailure,
   getPaymentPlans
-} from '../controller/payment.controller.js';
-import { verifyJWT } from '../middleware/auth.middleware.js';
-import { validatePaymentData } from '../middleware/payment.middleware.js';
+} from '../controllers/payment.controller.js';
+import { verifyJWT } from '../middlewares/auth.middleware.js';
+import { validatePaymentData } from '../middlewares/payment.middleware.js';
 
 const router = express.Router();
 
