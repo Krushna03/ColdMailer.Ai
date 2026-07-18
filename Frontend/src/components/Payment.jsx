@@ -4,7 +4,7 @@ import { BellRing, ShieldCheck, Sparkles, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { usePayment } from '../hooks/usePayment';
+import { usePayment, usePaymentPlans, usePaymentHistory } from '../hooks/usePayment';
 import { ensureAuthenticated, useLogout } from '../helpers/tokenValidation';
 import { MovingDots } from './MovingDots';
 import { Header } from './Header';
@@ -27,22 +27,24 @@ const PaymentComponent = () => {
     error,
     success,
     processPayment,
-    getPaymentPlans,
-    getPaymentHistory,
     resetPaymentState,
   } = usePayment();
   const dispatch = useDispatch();
 
-  const [plans, setPlans] = useState([]);
-  const [plansLoading, setPlansLoading] = useState(true);
-  const [paymentHistory, setPaymentHistory] = useState(null);
-  const [historyLoading, setHistoryLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
   const token = getToken();
   const userData = useSelector(state => state.auth.userData);
   const storedUserData = useMemo(() => getUserData(), []);
   const user = userData || storedUserData || null;
+
+  const { data: plans = [], isLoading: plansLoading } = usePaymentPlans();
+
+  const {
+    data: paymentHistory,
+    isFetching: historyLoading,
+    refetch: refetchPaymentHistory,
+  } = usePaymentHistory(Boolean(token && user));
   const syncUserPlanWithHistory = useCallback((historySnapshot) => {
     if (!historySnapshot || !user) return;
 
@@ -68,50 +70,17 @@ const PaymentComponent = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        setPlansLoading(true);
-        const planData = await getPaymentPlans();
-        setPlans(planData);
-      } catch (err) {
-        console.error('Failed to fetch plans:', err);
-      } finally {
-        setPlansLoading(false);
-      }
-    };
-    fetchPlans();
-  }, [getPaymentPlans]);
-
-  const loadPaymentHistory = useCallback(async (shouldOpenModal = false) => {
-    if (!ensureAuthenticated(token, logoutUser)) return;
-
-    setHistoryLoading(true);
-    try {
-      const history = await getPaymentHistory();
-      setPaymentHistory(history);
-      syncUserPlanWithHistory(history);
-      if (shouldOpenModal) {
-        setShowHistory(true);
-      }
-    } catch (err) {
-      console.error('Failed to fetch payment history:', err);
-    } finally {
-      setHistoryLoading(false);
+    if (paymentHistory) {
+      syncUserPlanWithHistory(paymentHistory);
     }
-  }, [token, getPaymentHistory, logoutUser, syncUserPlanWithHistory]);
-
-  useEffect(() => {
-    if (user && token && !paymentHistory) {
-      loadPaymentHistory(false);
-    }
-  }, [user, token, paymentHistory, loadPaymentHistory]);
+  }, [paymentHistory, syncUserPlanWithHistory]);
 
   const handleHistoryModal = () => {
     if (paymentHistory) {
       setShowHistory(true);
       return;
     }
-    loadPaymentHistory(true);
+    refetchPaymentHistory().then(() => setShowHistory(true));
   };
 
   const handlePayment = useCallback(async (planId) => {
@@ -152,7 +121,7 @@ const PaymentComponent = () => {
         userId: user?._id,
         phone: user?.phoneNumber || user?.contactNumber || ''
       });
-      await loadPaymentHistory(false);
+      await refetchPaymentHistory();
     } catch (err) {
       console.error('Payment failed:', err);
     }
@@ -164,7 +133,7 @@ const PaymentComponent = () => {
     user,
     resetPaymentState,
     processPayment,
-    loadPaymentHistory
+    refetchPaymentHistory
   ]);
 
   const reminderWindowDays = paymentHistory?.reminderWindowInDays || DEFAULT_REMINDER_WINDOW_DAYS;

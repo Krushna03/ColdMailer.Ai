@@ -1,44 +1,20 @@
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { api, getToken } from "../utils";
-import { isTokenExpired, useLogout } from "../helpers/tokenValidation";
+import { isTokenExpired } from "../helpers/tokenValidation";
+import { queryKeys } from "./queryKeys";
 
 export function usePlanUsage() {
-  const [planUsage, setPlanUsage] = useState(null);
-  const [usageLoading, setUsageLoading] = useState(false);
-  const logoutUser = useLogout();
   const token = getToken();
+  const enabled = !!token && !isTokenExpired(token);
 
-  const fetchPlanUsage = useCallback(async () => {
-    if (!token) {
-      setPlanUsage(null);
-      return;
-    }
-
-    if (isTokenExpired(token)) {
-      logoutUser("Session expired. Please log in again.");
-      return;
-    }
-
-    setUsageLoading(true);
-    try {
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.planUsage,
+    queryFn: async () => {
       const response = await api.get(`/api/v1/email/usage`);
-      if (response.data.success) {
-        setPlanUsage(response.data.data);
-      }
-    } catch (error) {
-      if (error.response?.status === 401) {
-        logoutUser("Session expired. Please log in again.");
-      } else {
-        console.error("Failed to fetch plan usage", error);
-      }
-    } finally {
-      setUsageLoading(false);
-    }
-  }, [token, logoutUser]);
+      return response.data.success ? response.data.data : null;
+    },
+    enabled,
+  });
 
-  useEffect(() => {
-    fetchPlanUsage();
-  }, [fetchPlanUsage]);
-
-  return { planUsage, setPlanUsage, usageLoading, fetchPlanUsage };
+  return { planUsage: data ?? null, usageLoading: enabled && isLoading };
 }

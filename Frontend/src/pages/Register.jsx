@@ -8,49 +8,38 @@ import { useToast } from "@/hooks/use-toast"
 import { NavLink, useNavigate } from "react-router-dom"
 import { Toaster } from "../components/ui/toaster"
 import Googlelogin from "./GoogleLogin"
-import { useDispatch } from "react-redux"
-import { login } from "../context/authSlice"
 import { useErrorToast } from "@/hooks/useErrorToast"
-import { api } from "@/utils"
+import { useRegister } from "../hooks/useAuth"
 
 export default function RegisterPage() {
   
   const { toast } = useToast()
   const showErrorToast = useErrorToast()
   const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
   const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const { mutate: registerUser, isPending: loading } = useRegister()
 
-  const onSubmit = async (data) => {
-    setLoading(true)
-    try {
-      const res = await api.post(`/api/v1/user/register`, data)
-
-      if (res.status === 201) { 
+  const onSubmit = (data) => {
+    registerUser(data, {
+      onSuccess: () => {
         toast({
           title: "Registration Successful !",
           description: "User Registered successfully!",
         });
-        
+
         setTimeout(() => {
           navigate("/generate-email")
         }, 1300)
-      }
 
-      dispatch(login(res.data?.data?.user))
-      localStorage.setItem('token', JSON.stringify(res.data?.data?.accessToken))
-      reset()
-
-    } catch (error) {
-      console.log("Error in signup", error);
-      showErrorToast(error, { fallback: "An unexpected error occurred. Please try again later." });
-      reset()
-    }
-    finally {
-      setLoading(false)
-    }
+        reset()
+      },
+      onError: (error) => {
+        console.log("Error in signup", error);
+        showErrorToast(error, { fallback: "An unexpected error occurred. Please try again later." });
+        reset()
+      },
+    })
   }
 
   return (

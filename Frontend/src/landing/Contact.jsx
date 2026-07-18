@@ -2,14 +2,14 @@ import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { useErrorToast } from "@/hooks/useErrorToast"
 import { Toaster } from "../components/ui/toaster"
-import { api } from "@/utils"
+import { useContactMutation } from "../hooks/useAuth"
 
 
 export default function Contact() {
 
   const { toast } = useToast()
   const showErrorToast = useErrorToast()
-  const [loading, setLoading] = useState(false)
+  const { mutate: sendContact, isPending: loading } = useContactMutation()
 
   const [formData, setFormData] = useState({
     name: "",
@@ -23,39 +23,33 @@ export default function Contact() {
   }
 
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
     formData.email.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
-    setLoading(true)
 
-    try {
-      const res = await api.post(`/api/v1/contact/new-contact`, formData);
-  
-      if (res.status === 200) {
-        toast({
-          title: "Message Sent !!",
-          description: "Thanks for sending messsage, we will love to reply you.",
-        });
-        setFormData({email: "", name: "", message: ""})
-      }
+    sendContact(formData, {
+      onSuccess: (res) => {
+        if (res.status === 200) {
+          toast({
+            title: "Message Sent !!",
+            description: "Thanks for sending messsage, we will love to reply you.",
+          });
+          setFormData({ email: "", name: "", message: "" })
+        }
 
-      if (res.status === 500) { 
-        toast({
-          title: "Error !!",
-          description: res.data.message,
-        });
-        setFormData({email: "", name: "", message: ""})
-        return;
-      }
-
-
-    } catch (error) {
-      console.log("Error in contact", error);
-      showErrorToast(error, { title: "Error", fallback: "An unexpected error occurred. Please try again later." });
-    }
-    finally {
-      setLoading(false)
-    }
+        if (res.status === 500) {
+          toast({
+            title: "Error !!",
+            description: res.data.message,
+          });
+          setFormData({ email: "", name: "", message: "" })
+        }
+      },
+      onError: (error) => {
+        console.log("Error in contact", error);
+        showErrorToast(error, { title: "Error", fallback: "An unexpected error occurred. Please try again later." });
+      },
+    })
   }
 
   return (

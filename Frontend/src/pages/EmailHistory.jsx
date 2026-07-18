@@ -9,10 +9,10 @@ import Sidebar from "../components/Sidebar"
 import { TiArrowBack } from "react-icons/ti"
 import { ensureAuthenticated, useLogout } from "../helpers/tokenValidation"
 import { useErrorToast } from "../hooks/useErrorToast"
-import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose, getUserInitial, api } from "../utils"
-import { useSidebarContext } from "../context/SidebarContext"
+import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose, getUserInitial } from "../utils"
 import { useKeyboardOffset } from "../hooks/useKeyboardOffset"
 import { EmailHistoryCard } from "../components/EmailHistoryCard"
+import { useEmail, useUpdateEmailIteration } from "../hooks/useEmail"
 
 export default function EmailHistory() {
   const { id } = useParams()
@@ -22,14 +22,14 @@ export default function EmailHistory() {
   const token = getToken()
   const logoutUser = useLogout()
   const showErrorToast = useErrorToast()
-  const { updateSidebar, setUpdateSidebar } = useSidebarContext()
-  
-  const emailHistoryFromState = location.state?.email
 
-  const [emailDetails, setEmailDetails] = useState(null)
-  const [fetchLoading, setFetchLoading] = useState(false)
+  const emailHistoryFromState = location.state?.email
+  const initialData = emailHistoryFromState?._id === id ? emailHistoryFromState : undefined
+
+  const { data: emailDetails, isLoading: fetchLoading } = useEmail(id, { initialData })
+  const { mutate: iterateEmail, isPending: isGenerating } = useUpdateEmailIteration()
+
   const [newModification, setNewModification] = useState("")
-  const [isGenerating, setIsGenerating] = useState(false)
   const [copiedId, setCopiedId] = useState(null)
   const keyboardOffset = useKeyboardOffset()
   const mobileTextareaRef = useRef(null)
@@ -52,34 +52,6 @@ export default function EmailHistory() {
   const handleGmailCompose = useCallback((subject, body) => {
     openGmailCompose({ to: userEmail, subject, body, userEmail })
   }, [userEmail])
-
-  // Fetch email details if not present in location state (e.g. on page refresh)
-  useEffect(() => {
-    if (emailHistoryFromState && emailHistoryFromState._id === id) {
-      setEmailDetails(emailHistoryFromState);
-      return;
-    }
-
-    const fetchEmailDetails = async () => {
-      if (!id) return;
-      if (!ensureAuthenticated(token, logoutUser)) return;
-
-      setFetchLoading(true);
-      try {
-        const response = await api.get(`/api/v1/email/${id}`);
-        if (response.data.success) {
-          setEmailDetails(response.data.email);
-        }
-      } catch (err) {
-        console.error("Failed to fetch email details:", err);
-        showErrorToast(err, { title: "Error", fallback: "Failed to load email details." });
-      } finally {
-        setFetchLoading(false);
-      }
-    };
-
-    fetchEmailDetails();
-  }, [id, emailHistoryFromState, token, logoutUser, toast]);
 
   const original = useMemo(() => parseEmail(emailDetails?.generatedEmail || ""), [emailDetails])
 
@@ -106,73 +78,35 @@ export default function EmailHistory() {
     }
   }, [emailDetails])
   
-  const generateNewEmailIteration = async (e) => {
+  const generateNewEmailIteration = (e) => {
     e.preventDefault();
     if (isGenerating) return;
     if (!newModification.trim()) return;
-  
+
     if (!ensureAuthenticated(token, logoutUser)) return;
 
-    try {
-      setIsGenerating(true);
-
-      const response = await api.patch(
-        `/api/v1/email/update-email-history`,
-        { 
-          modification: newModification,
-          emailId: id 
-        }
-      );
-
-      const generatedEmail = parseEmail(response.data?.updatedEmail || "");
-  
-      if (generatedEmail) {
-        const newIteration = {
-          id: response.data._id,
-          version: iterations.length + 2,
-          subject: generatedEmail.subject,
-          body: generatedEmail.body,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          modifications: newModification,
-        };
-        
-        setIterations((prev) => [newIteration, ...prev]);
-        
-        setEmailDetails((prev) => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            chatEmails: [
-              ...(prev.chatEmails || []),
-              {
-                prompt: newModification,
-                generatedEmail: response.data.updatedEmail,
-                createdAt: new Date().toISOString()
-              }
-            ]
-          };
-        });
-
-        setUpdateSidebar(!updateSidebar);
-        
-        toast({
-          title: "Success",
-          description: "New email iteration generated successfully",
-          variant: "success",
-        });
+    iterateEmail(
+      { emailId: id, modification: newModification },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: "New email iteration generated successfully",
+            variant: "success",
+          });
+        },
+        onError: (err) => {
+          console.error("Axios error:", err);
+          if (err.response?.status === 401) {
+            logoutUser("Session expired. Please log in again.");
+          }
+          showErrorToast(err, { title: "Error" });
+        },
+        onSettled: () => {
+          setNewModification("");
+        },
       }
-    } catch (err) {
-      console.error("Axios error:", err);
-      if (err.response?.status === 401) {
-        logoutUser("Session expired. Please log in again.");
-      }
-
-      showErrorToast(err, { title: "Error" });
-    } finally {
-      setIsGenerating(false);
-      setNewModification("");
-    }
+    );
   };
   
   return (

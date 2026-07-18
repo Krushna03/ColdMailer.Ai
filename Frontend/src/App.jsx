@@ -1,39 +1,45 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import GenerateEmail from './pages/GenerateEmail'
-import LoginPage from './pages/Login'
-import RegisterPage from './pages/Register'
 import Protected from './components/Protected'
-import NotFound from './components/NotFound'
-import LandingPage from './landing/Landing'
-import EmailHistory from './pages/EmailHistory'
-import EmailOutputPage from './pages/EmailOutputPage'
-import PaymentComponent from './components/Payment'
+import PageLoader from './loaders/PageLoader'
 
+const LandingPage = lazy(() => import('./landing/Landing'))
+const LoginPage = lazy(() => import('./pages/Login'))
+const RegisterPage = lazy(() => import('./pages/Register'))
+const NotFound = lazy(() => import('./components/NotFound'))
+const GenerateEmail = lazy(() => import('./pages/GenerateEmail'))
+const EmailOutputPage = lazy(() => import('./pages/EmailOutputPage'))
+const EmailHistory = lazy(() => import('./pages/EmailHistory'))
+const PaymentComponent = lazy(() => import('./components/Payment'))
+
+const withSuspense = (element) => (
+  <Suspense fallback={<PageLoader />}>{element}</Suspense>
+)
 
 function App() {
-  
+
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <LandingPage />
+      element: withSuspense(<LandingPage />)
     },
     {
       path: "/sign-in",
-      element: <LoginPage />
+      element: withSuspense(<LoginPage />)
     },
     {
       path: "/sign-up",
-      element: <RegisterPage />
+      element: withSuspense(<RegisterPage />)
     },
     {
       path: "*",
-      element: <NotFound />
+      element: withSuspense(<NotFound />)
     },
     {
       path: "/generate-email",
       element: (
         <Protected>
-            <GenerateEmail />
+            {withSuspense(<GenerateEmail />)}
         </Protected>
       ) 
     },
@@ -41,7 +47,7 @@ function App() {
       path: "/email/:id",
       element: (
         <Protected>
-            <EmailOutputPage />
+            {withSuspense(<EmailOutputPage />)}
         </Protected>
       ) 
     },
@@ -49,7 +55,7 @@ function App() {
       path: "/email/history/:id",
       element: (
         <Protected>
-            <EmailHistory />
+            {withSuspense(<EmailHistory />)}
         </Protected>
       ) 
     },
@@ -57,7 +63,7 @@ function App() {
       path: "/payment",
       element: (
         <Protected>
-          <PaymentComponent />
+          {withSuspense(<PaymentComponent />)}
         </Protected>
       ) 
     },

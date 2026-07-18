@@ -5,11 +5,11 @@ import { Header } from "../components/Header"
 import Sidebar from "../components/Sidebar"
 import { EmailOutput } from "../components/EmailOutput"
 import { Button } from "@/components/ui/button"
-import { Loader2, History } from "lucide-react"
-import { getToken, api } from "../utils"
-import { useSidebarContext } from "../context/SidebarContext"
+import { Loader2 } from "lucide-react"
+import { getToken } from "../utils"
 import { ensureAuthenticated, useLogout } from "../helpers/tokenValidation"
 import { useErrorToast } from "../hooks/useErrorToast"
+import { useEmail, useUpdateEmailIteration } from "../hooks/useEmail"
 
 export default function EmailOutputPage() {
   const { id } = useParams()
@@ -19,46 +19,31 @@ export default function EmailOutputPage() {
   const token = getToken()
   const logoutUser = useLogout()
   const showErrorToast = useErrorToast()
-  const { updateSidebar, setUpdateSidebar } = useSidebarContext()
 
   const emailHistoryFromState = location.state?.email
+  const initialData = emailHistoryFromState?._id === id ? emailHistoryFromState : undefined
 
-  const [emailHistory, setEmailHistory] = useState(null)
-  const [fetchLoading, setFetchLoading] = useState(false)
-  const [isGenerating, setIsGenerating] = useState(false)
   const [newModification, setNewModification] = useState("")
   const [error, setError] = useState(null)
 
-  // Synchronize state when URL param or router state changes
+  const {
+    data: emailHistory,
+    isLoading: fetchLoading,
+    isError,
+  } = useEmail(id, { initialData })
+
   useEffect(() => {
-    if (emailHistoryFromState && emailHistoryFromState._id === id) {
-      setEmailHistory(emailHistoryFromState);
-      setError(null);
-      return;
+    if (isError) {
+      setError("Failed to load email details. Please try again.")
+      showErrorToast(new Error("Failed to load email details."), {
+        title: "Error",
+        fallback: "Failed to load email details.",
+      })
     }
+  }, [isError, showErrorToast])
 
-    const fetchEmailDetails = async () => {
-      if (!id) return;
-      if (!ensureAuthenticated(token, logoutUser)) return;
-
-      setFetchLoading(true);
-      setError(null);
-      try {
-        const response = await api.get(`/api/v1/email/${id}`);
-        if (response.data.success) {
-          setEmailHistory(response.data.email);
-        }
-      } catch (err) {
-        console.error("Failed to fetch email details:", err);
-        setError("Failed to load email details. Please try again.");
-        showErrorToast(err, { title: "Error", fallback: "Failed to load email details." });
-      } finally {
-        setFetchLoading(false);
-      }
-    };
-
-    fetchEmailDetails();
-  }, [id, emailHistoryFromState, token, logoutUser, toast]);
+  const { mutate: iterateEmail, isPending: isGenerating } =
+    useUpdateEmailIteration()
 
   const latestGeneratedEmail = useMemo(() => {
     if (emailHistory?.chatEmails?.length) {
@@ -67,60 +52,36 @@ export default function EmailOutputPage() {
     return emailHistory?.generatedEmail || "";
   }, [emailHistory]);
 
-  const generateNewEmailIteration = async (e) => {
+  const generateNewEmailIteration = (e) => {
     if (e && e.preventDefault) e.preventDefault();
     if (isGenerating) return;
     if (!newModification.trim()) return;
 
     if (!ensureAuthenticated(token, logoutUser)) return;
 
-    setIsGenerating(true);
     setError(null);
 
-    try {
-      const response = await api.patch(
-        `/api/v1/email/update-email-history`,
-        { 
-          modification: newModification,
-          emailId: id 
-        }
-      );
-
-      if (response.data.success && response.data.updatedEmail) {
-        setEmailHistory((prev) => ({
-          ...prev,
-          chatEmails: [
-            ...(prev.chatEmails || []),
-            {
-              prompt: newModification,
-              generatedEmail: response.data.updatedEmail,
-              createdAt: new Date().toISOString()
-            }
-          ]
-        }));
-        
-        setNewModification("");
-        setUpdateSidebar(!updateSidebar);
-        
-        toast({
-          title: "Success",
-          description: "New email iteration generated successfully",
-          variant: "success",
-        });
-      } else {
-        throw new Error(response.data.error || "Failed to update email");
+    iterateEmail(
+      { emailId: id, modification: newModification },
+      {
+        onSuccess: () => {
+          setNewModification("");
+          toast({
+            title: "Success",
+            description: "New email iteration generated successfully",
+            variant: "success",
+          });
+        },
+        onError: (err) => {
+          console.error("Iteration error:", err);
+          if (err.response?.status === 401) {
+            logoutUser("Session expired. Please log in again.");
+            return;
+          }
+          setError(showErrorToast(err, { title: "Error" }));
+        },
       }
-    } catch (err) {
-      console.error("Iteration error:", err);
-      if (err.response?.status === 401) {
-        logoutUser("Session expired. Please log in again.");
-        return;
-      }
-
-      setError(showErrorToast(err, { title: "Error" }));
-    } finally {
-      setIsGenerating(false);
-    }
+    );
   };
 
   return (

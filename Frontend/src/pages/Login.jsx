@@ -8,10 +8,8 @@ import { NavLink, useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "../components/ui/toaster"
 import Googlelogin from "./GoogleLogin"
-import { useDispatch } from "react-redux"
-import { login } from "../context/authSlice"
 import { useErrorToast } from "@/hooks/useErrorToast"
-import { api } from "@/utils"
+import { useLogin } from "../hooks/useAuth"
 
 export default function LoginPage() {
 
@@ -19,16 +17,12 @@ export default function LoginPage() {
   const showErrorToast = useErrorToast()
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
   const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const { mutate: loginUser, isPending: loading } = useLogin()
 
-  const submit = async (data) => {
-    setLoading(true)
-    try {
-      const res = await api.post(`/api/v1/user/login`, data)
-
-      if (res.status === 200) { 
+  const submit = (data) => {
+    loginUser(data, {
+      onSuccess: () => {
         toast({
           title: "Login Successfull !",
           description: "User login successfully!",
@@ -37,19 +31,15 @@ export default function LoginPage() {
         setTimeout(() => {
           navigate("/generate-email")
         }, 1300)
-      }
 
-      dispatch(login(res.data?.data?.user))
-      localStorage.setItem('token', JSON.stringify(res.data?.data?.accessToken))
-      reset()
-
-    } catch (error) {
-      console.log("Error in login", error);
-      showErrorToast(error, { fallback: "An unexpected error occurred. Please try again later." });
-      reset()
-    } finally {
-      setLoading(false)
-    }
+        reset()
+      },
+      onError: (error) => {
+        console.log("Error in login", error);
+        showErrorToast(error, { fallback: "An unexpected error occurred. Please try again later." });
+        reset()
+      },
+    })
   }
 
   return (

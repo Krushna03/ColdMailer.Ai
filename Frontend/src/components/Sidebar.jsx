@@ -10,26 +10,35 @@ import { useSidebarContext } from "../context/SidebarContext";
 import { MoreVertical, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { ensureAuthenticated, useLogout } from "../helpers/tokenValidation";
-import { getToken, getUserData, capitalizeFirstLetter, api } from "../utils";
+import { getToken, getUserData, capitalizeFirstLetter } from "../utils";
+import { useEmailHistory, useDeleteEmail } from "../hooks/useEmail";
 
 export default function Sidebar() {
   const [sidebarActive, setSidebarActive] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [emailHistory, setEmailHistory] = useState([]);
-  const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
 
   const token = getToken();
   const userData = getUserData();
   const userID = userData?._id || null;
-  const { updateSidebar, setUpdateSidebar, isSidebarOpen, setIsSidebarOpen } = useSidebarContext();
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebarContext();
   const logoutUser = useLogout();
+
+  const {
+    data,
+    isFetching,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    isError,
+    error,
+  } = useEmailHistory(userID);
+  const emailHistory = data?.pages.flatMap((p) => p.emails) ?? [];
+
+  const { mutate: deleteEmail } = useDeleteEmail();
 
   const sidebarRef = useRef(null);
   const sidebarScrollRef = useRef(null);
-  const isFirstRender = useRef(true);
 
   const handleMouseEnter = () => {
     setSidebarActive(true);
@@ -49,32 +58,8 @@ export default function Sidebar() {
     }
   };
 
-  const fetchUserEmailHistory = async (currentPage, force = false) => {
-    if (!userID || loading || (!hasMore && !force)) return;
-
-    if (!ensureAuthenticated(token, logoutUser)) return;
-
-    setLoading(true);
-    try {
-      const res = await api.get(`/api/v1/email/get-user-email-history`, {
-        params: {
-          userID,
-          limit: 15,
-          page: currentPage,
-        },
-      });
-
-      if (res.status === 200) {
-        const newEmails = res.data.emails;
-
-        setHasMore(res.data.hasMore ?? false);
-
-        setEmailHistory((prev) =>
-          currentPage === 0 ? newEmails : [...prev, ...newEmails]
-        );
-      }
-    } catch (error) {
-      console.error("Email fetch error:", error);
+  useEffect(() => {
+    if (isError) {
       const message =
         error?.response?.data?.message ||
         "An unexpected error occurred. Please try again later.";
@@ -85,56 +70,26 @@ export default function Sidebar() {
         variant: "destructive",
         duration: 5000,
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [isError, error, toast]);
 
-  // Sync updateSidebar changes by resetting pagination state and reloading page 0
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    setHasMore(true);
-    if (page === 0) {
-      fetchUserEmailHistory(0, true);
-    } else {
-      setPage(0);
-    }
-  }, [updateSidebar]);
-
-  // Main fetch loop triggered by page or userID updates
-  useEffect(() => {
-    fetchUserEmailHistory(page);
-  }, [userID, page]);
-
-  const handleEmailDelete = async (emailId) => {
+  const handleEmailDelete = (emailId) => {
     if (!ensureAuthenticated(token, logoutUser)) return;
-    
-    setLoading(true);
-    try {
-      const res = await api.delete(`/api/v1/email/delete-email`, {
-        data: { emailId }, 
-      });
 
-      if (res.status === 200) {
-        setUpdateSidebar((prev) => !prev);
-      }
-    } catch (error) {
-      const message =
-        error?.response?.data?.message ||
-        "An unexpected error occurred. Please try again later.";
+    deleteEmail(emailId, {
+      onError: (err) => {
+        const message =
+          err?.response?.data?.message ||
+          "An unexpected error occurred. Please try again later.";
 
-      toast({
-        title: "Error Occurred !!",
-        description: message,
-        variant: "destructive",
-        duration: 5000,
-      });
-    } finally {
-      setLoading(false);
-    }
+        toast({
+          title: "Error Occurred !!",
+          description: message,
+          variant: "destructive",
+          duration: 5000,
+        });
+      },
+    });
   };
 
 
@@ -149,13 +104,13 @@ export default function Sidebar() {
     if (!scrollContainer) return;
 
     const handleSidebarScroll = () => {
-      if (loading || !hasMore) return;
+      if (isFetchingNextPage || !hasNextPage) return;
 
       const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
       const nearBottom = scrollTop + clientHeight >= scrollHeight - 100;
 
       if (nearBottom) {
-        setPage((prev) => prev + 1);
+        fetchNextPage();
       }
     };
 
@@ -163,7 +118,7 @@ export default function Sidebar() {
     return () => {
       scrollContainer.removeEventListener("scroll", handleSidebarScroll);
     };
-  }, [loading, hasMore]);
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
 
   return (
@@ -254,7 +209,7 @@ export default function Sidebar() {
                 </DropdownMenu>
               </li>
             ))
-          ) : !loading ? (
+          ) : !isFetching ? (
             <div key="error-message" className="text-center py-10 px-4 rounded-lg shadow-md">
               <p className="text-xl font-semibold text-gray-300 mb-2">
                 No Email History
@@ -265,7 +220,7 @@ export default function Sidebar() {
             </div>
           ) : null}
 
-          {loading && <SidebarLoader />}
+          {isFetching && <SidebarLoader />}
         </ul>
 
         <div className="p-3 border-t border-white/10 space-y-3">

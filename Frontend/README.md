@@ -13,7 +13,8 @@ The React single-page application for **ColdMailer.Ai**, an AI-powered cold-emai
 | Framework | [React 19](https://react.dev/) |
 | Build tool | [Vite 6](https://vite.dev/) |
 | Routing | [React Router DOM 7](https://reactrouter.com/) |
-| State management | [Redux Toolkit](https://redux-toolkit.js.org/) + [React Redux](https://react-redux.js.org/) |
+| Client state | [Redux Toolkit](https://redux-toolkit.js.org/) + [React Redux](https://react-redux.js.org/) |
+| Server state / data fetching | [TanStack Query 5](https://tanstack.com/query/latest) (`@tanstack/react-query` + devtools) |
 | Styling | [Tailwind CSS](https://tailwindcss.com/) + [tailwind-merge](https://github.com/dcastil/tailwind-merge) + `tailwindcss-animate` |
 | UI primitives | [Radix UI](https://www.radix-ui.com/), [shadcn-style components](https://ui.shadcn.com/) |
 | Icons | [lucide-react](https://lucide.dev/), [react-icons](https://react-icons.github.io/react-icons/) |
@@ -32,6 +33,7 @@ The React single-page application for **ColdMailer.Ai**, an AI-powered cold-emai
 - **Subscriptions & payments** — Razorpay checkout for upgrading plans, plan usage notices, and payment history.
 - **Protected routes** — authenticated-only pages guarded by a `Protected` wrapper.
 - **Responsive UI** — mobile-friendly layout with a collapsible sidebar and toast notifications.
+- **Cached data layer** — all server reads/writes go through TanStack Query hooks for caching, request de-duplication, and automatic refresh via cache invalidation (no manual refetch state).
 
 ---
 
@@ -99,24 +101,25 @@ Frontend/
 ├── public/                     # Static assets served as-is
 ├── src/
 │   ├── App.jsx                 # Route definitions (React Router)
-│   ├── main.jsx                # App entry: providers (Redux, Google OAuth, Sidebar, Tooltip)
+│   ├── main.jsx                # App entry: providers (Google OAuth, Redux, React Query, Sidebar, Tooltip)
 │   ├── index.css               # Global styles / Tailwind entry
 │   │
-│   ├── Landing/                # Marketing/landing page sections
+│   ├── landing/                # Marketing/landing page sections
 │   │   ├── Landing.jsx
 │   │   ├── Pricing.jsx
 │   │   ├── Faq.jsx
 │   │   ├── Contact.jsx
+│   │   ├── Testimonials.jsx
 │   │   ├── CallToAction.jsx
 │   │   └── Footer.jsx
 │   │
-│   ├── page/                   # Top-level routed pages
-│   │   ├── Generate-email.jsx  # Email generation workspace
+│   ├── pages/                  # Top-level routed pages
+│   │   ├── GenerateEmail.jsx   # Email generation workspace
 │   │   ├── EmailOutputPage.jsx # Generated email output view
 │   │   ├── EmailHistory.jsx    # Paginated email history
 │   │   ├── Login.jsx
 │   │   ├── Register.jsx
-│   │   └── Google-Login.jsx
+│   │   └── GoogleLogin.jsx
 │   │
 │   ├── components/             # Reusable UI components
 │   │   ├── Header.jsx
@@ -124,11 +127,13 @@ Frontend/
 │   │   ├── Footer.jsx
 │   │   ├── Protected.jsx       # Route guard for authenticated pages
 │   │   ├── NotFound.jsx
-│   │   ├── email-generator.jsx
-│   │   ├── email-input.jsx
-│   │   ├── email-output.jsx
+│   │   ├── EmailGenerator.jsx
+│   │   ├── EmailInput.jsx
+│   │   ├── EmailOutput.jsx
+│   │   ├── EmailHistoryCard.jsx
 │   │   ├── Payment.jsx
 │   │   ├── PlanUsageNotice.jsx
+│   │   ├── MovingDots.jsx
 │   │   ├── payment/            # Payment flow sub-components
 │   │   └── ui/                 # shadcn/Radix-based primitives (button, card, toast, ...)
 │   │
@@ -138,12 +143,23 @@ Frontend/
 │   │   ├── SidebarContext.js
 │   │   └── SidebarContextProvider.jsx
 │   │
-│   ├── hooks/                  # Custom hooks (usePayment, use-toast, use-mobile, useErrorToast)
+│   ├── hooks/                  # Custom hooks
+│   │   ├── queryKeys.js        # Centralized React Query key factory
+│   │   ├── useEmail.js         # Email queries + generate/iterate/delete mutations
+│   │   ├── useUser.js          # User count + current-user queries
+│   │   ├── useAuth.js          # Login/register/google + contact mutations
+│   │   ├── usePlanUsage.js     # Plan usage query
+│   │   ├── usePayment.js       # Payment plans/history queries + Razorpay orchestration
+│   │   ├── useErrorToast.js
+│   │   ├── useKeyboardOffset.js
+│   │   ├── use-toast.js
+│   │   └── use-mobile.jsx
+│   │
 │   ├── utils/                  # api client, localStorage, clipboard, string/email/error helpers
-│   ├── lib/                    # utils, email extraction & post-processing
+│   ├── lib/                    # queryClient (React Query config), email extraction & post-processing, cn util
 │   ├── data/                   # Static content (pricing, landing, faq, testimonials)
-│   ├── loader/                 # Loading skeletons/spinners
-│   └── Helper/                 # tokenValidation
+│   ├── loaders/                # Loading skeletons/spinners (PageLoader, SidebarLoader, Loader)
+│   └── helpers/                # tokenValidation (token parsing, expiry, logout)
 │
 ├── vite.config.js             # Vite config + "@" alias to src/
 ├── tailwind.config.js
@@ -180,6 +196,17 @@ All HTTP traffic goes through a shared axios instance in `src/utils/api.js`:
 - Base URL comes from `VITE_BASE_URL`.
 - Requests are sent with `withCredentials: true` (cookies) and a `Bearer` token from local storage.
 - On a `401` response for a protected endpoint, the token is cleared and the user is redirected to `/sign-in`.
+
+### Data layer (TanStack Query)
+
+Components never call axios directly — every read/write is wrapped in a React Query hook. The client and its defaults live in `src/lib/queryClient.js` and are provided app-wide by `QueryClientProvider` in `main.jsx` (React Query Devtools are mounted in dev only).
+
+- **Queries (`useQuery`)** — reads (GET). Cached by a key from `src/hooks/queryKeys.js`; results are reused/de-duped across components. Defaults: `staleTime: 60s`, `refetchOnWindowFocus: false`, and retries are disabled on `4xx` so RQ doesn't fight the axios `401` redirect.
+- **Mutations (`useMutation`)** — writes (POST/PATCH/DELETE). Each hook's `onSuccess` keeps the cache in sync via `invalidateQueries` (mark stale → refetch) or `setQueryData` (patch in place); components pass their own `onSuccess`/`onError` for toasts and navigation.
+- **`enabled`** gates queries on auth (e.g. plan usage / current user only run with a valid token).
+- **Logout** calls `queryClient.clear()` to purge all cached data.
+
+Hooks by domain: `useEmail` (email detail, infinite history, generate/iterate/delete), `useUser` (user count, current user), `useAuth` (login/register/google/contact), `usePlanUsage`, and `usePayment` (plans/history + Razorpay checkout orchestration).
 
 ---
 

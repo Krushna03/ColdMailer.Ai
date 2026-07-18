@@ -1,46 +1,17 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useState } from 'react'
 import { MovingDots } from '../components/MovingDots';
 import { Header } from '../components/Header';
 import { EmailGenerator } from '../components/EmailGenerator';
 import { Footer } from '../components/Footer';
-import { useDispatch } from 'react-redux';
-import { login } from '../context/authSlice';
 import Sidebar from '../components/Sidebar';
-import { ensureAuthenticated, useLogout } from '../helpers/tokenValidation';
-import { getToken, getErrorMessage, api } from '../utils';
+import { useCurrentUser } from '../hooks/useUser';
 
 export const GenerateEmail = () => {
 
   const [generatedEmail, setGeneratedEmails] = useState(false);
-  const dispatch = useDispatch()
-  const logoutUser = useLogout()
 
-  const token = getToken();
+  useCurrentUser();
 
-  const validateANDFetchUser = useCallback(async () => {
-    if (!ensureAuthenticated(token, logoutUser)) return;
-
-    try {
-      const response = await api.get(`/api/v1/user/getCurrentUser`)
-
-    if (response && response.data) {
-        dispatch(login(response.data?.data))
-      }
-    } catch (error) {
-      console.error("Error while validating token:", error);
-      logoutUser({
-        title: "Authentication Error",
-        message: getErrorMessage(error, "Please log in again"),
-      });
-    }
-  }, [token, logoutUser])
-
-  useEffect(() => {
-    if (token) {
-      validateANDFetchUser()
-    }
-  }, [])
-  
   return (
     <>
       <Sidebar />

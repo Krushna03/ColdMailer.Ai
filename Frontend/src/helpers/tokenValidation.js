@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { logout } from "../context/authSlice";
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from '../hooks/use-toast';
 import { api } from "../utils";
 
@@ -52,6 +53,7 @@ export const useLogout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   return useCallback(async (options = {}) => {
     const {
@@ -71,9 +73,10 @@ export const useLogout = () => {
     localStorage.removeItem('token');
     dispatch(logout());
     navigate(redirectTo);
+    queryClient.clear();
 
     if (showToast) {
       toast({ title, description: message, variant });
     }
-  }, [dispatch, navigate, toast]);
+  }, [dispatch, navigate, toast, queryClient]);
 };

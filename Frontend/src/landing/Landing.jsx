@@ -9,33 +9,19 @@ import {MovingDots} from "../components/MovingDots"
 import { RiMailSendFill, RiMoneyDollarCircleLine } from "react-icons/ri";
 import { User } from 'lucide-react';
 import PricingSection from './Pricing';
-import MarqueeTestimonials from "../components/MarqueeTestimonials"
+import MarqueeTestimonials from "./Testimonials"
 import { navigationLinks, features } from "../data/landingData"
 import { fetchToken, isTokenExpired } from '../helpers/tokenValidation';
-import { api } from '../utils';
+import { useUserCount } from '../hooks/useUser';
 
 const LandingPage = () => {
 
-  const [userCount, setuserCount] = useState()
   const [showMidHeader, setShowMidHeader] = useState(false)
 
   const tokenFetched = fetchToken()
   const token = isTokenExpired(tokenFetched);
 
-  useEffect(() => {
-    const fetchUserCount = async () => {
-      try {
-        const response = await api.get(`/api/v1/user/get-user-count`)
-        
-        if (response.status === 200) {
-          setuserCount(response.data?.data?.totalUsers)
-        }
-      } catch (error) {
-        console.error(`Error in logout`, error);
-      }
-    }
-    fetchUserCount()
-  }, [])
+  const { data: userCount } = useUserCount()
 
   useEffect(() => {
     const handleScroll = () => {

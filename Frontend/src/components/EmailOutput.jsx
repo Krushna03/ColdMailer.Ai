@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUp, Copy, CopyCheckIcon, Loader2, MailOpen } from "lucide-react";
 import { Button } from "./ui/button";
 import { TiArrowBack } from "react-icons/ti";
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { formatBulletPoints, processGeneratedEmail } from '../lib/processGeneratedEmail';
 import { useCopyToClipboard, getUserInitial, parseEmail, openGmailCompose } from '../utils';
@@ -23,12 +24,12 @@ export function EmailOutput({
   loading,
   updating,
   onBack,
-  planUsage,
   error
 }) {
 
   const [copied, setCopied] = useState(false);
   const [readMorePrompt, setReadMorePrompt] = useState(false);
+  const navigate = useNavigate();
   const keyboardOffset = useKeyboardOffset();
   const mobileTextareaRef = useRef(null);
   const desktopTextareaRef = useRef(null);
@@ -95,11 +96,20 @@ export function EmailOutput({
       );
     }
     if (error) {
+      const showUpgrade = /upgrade|plan|limit|revision/i.test(error);
       return (
         <div className={`absolute inset-0 flex flex-col items-center justify-center p-6 text-center rounded-lg ${dark ? "bg-danger-dark" : "bg-red-50"}`}>
           <div className="max-w-md">
             <h3 className={`font-bold text-lg mb-1 ${dark ? "text-red-300" : "text-brand-deep"}`}>Email Generation Failed</h3>
             <p className={`text-sm whitespace-pre-wrap ${dark ? "text-red-200/80" : "text-brand-deep"}`}>{error}</p>
+            {showUpgrade && (
+              <Button
+                onClick={() => navigate("/payment")}
+                className="mt-4 bg-brand-deep text-white hover:bg-brand-deep/90"
+              >
+                Upgrade Plan
+              </Button>
+            )}
           </div>
         </div>
       );
@@ -203,14 +213,14 @@ export function EmailOutput({
               {updating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
             </button>
           </div>
-          {planUsage && (
+          {/* {planUsage && (
             <p className="text-center text-[11px] text-gray-500 mt-1.5">
               {typeof planUsage?.capabilities?.maxRegenerationsPerEmail === 'number' &&
               planUsage.capabilities.maxRegenerationsPerEmail >= 0
                 ? `Up to ${planUsage.capabilities.maxRegenerationsPerEmail} updates per email on the ${planUsage.plan?.name || 'current'} plan.`
                 : 'Unlimited updates with your current plan.'}
             </p>
-          )}
+          )} */}
         </form>
       </div>
 
@@ -312,14 +322,14 @@ export function EmailOutput({
                 {updating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
               </button>
             </div>
-            {planUsage && (
+            {/* {planUsage && (
               <p className="text-center text-xs text-gray-400 mt-1.5">
                 {typeof planUsage?.capabilities?.maxRegenerationsPerEmail === 'number' &&
                 planUsage.capabilities.maxRegenerationsPerEmail >= 0
                   ? `You can apply up to ${planUsage.capabilities.maxRegenerationsPerEmail} updates per email on the ${planUsage.plan?.name || 'current'}.`
                   : 'Unlimited updates with your current plan.'}
               </p>
-            )}
+            )} */}
           </form>
         </div>
       </div>

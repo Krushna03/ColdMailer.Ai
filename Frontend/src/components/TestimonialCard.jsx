@@ -11,6 +11,7 @@ const TestimonialCard = ({ card }) => {
           className="size-12 rounded-full border-2 border-brand/50"
           src={card.image}
           alt={card.name}
+          loading="lazy"
         />
 
         <div className="flex flex-col">

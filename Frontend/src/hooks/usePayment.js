@@ -1,12 +1,38 @@
 import { useState, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast'; 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 import { useDispatch } from 'react-redux';
 import { login } from '@/context/authSlice';
 import { getErrorMessage, api } from '../utils';
+import { queryKeys } from './queryKeys';
+
+// GET /api/v1/payment/plans
+export function usePaymentPlans() {
+  return useQuery({
+    queryKey: queryKeys.paymentPlans,
+    queryFn: async () => {
+      const response = await api.get('/api/v1/payment/plans');
+      return response.data.data;
+    },
+  });
+}
+
+// GET /api/v1/payment/history
+export function usePaymentHistory(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.paymentHistory,
+    queryFn: async () => {
+      const response = await api.get('/api/v1/payment/history');
+      return response.data.data;
+    },
+    enabled,
+  });
+}
 
 export const usePayment = () => {
-  const { toast } = useToast(); 
+  const { toast } = useToast();
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -42,78 +68,57 @@ export const usePayment = () => {
     });
   }, []);
 
-  const getPaymentPlans = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await api.get('/api/v1/payment/plans');
-      return response.data.data;
-    } catch (err) {
-      const errorMessage = getErrorMessage(err, 'Failed to fetch payment plans');
-      setError(errorMessage);
-      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
-  const createOrder = useCallback(async (planType) => {
-    try {
-      setError(null);
-      
+  const createOrderMutation = useMutation({
+    mutationFn: async (planType) => {
       const response = await api.post('/api/v1/payment/create-order', { planType });
       return response.data.data;
-    } catch (err) {
+    },
+    onError: (err) => {
       const errorMessage = getErrorMessage(err, 'Failed to create order');
       setError(errorMessage);
-      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
-      throw new Error(errorMessage);
-    }
-  }, [toast]);
+      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 });
+    },
+  });
 
-  const verifyPayment = useCallback(async (paymentData) => {
-    try {
-      setError(null);
-      
+  const verifyPaymentMutation = useMutation({
+    mutationFn: async (paymentData) => {
       const response = await api.post('/api/v1/payment/verify-payment', paymentData);
-      setSuccess(true);
-      toast({ title: "Payment Successful", description: "Your payment has been verified successfully." }); 
       return response.data.data;
-    } catch (err) {
+    },
+    onSuccess: (data) => {
+      setSuccess(true);
+      toast({ title: "Payment Successful", description: "Your payment has been verified successfully." });
+      if (data?.user) {
+        dispatch(login(data.user));
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentHistory });
+      queryClient.invalidateQueries({ queryKey: queryKeys.currentUser });
+      queryClient.invalidateQueries({ queryKey: queryKeys.planUsage });
+    },
+    onError: (err) => {
       const errorMessage = getErrorMessage(err, 'Payment verification failed');
       setError(errorMessage);
-      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
-      throw new Error(errorMessage);
-    }
-  }, [toast]);
+      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 });
+    },
+  });
 
-  const handlePaymentFailure = useCallback(async (error, orderId) => {
-    try {
-      await api.post('/api/v1/payment/failure', { error, orderId });
-      toast({ title: "Payment Failed", description: error, variant: "destructive", duration: 5000 }); 
-    } catch (err) {
+  const failureMutation = useMutation({
+    mutationFn: async ({ error: failureError, orderId }) => {
+      await api.post('/api/v1/payment/failure', { error: failureError, orderId });
+    },
+    onSuccess: (_data, variables) => {
+      toast({ title: "Payment Failed", description: variables.error, variant: "destructive", duration: 5000 });
+    },
+    onError: (err) => {
       console.error('Failed to log payment failure:', err);
-    }
-  }, [toast]);
+    },
+  });
 
-  const getPaymentHistory = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await api.get('/api/v1/payment/history');
-      return response.data.data;
-    } catch (err) {
-      const errorMessage = getErrorMessage(err, 'Failed to fetch payment history');
-      setError(errorMessage);
-      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
+  const logPaymentFailure = useCallback(
+    (failureError, orderId) =>
+      failureMutation.mutateAsync({ error: failureError, orderId }).catch(() => {}),
+    [failureMutation]
+  );
 
   const processPayment = useCallback(async (planType, userInfo = {}) => {
     try {
@@ -126,7 +131,7 @@ export const usePayment = () => {
         throw new Error('Failed to load Razorpay SDK.');
       }
 
-      const orderData = await createOrder(planType);
+      const orderData = await createOrderMutation.mutateAsync(planType);
 
       const options = {
         key: orderData.key,
@@ -151,7 +156,7 @@ export const usePayment = () => {
         modal: {
           ondismiss: () => {
             setError('Payment cancelled by user');
-            toast({ title: "Payment Cancelled", description: "You cancelled the payment.", variant: "destructive", duration: 5000 }); 
+            toast({ title: "Payment Cancelled", description: "You cancelled the payment.", variant: "destructive", duration: 5000 });
             setLoading(false);
           },
         },
@@ -165,43 +170,40 @@ export const usePayment = () => {
               planType: orderData.planType,
             };
 
-            const verificationResult = await verifyPayment(verificationData);
-            if (verificationResult?.user) {
-              dispatch(login(verificationResult.user));
-            }
+            const verificationResult = await verifyPaymentMutation.mutateAsync(verificationData);
             setLoading(false);
             return verificationResult;
           } catch (verificationError) {
             console.error('Payment verification failed:', verificationError);
             setLoading(false);
-            await handlePaymentFailure(verificationError.message, orderData.orderId);
+            await logPaymentFailure(verificationError.message, orderData.orderId);
             throw verificationError;
           }
         },
       };
 
       const razorpay = new window.Razorpay(options);
-      
+
       razorpay.on('payment.failed', async (response) => {
         const errorMessage = response.error?.description || 'Payment failed';
         setError(errorMessage);
-        toast({ title: "Payment Failed", description: errorMessage, variant: "destructive", duration: 5000 }); 
+        toast({ title: "Payment Failed", description: errorMessage, variant: "destructive", duration: 5000 });
         setLoading(false);
-        await handlePaymentFailure(errorMessage, orderData.orderId);
+        await logPaymentFailure(errorMessage, orderData.orderId);
       });
 
       razorpay.open();
       setLoading(false);
-      
+
     } catch (err) {
       console.error('Payment process error:', err);
       const errorMessage = getErrorMessage(err);
       setError(errorMessage);
-      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 }); 
+      toast({ title: "Error", description: errorMessage, variant: "destructive", duration: 5000 });
       setLoading(false);
       throw err;
     }
-  }, [toast, createOrder, verifyPayment, handlePaymentFailure, loadRazorpayScript, dispatch]);
+  }, [toast, createOrderMutation, verifyPaymentMutation, logPaymentFailure, loadRazorpayScript]);
 
   const resetPaymentState = useCallback(() => {
     setError(null);
@@ -214,8 +216,6 @@ export const usePayment = () => {
     error,
     success,
     processPayment,
-    getPaymentPlans,
-    getPaymentHistory,
     resetPaymentState,
   };
 };
