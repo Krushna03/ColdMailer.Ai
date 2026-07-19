@@ -10,6 +10,7 @@ import { getToken } from "../utils"
 import { ensureAuthenticated, useLogout } from "../helpers/tokenValidation"
 import { useErrorToast } from "../hooks/useErrorToast"
 import { useEmail, useUpdateEmailIteration } from "../hooks/useEmail"
+import Seo from "../components/Seo"
 
 export default function EmailOutputPage() {
   const { id } = useParams()
@@ -86,6 +87,7 @@ export default function EmailOutputPage() {
 
   return (
     <div className="h-screen overflow-y-hidden flex flex-col relative bg-surface-900 z-0">
+      <Seo title="Your Email" noIndex />
       <div className="absolute top-20 -left-14 w-1/2 h-48 bg-brand opacity-30 blur-3xl pointer-events-none transform-gpu will-change-transform"></div>
       <div className="absolute bottom-20 right-0 w-1/2 h-40 bg-brand opacity-30 blur-3xl pointer-events-none transform-gpu will-change-transform"></div>
 

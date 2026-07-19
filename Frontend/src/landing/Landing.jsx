@@ -13,6 +13,7 @@ import MarqueeTestimonials from "./Testimonials"
 import { navigationLinks, features } from "../data/landingData"
 import { fetchToken, isTokenExpired } from '../helpers/tokenValidation';
 import { useUserCount } from '../hooks/useUser';
+import Seo from '../components/Seo';
 
 const LandingPage = () => {
 
@@ -43,6 +44,11 @@ const LandingPage = () => {
 
   return (
     <>
+      <Seo
+        title="AI Cold Email Generator"
+        description="Transform your outreach with AI-powered cold emails. Generate personalized, engaging emails that boost engagement and conversions."
+        path="/"
+      />
       {/* Navbar & hero  */}
       <Element name='home' id='home' className="min-h-screen bg-black text-white relative overflow-hidden">
         

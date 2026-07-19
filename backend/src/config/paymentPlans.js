@@ -20,7 +20,7 @@ const PAYMENT_PLANS = Object.freeze({
     popular: false,
     limits: Object.freeze({
       monthlyEmailGenerations: 50,
-      maxRegenerationsPerEmail: 3
+      maxRegenerationsPerEmail: 2
     })
   },
   STARTFREETRIAL: {

@@ -19,5 +19,16 @@ export default defineConfig({
       "bf31-2409-40c2-119-b292-f847-1b46-a130-7151.ngrok-free.app"
     ],
     host: true
-  }
+  },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/test/setup.js",
+    css: false,
+    include: ["src/**/*.{test,spec}.{js,jsx}"],
+    pool: "forks",
+    fileParallelism: false,
+    maxWorkers: 1,
+    minWorkers: 1,
+  },
 })

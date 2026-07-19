@@ -1,9 +1,9 @@
 import './loadEnv.js';
 import { app } from './app.js'
 import connectDB from './database/db.js'
-import { OAuth2Client } from 'google-auth-library';
+import { client } from './config/google-client.js';
 
-export const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+export { client };
 
 app.get('/', (req, res) => {
   res.send('Hello');

@@ -18,6 +18,7 @@ import { formatDate, formatDaysLabel, getDaysUntil } from './payment/utils';
 import { Toaster } from './ui/toaster';
 import { login } from '@/context/authSlice';
 import { getToken, getUserData } from '../utils';
+import Seo from './Seo';
 
 const DEFAULT_REMINDER_WINDOW_DAYS = 2;
 
@@ -218,6 +219,7 @@ const PaymentComponent = () => {
 
   return (
     <>
+    <Seo title="Upgrade Plan" path="/payment" noIndex />
     <Toaster />
     
     <div className="relative min-h-screen overflow-hidden bg-surface-950 text-white">

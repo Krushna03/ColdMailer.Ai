@@ -21,6 +21,10 @@ const paginationSchema = z.object({
   page: z.coerce.number().int().min(0).default(0)
 });
 
+// Zod exposes validation problems on `issues`
+const firstIssueMessage = (error, fallback = "Invalid input") =>
+  (error?.issues ?? error?.errors ?? [])[0]?.message ?? fallback;
+
 export const validateUserAuth = (user, res) => {
   if (!user?._id) {
     res.status(401).json({
@@ -37,7 +41,7 @@ export const validateEmailPrompt = (prompt, res) => {
   if (!result.success) {
     res.status(400).json({
       success: false,
-      message: result.error.errors[0].message
+      message: firstIssueMessage(result.error)
     });
     return false;
   }
@@ -49,7 +53,7 @@ export const validateEmailUpdate = ({ emailId, baseEmail, modifications }, res) 
   if (!result.success) {
     res.status(400).json({
       success: false,
-      message: result.error.errors[0].message
+      message: firstIssueMessage(result.error)
     });
     return false;
   }
@@ -61,7 +65,7 @@ export const validateEmailHistoryUpdate = ({ emailId, modification }, res) => {
   if (!result.success) {
     res.status(400).json({
       success: false,
-      message: result.error.errors[0].message
+      message: firstIssueMessage(result.error)
     });
     return false;
   }
@@ -84,7 +88,7 @@ export const validatePagination = (limit, page, res) => {
   if (!result.success) {
     res.status(400).json({
       success: false,
-      message: result.error.errors[0].message
+      message: firstIssueMessage(result.error)
     });
     return null;
   }

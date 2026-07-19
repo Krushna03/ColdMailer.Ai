@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowUp, Loader2 } from "lucide-react"
+import { ArrowUp, Loader2, Lock } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Header } from "../components/Header"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
@@ -9,10 +9,13 @@ import Sidebar from "../components/Sidebar"
 import { TiArrowBack } from "react-icons/ti"
 import { ensureAuthenticated, useLogout } from "../helpers/tokenValidation"
 import { useErrorToast } from "../hooks/useErrorToast"
-import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose, getUserInitial } from "../utils"
+import { useCopyToClipboard, parseEmail, getToken, capitalizeFirstLetter, openGmailCompose, getUserInitial, getUserData } from "../utils"
 import { useKeyboardOffset } from "../hooks/useKeyboardOffset"
 import { EmailHistoryCard } from "../components/EmailHistoryCard"
 import { useEmail, useUpdateEmailIteration } from "../hooks/useEmail"
+import { usePlanUsage } from "../hooks/usePlanUsage"
+import Seo from "../components/Seo"
+import IterationLimitModal from "../components/IterationLimitModal"
 
 export default function EmailHistory() {
   const { id } = useParams()
@@ -55,6 +58,32 @@ export default function EmailHistory() {
 
   const original = useMemo(() => parseEmail(emailDetails?.generatedEmail || ""), [emailDetails])
 
+  const { planUsage } = usePlanUsage()
+  const updatesCount = emailDetails?.chatEmails?.length || 0
+
+  const regenLimit = useMemo(() => {
+    const currentUser = user || getUserData()
+    if (currentUser?.isPaidUser) return Infinity
+    const maxRegen = planUsage?.capabilities?.maxRegenerationsPerEmail
+    if (planUsage) return maxRegen == null ? Infinity : maxRegen
+    return 2 // free-tier fallback while plan usage is still loading
+  }, [user, planUsage])
+
+  const limitReached = updatesCount >= regenLimit
+  const maxVersions = Number.isFinite(regenLimit) ? regenLimit + 1 : 3
+
+  const [showLimitModal, setShowLimitModal] = useState(false)
+
+  const handleCreateNewEmail = useCallback(() => {
+    setShowLimitModal(false)
+    navigate("/generate-email")
+  }, [navigate])
+
+  const handleUpgrade = useCallback(() => {
+    setShowLimitModal(false)
+    navigate("/payment")
+  }, [navigate])
+
   const [iterations, setIterations] = useState([])
 
   useEffect(() => {
@@ -81,6 +110,10 @@ export default function EmailHistory() {
   const generateNewEmailIteration = (e) => {
     e.preventDefault();
     if (isGenerating) return;
+    if (limitReached) {
+      setShowLimitModal(true);
+      return;
+    }
     if (!newModification.trim()) return;
 
     if (!ensureAuthenticated(token, logoutUser)) return;
@@ -94,6 +127,10 @@ export default function EmailHistory() {
             description: "New email iteration generated successfully",
             variant: "success",
           });
+          
+          if (updatesCount + 1 >= regenLimit) {
+            setShowLimitModal(true);
+          }
         },
         onError: (err) => {
           console.error("Axios error:", err);
@@ -111,6 +148,7 @@ export default function EmailHistory() {
   
   return (
     <div className="h-full min-h-screen overflow-y-hidden flex flex-col relative bg-surface-900 z-0">
+      <Seo title="Email History" noIndex />
       <div className="absolute top-20 -left-14 w-1/2 h-48 bg-brand opacity-30 blur-3xl pointer-events-none transform-gpu will-change-transform"></div>
       <div className="absolute bottom-20 right-0 w-1/2 h-40 bg-brand opacity-30 blur-3xl pointer-events-none transform-gpu will-change-transform"></div>
 
@@ -194,27 +232,53 @@ export default function EmailHistory() {
                   Back to Input
                 </Button>
 
-                <form onSubmit={generateNewEmailIteration}>
-                  <div className="flex flex-col bg-surface-850 border border-gray-700 rounded-2xl p-2.5 shadow-lg focus-within:border-gray-500 transition-colors">
-                    <textarea
-                      placeholder="Generate more cold mail..."
-                      value={newModification}
-                      onChange={(e) => setNewModification(e.target.value)}
-                      disabled={isGenerating}
-                      className="w-full min-h-[110px] resize-none bg-transparent text-gray-200 text-sm px-2 pt-1.5 placeholder:text-gray-500 focus:outline-none custom-scroll disabled:opacity-60 disabled:cursor-not-allowed"
-                    />
-                    <div className="flex justify-end">
-                      <button
-                        type="submit"
-                        disabled={isGenerateDisabled}
-                        aria-label="Generate email"
-                        className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-full transition-colors active:scale-95 ${isGenerateDisabled ? 'bg-brand-800 text-gray-400 cursor-not-allowed' : 'bg-brand-700 hover:bg-brand-600 text-white cursor-pointer'}`}
+                {limitReached ? (
+                  <div className="flex flex-col bg-surface-850 border border-amber-500/30 rounded-2xl p-4 shadow-lg">
+                    <div className="flex items-center gap-2 text-amber-300 mb-2">
+                      <Lock className="h-4 w-4" />
+                      <span className="text-sm font-medium">Free limit reached</span>
+                    </div>
+                    <p className="text-sm text-gray-300 mb-3">
+                      You&apos;ve used all {maxVersions} versions for this email. Upgrade for unlimited revisions or start a new email.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleCreateNewEmail}
+                        className="flex-1 h-9 text-sm bg-surface-800 hover:bg-surface-700 text-gray-200 border border-gray-600"
                       >
-                        {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
-                      </button>
+                        New email
+                      </Button>
+                      <Button
+                        onClick={() => setShowLimitModal(true)}
+                        className="flex-1 h-9 text-sm bg-brand-700 hover:bg-brand-600 text-white"
+                      >
+                        Upgrade
+                      </Button>
                     </div>
                   </div>
-                </form>
+                ) : (
+                  <form onSubmit={generateNewEmailIteration}>
+                    <div className="flex flex-col bg-surface-850 border border-gray-700 rounded-2xl p-2.5 shadow-lg focus-within:border-gray-500 transition-colors">
+                      <textarea
+                        placeholder="Generate more cold mail..."
+                        value={newModification}
+                        onChange={(e) => setNewModification(e.target.value)}
+                        disabled={isGenerating}
+                        className="w-full min-h-[110px] resize-none bg-transparent text-gray-200 text-sm px-2 pt-1.5 placeholder:text-gray-500 focus:outline-none custom-scroll disabled:opacity-60 disabled:cursor-not-allowed"
+                      />
+                      <div className="flex justify-end">
+                        <button
+                          type="submit"
+                          disabled={isGenerateDisabled}
+                          aria-label="Generate email"
+                          className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-full transition-colors active:scale-95 ${isGenerateDisabled ? 'bg-brand-800 text-gray-400 cursor-not-allowed' : 'bg-brand-700 hover:bg-brand-600 text-white cursor-pointer'}`}
+                        >
+                          {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                )}
               </div>
             </div>
 
@@ -224,29 +288,53 @@ export default function EmailHistory() {
               style={{ bottom: keyboardOffset, paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
               className="lg:hidden fixed inset-x-0 z-30 px-3 pt-3 bg-gradient-to-t from-surface-900 via-surface-900 to-transparent transition-[bottom] duration-10"
             >
-              <div className="flex items-end gap-2 bg-surface-800 border border-gray-700 rounded-[26px] px-2 py-2 focus-within:border-gray-500 transition-colors">
-                <textarea
-                  ref={mobileTextareaRef}
-                  rows={1}
-                  placeholder="Generate more cold mail..."
-                  className="flex-1 resize-none bg-transparent text-gray-200 text-base placeholder:text-gray-500 px-2 py-2 max-h-36 overflow-y-auto focus:outline-none custom-scroll disabled:opacity-60"
-                  value={newModification}
-                  onChange={(e) => setNewModification(e.target.value)}
-                  disabled={isGenerating}
-                />
-                <button
-                  type="submit"
-                  disabled={isGenerateDisabled}
-                  aria-label="Generate email"
-                  className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 ${isGenerateDisabled ? 'bg-brand-800 text-gray-400' : 'bg-brand-700 text-white'}`}
-                >
-                  {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
-                </button>
-              </div>
+              {limitReached ? (
+                <div className="flex items-center justify-between gap-2 bg-surface-800 border border-amber-500/30 rounded-[26px] px-4 py-3">
+                  <div className="flex items-center gap-2 text-amber-300 text-sm">
+                    <Lock className="h-4 w-4 shrink-0" />
+                    <span>Free version limit reached</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowLimitModal(true)}
+                    className="shrink-0 text-xs font-medium bg-brand-700 text-white rounded-full px-3 py-1.5"
+                  >
+                    Upgrade
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-end gap-2 bg-surface-800 border border-gray-700 rounded-[26px] px-2 py-2 focus-within:border-gray-500 transition-colors">
+                  <textarea
+                    ref={mobileTextareaRef}
+                    rows={1}
+                    placeholder="Generate more cold mail..."
+                    className="flex-1 resize-none bg-transparent text-gray-200 text-base placeholder:text-gray-500 px-2 py-2 max-h-36 overflow-y-auto focus:outline-none custom-scroll disabled:opacity-60"
+                    value={newModification}
+                    onChange={(e) => setNewModification(e.target.value)}
+                    disabled={isGenerating}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isGenerateDisabled}
+                    aria-label="Generate email"
+                    className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 ${isGenerateDisabled ? 'bg-brand-800 text-gray-400' : 'bg-brand-700 text-white'}`}
+                  >
+                    {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
+                  </button>
+                </div>
+              )}
             </form>
           </>
         )}
       </div>
+
+      <IterationLimitModal
+        open={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        onCreateNew={handleCreateNewEmail}
+        onUpgrade={handleUpgrade}
+        maxVersions={maxVersions}
+      />
     </div>
   )
 }

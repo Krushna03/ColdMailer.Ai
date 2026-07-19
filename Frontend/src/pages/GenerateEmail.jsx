@@ -5,6 +5,7 @@ import { EmailGenerator } from '../components/EmailGenerator';
 import { Footer } from '../components/Footer';
 import Sidebar from '../components/Sidebar';
 import { useCurrentUser } from '../hooks/useUser';
+import Seo from '../components/Seo';
 
 export const GenerateEmail = () => {
 
@@ -14,6 +15,7 @@ export const GenerateEmail = () => {
 
   return (
     <>
+      <Seo title="Generate Email" path="/generate-email" noIndex />
       <Sidebar />
     
       {/* Main Content */}

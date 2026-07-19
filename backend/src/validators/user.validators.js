@@ -15,6 +15,10 @@ const loginSchema = z.object({
   password: z.string().min(5, "Password must be at least 5 characters long"),
 })
 
+// Zod exposes validation problems on `issues`
+const firstIssueMessage = (err, fallback = "Invalid input") =>
+  (err?.issues ?? err?.errors ?? [])[0]?.message ?? fallback;
+
 export const validateRegister = (req, res, next) => {
   try {
     registerSchema.parse(req.body);
@@ -22,7 +26,7 @@ export const validateRegister = (req, res, next) => {
   } catch (err) {
     return res.status(400).json({
       success: false,
-      message: err.errors[0].message, 
+      message: firstIssueMessage(err),
     });
   }
 };
@@ -36,7 +40,7 @@ export const validateLogin = (req, res, next) => {
   catch (err) {
     return res.status(400).json({
       success: false,
-      message: err.errors[0].message, 
+      message: firstIssueMessage(err),
     });
   }
 } 

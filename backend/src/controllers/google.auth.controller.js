@@ -1,6 +1,6 @@
 import UserModel from '../models/User.model.js';
 import bcrypt from "bcryptjs"
-import { client } from '../index.js';
+import { client } from '../config/google-client.js';
 import { generateAccessAndRefreshTokens } from '../utils/token.js';
 import { getCookieOptions } from '../utils/cookie.js';
 

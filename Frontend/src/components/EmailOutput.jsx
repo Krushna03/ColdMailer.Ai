@@ -101,14 +101,22 @@ export function EmailOutput({
         <div className={`absolute inset-0 flex flex-col items-center justify-center p-6 text-center rounded-lg ${dark ? "bg-danger-dark" : "bg-red-50"}`}>
           <div className="max-w-md">
             <h3 className={`font-bold text-lg mb-1 ${dark ? "text-red-300" : "text-brand-deep"}`}>Email Generation Failed</h3>
-            <p className={`text-sm whitespace-pre-wrap ${dark ? "text-red-200/80" : "text-brand-deep"}`}>{error}</p>
+            <p className={`text-sm whitespace-pre-wrap max-w-xs ${dark ? "text-red-200/80" : "text-brand-deep"}`}>{error}</p>
             {showUpgrade && (
+              <> 
+              <Button
+                onClick={() => navigate("/generated-emails")}
+                className="mt-4 mr-3 bg-brand-deep text-white hover:bg-brand-deep/90"
+              >
+                Create New Email
+              </Button>
               <Button
                 onClick={() => navigate("/payment")}
                 className="mt-4 bg-brand-deep text-white hover:bg-brand-deep/90"
               >
                 Upgrade Plan
               </Button>
+              </>
             )}
           </div>
         </div>

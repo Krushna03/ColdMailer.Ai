@@ -11,7 +11,7 @@ export const findSignatureEndIndex = (text, signatureMatch) => {
     const trimmedLine = line.trim();
     
     // Check if this line starts a bullet point or suggestions header
-    const isRealBullet = /^[•\*]\s+|^-\s+|^\d+[\.\)]\s+/.test(trimmedLine);
+    const isRealBullet = /^[•*]\s+|^-\s+|^\d+[.)]\s+/.test(trimmedLine);
     const isSuggestionsHeader = /^(Additional Suggestions|Additional Content|Suggestions:|Explanation:|Additional notes:)/i.test(trimmedLine);
     
     if (isRealBullet || isSuggestionsHeader) {
