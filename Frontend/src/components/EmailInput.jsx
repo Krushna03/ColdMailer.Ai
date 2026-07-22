@@ -1,15 +1,22 @@
-
 import { useLayoutEffect, useRef } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Mic, MicOff } from "lucide-react";
 import { useKeyboardOffset } from "../hooks/useKeyboardOffset";
+import { useVoiceInput } from "../hooks/useVoiceInput";
 import { PROMPT_SUGGESTIONS } from "../data/promptSuggestions";
 
 const MAX_TEXTAREA_HEIGHT = 200;
 
 export function EmailInput({ prompt, setPrompt, onSubmit }) {
-
   const keyboardOffset = useKeyboardOffset();
   const textareaRef = useRef(null);
+
+  const {
+    listening,
+    browserSupportsSpeechRecognition,
+    handleMicClick,
+    stopListening,
+    handleValueChange,
+  } = useVoiceInput(prompt, setPrompt);
 
   useLayoutEffect(() => {
     const el = textareaRef.current;
@@ -17,6 +24,11 @@ export function EmailInput({ prompt, setPrompt, onSubmit }) {
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT)}px`;
   }, [prompt]);
+
+  const handleFormSubmit = (e) => {
+    if (listening) stopListening();
+    onSubmit(e);
+  };
 
   return (
     <div className="w-full max-w-[750px] mx-auto px-0 flex flex-col">
@@ -36,7 +48,7 @@ export function EmailInput({ prompt, setPrompt, onSubmit }) {
         </div>
 
         <form
-          onSubmit={onSubmit}
+          onSubmit={handleFormSubmit}
           style={{ bottom: keyboardOffset, paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
           className="fixed inset-x-0 z-30 px-3 pt-2 transition-[bottom] duration-10"
         >
@@ -44,17 +56,33 @@ export function EmailInput({ prompt, setPrompt, onSubmit }) {
             <textarea
               ref={textareaRef}
               rows={2}
-              placeholder="Describe your email..."
+              placeholder={listening ? "Listening…" : "Describe your email..."}
               className="flex-1 resize-none bg-transparent text-gray-200 text-base placeholder:text-gray-500 px-2 py-2 max-h-40 overflow-y-auto focus:outline-none custom-scroll"
               aria-label="Describe your email"
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
+              onChange={handleValueChange}
             />
+            <button
+              type="button"
+              onClick={handleMicClick}
+              aria-label={listening ? "Stop voice input" : "Start voice input"}
+              aria-pressed={listening}
+              title={
+                browserSupportsSpeechRecognition
+                  ? listening
+                    ? "Stop listening"
+                    : "Speak your prompt"
+                  : "Voice input not supported"
+              }
+              className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 ${listening ? "bg-red-500/90 hover:bg-red-500 text-white animate-pulse" : "bg-surface-700 hover:bg-surface-600 text-gray-300 border border-gray-600"}`}
+            >
+              {listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            </button>
             <button
               type="submit"
               disabled={!prompt.trim()}
               aria-label="Generate email"
-              className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 ${!prompt.trim() ? 'bg-brand-800 text-gray-400' : 'bg-brand-700 text-white'}`}
+              className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 ${!prompt.trim() ? "bg-brand-800 text-gray-400" : "bg-brand-700 text-white"}`}
             >
               <ArrowUp className="h-5 w-5" />
             </button>
@@ -77,36 +105,59 @@ export function EmailInput({ prompt, setPrompt, onSubmit }) {
           </p>
         </div>
 
-        <form onSubmit={onSubmit} className="flex flex-col">
-          {/* Gradient ring wrapper */}
+        <form onSubmit={handleFormSubmit} className="flex flex-col">
           <div className="relative h-[20vh] flex flex-col rounded-[24px] p-[1.5px] bg-gradient-to-br from-brand-400/50 via-gray-700/40 to-gray-800/20 focus-within:from-brand-400 focus-within:via-brand-500/40 transition-colors shadow-2xl shadow-brand-900/40">
             <div className="flex-1 min-h-0 flex items-stretch gap-2 rounded-[22px] bg-surface-850/95 backdrop-blur-sm px-4 py-3">
               <textarea
-                placeholder="Describe your email — who it's for, the goal, and any key details…"
-                className="flex-1 min-h-0 resize-none bg-transparent text-gray-100 text-md leading-relaxed overflow-y-auto placeholder:text-gray-500 focus:outline-none custom-scroll"
+                placeholder={
+                  listening
+                    ? "Listening… speak your email goal"
+                    : "Describe your email — who it's for, the goal, and any key details…"
+                }
+                className="flex-1 min-w-0 min-h-0 resize-none bg-transparent text-gray-100 text-md leading-relaxed overflow-y-auto placeholder:text-gray-500 focus:outline-none custom-scroll"
                 aria-label="Describe your email"
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={handleValueChange}
               />
-              <button
-                type="submit"
-                disabled={!prompt.trim()}
-                aria-label="Generate email"
-                className={`self-end shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-all active:scale-95 ${!prompt.trim() ? 'bg-brand-800/70 text-gray-400 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-600/30 cursor-pointer'}`}
-              >
-                <ArrowUp className="h-5 w-5" />
-              </button>
+              <div className="shrink-0 self-end flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleMicClick}
+                  aria-label={listening ? "Stop voice input" : "Start voice input"}
+                  aria-pressed={listening}
+                  title={
+                    browserSupportsSpeechRecognition
+                      ? listening
+                        ? "Stop listening"
+                        : "Speak your prompt"
+                      : "Voice input not supported"
+                  }
+                  className={`h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 ${listening ? "bg-red-500/90 hover:bg-red-500 text-white animate-pulse" : "bg-surface-700 hover:bg-surface-600 text-gray-300 border border-gray-600"}`}
+                >
+                  {listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                </button>
+                <button
+                  type="submit"
+                  disabled={!prompt.trim()}
+                  aria-label="Generate email"
+                  className={`h-10 w-10 flex items-center justify-center rounded-full transition-all active:scale-95 ${!prompt.trim() ? "bg-brand-800/70 text-gray-400 cursor-not-allowed" : "bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-600/30 cursor-pointer"}`}
+                >
+                  <ArrowUp className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </div>
         </form>
 
-        {/* Example prompt chips */}
         <div className="flex flex-wrap justify-center gap-2 mt-5 shrink-0">
           {PROMPT_SUGGESTIONS.map((suggestion) => (
             <button
               key={suggestion}
               type="button"
-              onClick={() => setPrompt(suggestion)}
+              onClick={() => {
+                if (listening) stopListening();
+                setPrompt(suggestion);
+              }}
               className="text-xs text-gray-300 bg-surface-800/80 hover:bg-surface-700 border border-gray-700 hover:border-brand-500/60 rounded-full px-4 py-1.5 transition-colors"
             >
               {suggestion}

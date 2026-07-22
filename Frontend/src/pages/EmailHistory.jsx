@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowUp, Loader2, Lock } from "lucide-react"
+import { ArrowUp, Loader2, Lock, Mic, MicOff } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Header } from "../components/Header"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
@@ -16,6 +16,7 @@ import { useEmail, useUpdateEmailIteration } from "../hooks/useEmail"
 import { usePlanUsage } from "../hooks/usePlanUsage"
 import Seo from "../components/Seo"
 import IterationLimitModal from "../components/IterationLimitModal"
+import { useVoiceInput } from "../hooks/useVoiceInput"
 
 export default function EmailHistory() {
   const { id } = useParams()
@@ -33,6 +34,8 @@ export default function EmailHistory() {
   const { mutate: iterateEmail, isPending: isGenerating } = useUpdateEmailIteration()
 
   const [newModification, setNewModification] = useState("")
+  const { listening, browserSupportsSpeechRecognition, handleMicClick, stopListening, handleValueChange } = useVoiceInput(newModification, setNewModification)
+
   const [copiedId, setCopiedId] = useState(null)
   const keyboardOffset = useKeyboardOffset()
   const mobileTextareaRef = useRef(null)
@@ -45,7 +48,7 @@ export default function EmailHistory() {
     const el = mobileTextareaRef.current
     if (!el) return
     el.style.height = "auto"
-    el.style.height = `${Math.min(el.scrollHeight, 110)}px`
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`
   }, [newModification])
 
   const user = useSelector((state) => state.auth.userData)
@@ -192,7 +195,7 @@ export default function EmailHistory() {
             <div className="w-full lg:flex">
               <div className="flex flex-col lg:w-[65%] lg:mr-6 z-0">
                 {/* Email versions as dark cards (matches the generated email UI) */}
-                <div className="space-y-4 lg:space-y-6 overflow-y-auto max-h-[calc(100vh-160px)] lg:max-h-[calc(100vh-10rem)] pb-14 sm:pb-4 custom-scroll">
+                <div className="space-y-4 lg:space-y-6 overflow-y-auto max-h-[calc(100vh-160px)] lg:max-h-[calc(100vh-10rem)] pb-28 lg:pb-4 custom-scroll">
                   {iterations?.map((iteration) => (
                     <EmailHistoryCard
                       key={iteration.id}
@@ -257,16 +260,41 @@ export default function EmailHistory() {
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={generateNewEmailIteration}>
-                    <div className="flex flex-col bg-surface-850 border border-gray-700 rounded-2xl p-2.5 shadow-lg focus-within:border-gray-500 transition-colors">
+                  <form
+                    onSubmit={(e) => {
+                      if (listening) stopListening()
+                      generateNewEmailIteration(e)
+                    }}
+                  >
+                    <div className="flex flex-col bg-surface-850 border border-gray-700 rounded-2xl p-2 shadow-lg focus-within:border-gray-500 transition-colors">
                       <textarea
-                        placeholder="Generate more cold mail..."
+                        placeholder={
+                          listening
+                            ? "Listening… speak your email goal"
+                            : "Generate more cold mail..."
+                        }
                         value={newModification}
-                        onChange={(e) => setNewModification(e.target.value)}
+                        onChange={handleValueChange}
                         disabled={isGenerating}
-                        className="w-full min-h-[110px] resize-none bg-transparent text-gray-200 text-sm px-2 pt-1.5 placeholder:text-gray-500 focus:outline-none custom-scroll disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="w-full min-h-[150px] resize-none bg-transparent text-gray-200 text-sm px-2 pt-1 placeholder:text-gray-500 focus:outline-none custom-scroll disabled:opacity-60 disabled:cursor-not-allowed"
                       />
-                      <div className="flex justify-end">
+                      <div className="flex justify-end items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleMicClick}
+                          aria-label={listening ? "Stop voice input" : "Start voice input"}
+                          aria-pressed={listening}
+                          title={
+                            browserSupportsSpeechRecognition
+                              ? listening
+                                ? "Stop listening"
+                                : "Speak your prompt"
+                              : "Voice input not supported"
+                          }
+                          className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-full transition-colors active:scale-95 ${listening ? "bg-red-500/90 hover:bg-red-500 text-white animate-pulse" : "bg-surface-700 hover:bg-surface-600 text-gray-300 border border-gray-600"}`}
+                        >
+                          {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                        </button>
                         <button
                           type="submit"
                           disabled={isGenerateDisabled}
@@ -281,52 +309,73 @@ export default function EmailHistory() {
                 )}
               </div>
             </div>
-
-            {/* Sticky mobile/tablet input (ChatGPT-style pill) */}
-            <form
-              onSubmit={generateNewEmailIteration}
-              style={{ bottom: keyboardOffset, paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
-              className="lg:hidden fixed inset-x-0 z-30 px-3 pt-3 bg-gradient-to-t from-surface-900 via-surface-900 to-transparent transition-[bottom] duration-10"
-            >
-              {limitReached ? (
-                <div className="flex items-center justify-between gap-2 bg-surface-800 border border-amber-500/30 rounded-[26px] px-4 py-3">
-                  <div className="flex items-center gap-2 text-amber-300 text-sm">
-                    <Lock className="h-4 w-4 shrink-0" />
-                    <span>Free version limit reached</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowLimitModal(true)}
-                    className="shrink-0 text-xs font-medium bg-brand-700 text-white rounded-full px-3 py-1.5"
-                  >
-                    Upgrade
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-end gap-2 bg-surface-800 border border-gray-700 rounded-[26px] px-2 py-2 focus-within:border-gray-500 transition-colors">
-                  <textarea
-                    ref={mobileTextareaRef}
-                    rows={1}
-                    placeholder="Generate more cold mail..."
-                    className="flex-1 resize-none bg-transparent text-gray-200 text-base placeholder:text-gray-500 px-2 py-2 max-h-36 overflow-y-auto focus:outline-none custom-scroll disabled:opacity-60"
-                    value={newModification}
-                    onChange={(e) => setNewModification(e.target.value)}
-                    disabled={isGenerating}
-                  />
-                  <button
-                    type="submit"
-                    disabled={isGenerateDisabled}
-                    aria-label="Generate email"
-                    className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 ${isGenerateDisabled ? 'bg-brand-800 text-gray-400' : 'bg-brand-700 text-white'}`}
-                  >
-                    {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
-                  </button>
-                </div>
-              )}
-            </form>
           </>
         )}
       </div>
+
+      {/* Must live outside transform-gpu scroll parent so position:fixed sticks to the viewport */}
+      {emailDetails && !fetchLoading && (
+        <form
+          onSubmit={(e) => {
+            if (listening) stopListening()
+            generateNewEmailIteration(e)
+          }}
+          style={{ bottom: keyboardOffset, paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+          className="lg:hidden fixed inset-x-0 z-30 px-3 pt-3 bg-gradient-to-t from-surface-900 via-surface-900 to-transparent transition-[bottom] duration-10"
+        >
+          {limitReached ? (
+            <div className="flex items-center justify-between gap-2 bg-surface-800 border border-amber-500/30 rounded-[26px] px-4 py-3">
+              <div className="flex items-center gap-2 text-amber-300 text-sm">
+                <Lock className="h-4 w-4 shrink-0" />
+                <span>Free version limit reached</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLimitModal(true)}
+                className="shrink-0 text-xs font-medium bg-brand-700 text-white rounded-full px-3 py-1.5"
+              >
+                Upgrade
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-end gap-2 bg-surface-800 border border-gray-700 rounded-[26px] px-2 py-2 focus-within:border-gray-500 transition-colors">
+              <textarea
+                ref={mobileTextareaRef}
+                rows={1}
+                placeholder={listening ? "Listening…" : "Generate more cold mail..."}
+                className="flex-1 resize-none bg-transparent text-gray-200 text-base placeholder:text-gray-500 px-2 py-2 max-h-36 overflow-y-auto focus:outline-none custom-scroll disabled:opacity-60"
+                value={newModification}
+                onChange={handleValueChange}
+                disabled={isGenerating}
+              />
+              <button
+                type="button"
+                onClick={handleMicClick}
+                aria-label={listening ? "Stop voice input" : "Start voice input"}
+                aria-pressed={listening}
+                title={
+                  browserSupportsSpeechRecognition
+                    ? listening
+                      ? "Stop listening"
+                      : "Speak your prompt"
+                    : "Voice input not supported"
+                }
+                className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 ${listening ? "bg-red-500/90 hover:bg-red-500 text-white animate-pulse" : "bg-surface-700 hover:bg-surface-600 text-gray-300 border border-gray-600"}`}
+              >
+                {listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </button>
+              <button
+                type="submit"
+                disabled={isGenerateDisabled}
+                aria-label="Generate email"
+                className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 ${isGenerateDisabled ? "bg-brand-800 text-gray-400" : "bg-brand-700 text-white"}`}
+              >
+                {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
+              </button>
+            </div>
+          )}
+        </form>
+      )}
 
       <IterationLimitModal
         open={showLimitModal}

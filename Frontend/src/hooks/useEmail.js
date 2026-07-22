@@ -83,8 +83,8 @@ export function useUpdateEmailIteration() {
       return res.data;
     },
     onSuccess: (data, variables) => {
-      // The backend exposes no GET /email/:id endpoint, so update the cached
-      // email in place (append the new iteration) instead of refetching.
+      // Keep cache warm for the detail view; 
+      // invalidate so a refetch can reconcile from GET /api/v1/email/:id when needed.
       queryClient.setQueryData(queryKeys.email(variables.emailId), (prev) => {
         if (!prev) return prev;
         return {

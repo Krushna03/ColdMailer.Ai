@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ArrowUp, Copy, CopyCheckIcon, Loader2, MailOpen } from "lucide-react";
+import { createPortal } from 'react-dom';
+import { ArrowUp, Copy, CopyCheckIcon, Loader2, MailOpen, Mic, MicOff } from "lucide-react";
 import { Button } from "./ui/button";
 import { TiArrowBack } from "react-icons/ti";
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { formatBulletPoints, processGeneratedEmail } from '../lib/processGeneratedEmail';
 import { useCopyToClipboard, getUserInitial, parseEmail, openGmailCompose } from '../utils';
 import { useKeyboardOffset } from '../hooks/useKeyboardOffset';
+import { useVoiceInput } from '../hooks/useVoiceInput';
 
 const MAX_TEXTAREA_HEIGHT = 100;
 
@@ -35,6 +37,14 @@ export function EmailOutput({
   const desktopTextareaRef = useRef(null);
   const user = useSelector(state => state.auth.userData);
   const userInitial = getUserInitial(user?.username);
+
+  const {
+    listening,
+    browserSupportsSpeechRecognition,
+    handleMicClick,
+    stopListening,
+    handleValueChange,
+  } = useVoiceInput(bottomPrompt, setBottomPrompt);
 
   const handleCopyToClipboard = useCopyToClipboard(setCopied);
 
@@ -69,10 +79,17 @@ export function EmailOutput({
 
   const handleUpdateSubmit = (e) => {
     if (e?.preventDefault) e.preventDefault();
+    if (listening) stopListening();
     onUpdate(e);
   };
 
-  const isUpdateDisabled = !bottomPrompt.trim() || !!error || updating || loading;
+  const isInputLocked = !!error || updating || loading;
+  const isUpdateDisabled = !bottomPrompt.trim() || isInputLocked;
+  const isMicDisabled = isInputLocked;
+
+  useEffect(() => {
+    if (isMicDisabled && listening) stopListening();
+  }, [isMicDisabled, listening, stopListening]);
 
   // Auto-resize the modification textareas (mobile + desktop share the same behaviour)
   useLayoutEffect(() => {
@@ -130,7 +147,7 @@ export function EmailOutput({
   return (
     <>
       {/* ============================= MOBILE LAYOUT ============================= */}
-      <div className="sm:hidden flex flex-col pb-20 mt-2">
+      <div className="sm:hidden flex flex-col pb-28 mt-2">
 
         {/* Prompt bubble */}
         <div className="flex items-start gap-2.5 mb-4">
@@ -195,42 +212,54 @@ export function EmailOutput({
             </p>
           </div>
         )}
-
-        {/* Fixed bottom modification bar (ChatGPT-style) */}
-        <form
-          onSubmit={handleUpdateSubmit}
-          style={{ bottom: keyboardOffset, paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
-          className="fixed inset-x-0 z-30 px-3 pt-3 bg-gradient-to-t from-surface-900 via-surface-900 to-transparent transition-[bottom] duration-10"
-        >
-          <div className="flex items-end gap-2 bg-surface-800 border border-gray-700 rounded-[26px] px-2 py-2 focus-within:border-gray-500 transition-colors">
-            <textarea
-              ref={mobileTextareaRef}
-              rows={1}
-              placeholder="Add requirements or modifications..."
-              className="flex-1 resize-none bg-transparent text-gray-200 text-base placeholder:text-gray-500 px-2 py-2 max-h-36 overflow-y-auto focus:outline-none custom-scroll disabled:opacity-60"
-              value={bottomPrompt}
-              onChange={(e) => setBottomPrompt(e.target.value)}
-              disabled={!!error || updating || loading}
-            />
-            <button
-              type="submit"
-              disabled={isUpdateDisabled}
-              aria-label="Update email"
-              className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-full transition-colors active:scale-95 ${isUpdateDisabled ? 'bg-brand-800 text-gray-400' : 'bg-brand-700 text-white'}`}
-            >
-              {updating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
-            </button>
-          </div>
-          {/* {planUsage && (
-            <p className="text-center text-[11px] text-gray-500 mt-1.5">
-              {typeof planUsage?.capabilities?.maxRegenerationsPerEmail === 'number' &&
-              planUsage.capabilities.maxRegenerationsPerEmail >= 0
-                ? `Up to ${planUsage.capabilities.maxRegenerationsPerEmail} updates per email on the ${planUsage.plan?.name || 'current'} plan.`
-                : 'Unlimited updates with your current plan.'}
-            </p>
-          )} */}
-        </form>
       </div>
+
+      {/* Portal keeps fixed bar on the viewport — ancestors use transform-gpu / contain:paint */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <form
+            onSubmit={handleUpdateSubmit}
+            style={{ bottom: keyboardOffset, paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+            className="sm:hidden fixed inset-x-0 z-30 px-3 pt-3 bg-gradient-to-t from-surface-900 via-surface-900 to-transparent transition-[bottom] duration-10"
+          >
+            <div className="flex items-end gap-2 bg-surface-800 border border-gray-700 rounded-[26px] px-2 py-2 focus-within:border-gray-500 transition-colors">
+              <textarea
+                ref={mobileTextareaRef}
+                rows={1}
+                placeholder={listening ? "Listening…" : "Add modifications..."}
+                className="flex-1 resize-none bg-transparent text-gray-200 text-base placeholder:text-gray-500 px-2 py-2 max-h-36 overflow-y-auto focus:outline-none custom-scroll disabled:opacity-60"
+                value={bottomPrompt}
+                onChange={handleValueChange}
+                disabled={isInputLocked}
+              />
+              <button
+                type="button"
+                onClick={handleMicClick}
+                disabled={isMicDisabled}
+                aria-label={listening ? "Stop voice input" : "Start voice input"}
+                aria-pressed={listening}
+                title={ browserSupportsSpeechRecognition
+                    ? listening
+                      ? "Stop listening"
+                      : "Speak your prompt"
+                    : "Voice input not supported"
+                }
+                className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-full transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 ${listening ? "bg-red-500/90 hover:bg-red-500 text-white animate-pulse" : "bg-surface-700 hover:bg-surface-600 text-gray-300 border border-gray-600"}`}
+              >
+                {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </button>
+              <button
+                type="submit"
+                disabled={isUpdateDisabled}
+                aria-label="Update email"
+                className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-full transition-colors active:scale-95 ${isUpdateDisabled ? "bg-brand-800 text-gray-400" : "bg-brand-700 text-white"}`}
+              >
+                {updating ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
+              </button>
+            </div>
+          </form>,
+          document.body
+        )}
 
       {/* ============================= DESKTOP / TABLET LAYOUT ============================= */}
       <div className="hidden sm:flex sm:flex-row gap-7 mt-1">
@@ -315,12 +344,29 @@ export function EmailOutput({
               <textarea
                 ref={desktopTextareaRef}
                 rows={2}
-                placeholder="Add any specific requirements or modifications..."
+                placeholder={listening ? "Listening…" : "Add any specific requirements or modifications..."}
                 className="flex-1 resize-none bg-transparent text-gray-200 text-base placeholder:text-gray-500 px-2 py-2 max-h-36 overflow-y-auto focus:outline-none custom-scroll disabled:opacity-60"
                 value={bottomPrompt}
-                onChange={(e) => setBottomPrompt(e.target.value)}
-                disabled={!!error || updating || loading}
+                onChange={handleValueChange}
+                disabled={isInputLocked}
               />
+              <button
+                type="button"
+                onClick={handleMicClick}
+                disabled={isMicDisabled}
+                aria-label={listening ? "Stop voice input" : "Start voice input"}
+                aria-pressed={listening}
+                title={
+                  browserSupportsSpeechRecognition
+                    ? listening
+                      ? "Stop listening"
+                      : "Speak your prompt"
+                    : "Voice input not supported"
+                }
+                className={`shrink-0 h-10 w-10 flex items-center justify-center rounded-full transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 ${listening ? "bg-red-500/90 hover:bg-red-500 text-white animate-pulse" : "bg-surface-700 hover:bg-surface-600 text-gray-300 border border-gray-600"}`}
+              >
+                {listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </button>
               <button
                 type="submit"
                 disabled={isUpdateDisabled}

@@ -5,7 +5,8 @@ import {
   updateEmailHistoryService,
   getUserEmailHistoryService,
   getUsageSummaryService,
-  deleteEmailService
+  deleteEmailService,
+  getEmailByIdService
 } from "../services/email.service.js";
 import {
   validateUserAuth,
@@ -160,11 +161,34 @@ const deleteEmail = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Get a single email by ID (owner-scoped)
+ * GET /api/v1/email/:id
+ */
+const getEmailById = asyncHandler(async (req, res) => {
+  const { id: emailId } = req.params;
+
+  if (!validateUserAuth(req.user, res)) return;
+  if (!validateEmailDeletion(emailId, res)) return;
+
+  const email = await getEmailByIdService({
+    emailId,
+    userId: req.user._id
+  });
+
+  return res.status(200).json({
+    success: true,
+    email,
+    message: "Email fetched successfully"
+  });
+});
+
 export {
   generateEmail,
   updateEmail,
   getUserEmailHistory,
   updateEmailHistory,
   deleteEmail,
-  getUsageSummary
+  getUsageSummary,
+  getEmailById
 };

@@ -1,6 +1,6 @@
 import express from "express"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { deleteEmail, generateEmail, getUsageSummary, getUserEmailHistory, updateEmail, updateEmailHistory } from "../controllers/email.controller.js";
+import { deleteEmail, generateEmail, getEmailById, getUsageSummary, getUserEmailHistory, updateEmail, updateEmailHistory } from "../controllers/email.controller.js";
 
 const router = express.Router()
 
@@ -15,5 +15,7 @@ router.route('/update-email-history').patch(verifyJWT, updateEmailHistory)
 router.route('/delete-email').delete(verifyJWT, deleteEmail)
 
 router.route('/usage').get(verifyJWT, getUsageSummary)
+
+router.route('/:id').get(verifyJWT, getEmailById)
 
 export default router;

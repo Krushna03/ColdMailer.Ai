@@ -25,7 +25,7 @@ export const PLATFORM_ICONS = {
 
 export const testimonialCardsData = [
   {
-    image: "/tesimonial-icon.png",
+    image: "/testimonial-icon.png",
     name: "Accurate_Maximum_974",
     handle: "u/Accurate_Maximum_974",
     date: "January 14, 2026",
