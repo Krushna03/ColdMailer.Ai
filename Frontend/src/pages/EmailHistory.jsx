@@ -185,17 +185,10 @@ export default function EmailHistory() {
               </div>
             </div>
 
-            {/* Desktop: heading */}
-            <div className="hidden lg:block mb-3 max-w-4xl">
-              <h2 className="text-lg font-semibold text-white mb-2">
-                {capitalizeFirstLetter(emailDetails?.prompt || '')}
-              </h2>
-            </div>
-
-            <div className="w-full lg:flex">
+            <div className="w-full lg:flex lg:mt-4">
               <div className="flex flex-col lg:w-[65%] lg:mr-6 z-0">
                 {/* Email versions as dark cards (matches the generated email UI) */}
-                <div className="space-y-4 lg:space-y-6 overflow-y-auto max-h-[calc(100vh-160px)] lg:max-h-[calc(100vh-10rem)] pb-28 lg:pb-4 custom-scroll">
+                <div className="space-y-4 lg:space-y-6 overflow-y-auto max-h-[calc(100vh-160px)] lg:max-h-[calc(100vh-8rem)] pb-28 lg:pb-4 custom-scroll">
                   {iterations?.map((iteration) => (
                     <EmailHistoryCard
                       key={iteration.id}
@@ -234,6 +227,12 @@ export default function EmailHistory() {
                   <TiArrowBack className='h-5 w-5' />
                   Back to Input
                 </Button>
+
+                <div className="mb-4 bg-surface-850 border border-gray-700 rounded-2xl p-4 shadow-lg">
+                  <p className="text-sm leading-relaxed text-gray-200 break-words">
+                    {capitalizeFirstLetter(emailDetails?.prompt || '')}
+                  </p>
+                </div>
 
                 {limitReached ? (
                   <div className="flex flex-col bg-surface-850 border border-amber-500/30 rounded-2xl p-4 shadow-lg">

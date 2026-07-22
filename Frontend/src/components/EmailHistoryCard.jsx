@@ -56,7 +56,12 @@ function EmailHistoryCardComponent({
         </div>
         <div>
           <h4 className="text-xs font-semibold text-gray-400 mb-1.5">Body</h4>
-          <div className="text-[14px] text-gray-100 bg-surface-900 border border-gray-800 rounded-lg p-3 whitespace-pre-wrap leading-relaxed">{body}</div>
+          {/* Outer keeps radius; desktop scroll is on the inner layer so corners stay visible */}
+          <div className="bg-surface-900 border border-gray-800 rounded-lg overflow-hidden">
+            <div className="text-[14px] text-gray-100 p-3 whitespace-pre-wrap leading-relaxed lg:max-h-[min(60vh,48rem)] lg:overflow-y-auto custom-scroll">
+              {body}
+            </div>
+          </div>
         </div>
       </div>
     </div>
